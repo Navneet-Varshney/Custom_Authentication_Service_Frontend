@@ -11,46 +11,89 @@ export function initFormSubmit({
   AUTH_MODE,
   phoneDropdown
 }) {
-  const phoneError = document.getElementById("phoneError");
-  const resetSuccess = document.getElementById("resetSuccess");
-
-  form.addEventListener("submit", e => {
+  form.addEventListener("submit", async e => {
     e.preventDefault();
 
-    // 🔹 Clear messages
-    const selectedOption = countryCodeSelect.options[countryCodeSelect.selectedIndex];
-    const requiredLength = Number(selectedOption.dataset.length);
-    if (phoneInput.value && phoneInput.value.length !== requiredLength) { 
-      alert(messages.phoneLength(requiredLength)); 
-      return; 
-    }
+    const phoneError = document.getElementById("phoneError");
+    const resetSuccess = document.getElementById("resetSuccess");
+    const submitBtn = form.querySelector("button[type='submit']");
 
-    if (emailInput.value && !emailRegex.test(emailInput.value.trim())) { 
-      alert(messages.emailInvalid); 
-      return; 
-    }
-    
     resetSuccess.textContent = "";
     phoneError.textContent = "";
-    const successMessage = document.getElementById("successMessage");
-    if (successMessage) successMessage.textContent = "";
 
+    const selectedOption = countryCodeSelect.options[countryCodeSelect.selectedIndex];
+    const requiredLength = Number(selectedOption.dataset.length);
 
-    // 🔹 Validation
-    
+    if (phoneInput.value && phoneInput.value.length !== requiredLength) {
+      alert(messages.phoneLength(requiredLength));
+      return;
+    }
 
-    const finalPhoneNumber = phoneInput.value ? countryCodeSelect.value + phoneInput.value.trim() : "";
-    console.log("Final Phone:", finalPhoneNumber);
-    resetSuccess.textContent = messages.forgetSuccess;
+    if (emailInput.value && !emailRegex.test(emailInput.value.trim())) {
+      alert(messages.emailInvalid);
+      return;
+    }
 
-    // 🔹 Reset inputs and toggle
-    phoneInput.value = "";
-    emailInput.value = "";
-    phoneInput.oninput = null;
-    emailInput.oninput = null;
-    phoneInput.disabled = false;
-    emailInput.disabled = false;
+    const countryCode = countryCodeSelect.value.replace("+", "");
+    const localNumber = phoneInput.value.trim();
 
-    applyAuthMode(AUTH_MODE, phoneField, emailField, phoneInput, emailInput,phoneDropdown);
+    const requestBody = {};
+    if (emailInput.value) requestBody.email = emailInput.value.trim();
+    if (localNumber) {
+      requestBody.countryCode = countryCode;
+      requestBody.localNumber = localNumber;
+      requestBody.phone = `+${countryCode}${localNumber}`;
+    }
+
+    const API_BASE = window.RUNTIME_ENV.API_BASE_URL;
+    const deviceUUID = getDeviceUUID();
+
+    submitBtn.disabled = true;
+    submitBtn.textContent = "Sending...";
+
+    try {
+      const res = await fetch(`${API_BASE}/password/forgot-password`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "x-device-uuid": deviceUUID,
+        },
+        body: JSON.stringify(requestBody),
+        credentials: "include",
+      });
+
+      const data = await res.json();
+
+      if (!res.ok || !data.success) {
+        resetSuccess.textContent = "";
+        alert(data.message || "Failed to send reset link.");
+        return;
+      }
+
+      // Store info for OTP/reset page
+      const contactMode = data.data?.contactMode || (emailInput.value ? "EMAIL" : "PHONE");
+      localStorage.setItem("otpDeliveryMode", contactMode);
+      localStorage.setItem("otpPurpose", "PASSWORD_RESET");
+      localStorage.setItem("signupEmail", emailInput.value || "");
+      localStorage.setItem("signupPhone", localNumber ? `+${countryCode}${localNumber}` : "");
+
+      window.location.href = "otp.html";
+      // Reset form
+      phoneInput.value = "";
+      emailInput.value = "";
+      applyAuthMode(AUTH_MODE, phoneField, emailField, phoneInput, emailInput, phoneDropdown);
+
+    } catch (err) {
+      alert("Network error. Please check your connection.");
+    } finally {
+      submitBtn.disabled = false;
+      submitBtn.textContent = "Submit";
+    }
   });
+}
+
+function getDeviceUUID() {
+  let uuid = localStorage.getItem("deviceUUID");
+  if (!uuid) { uuid = crypto.randomUUID(); localStorage.setItem("deviceUUID", uuid); }
+  return uuid;
 }
