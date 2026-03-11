@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Account Settings</title>
+    <link rel="stylesheet" href="../style.css" />
+    <link rel="stylesheet" href="../dashboard.css" />
+  </head>
+  <body class="dashboard-body">
+    <div class="dash-container">
+
+      <a href="dashboard.html" class="back-link">← Back to Dashboard</a>
+
+      <!-- Update Profile -->
+      <div class="card" style="margin-bottom:20px;">
+        <h3>Update Profile</h3>
+        <div class="two-col">
+          <div class="field">
+            <label>First Name</label>
+            <input type="text" id="firstName" placeholder="First name" />
+          </div>
+          <div class="field">
+            <label>Email</label>
+            <input type="email" id="emailUpdate" placeholder="Email address" />
+          </div>
+        </div>
+        <div class="field">
+          <label>Phone (e.g. +919876543210)</label>
+          <input type="text" id="phoneUpdate" placeholder="+91XXXXXXXXXX" />
+        </div>
+        <button id="updateBtn">Update Profile</button>
+        <div id="updateError" class="error"></div>
+        <div id="updateSuccess" class="success"></div>
+      </div>
+
+      <!-- Change Password -->
+      <div class="card" style="margin-bottom:20px;">
+        <h3>Change Password</h3>
+        <div class="field password-field">
+          <label>Current Password</label>
+          <input type="password" id="currentPassword" placeholder="Current password" />
+          <span class="toggle-eye" data-target="currentPassword">👁</span>
+        </div>
+        <div class="two-col">
+          <div class="field password-field">
+            <label>New Password</label>
+            <input type="password" id="newPassword" placeholder="New password" />
+            <span class="toggle-eye" data-target="newPassword">👁</span>
+          </div>
+          <div class="field password-field">
+            <label>Confirm New Password</label>
+            <input type="password" id="confirmPassword" placeholder="Confirm new password" />
+            <span class="toggle-eye" data-target="confirmPassword">👁</span>
+          </div>
+        </div>
+        <button id="changePasswordBtn">Change Password</button>
+        <div id="changePasswordError" class="error"></div>
+        <div id="changePasswordSuccess" class="success"></div>
+      </div>
+
+      <!-- Two-Factor Authentication -->
+      <div class="card" style="margin-bottom:20px;">
+        <h3>Two-Factor Authentication (2FA)</h3>
+        <p id="twoFaStatus">Checking status...</p>
+        <div class="field password-field">
+          <label>Password (required to toggle 2FA)</label>
+          <input type="password" id="twoFaPassword" placeholder="Enter your password" />
+          <span class="toggle-eye" data-target="twoFaPassword">👁</span>
+        </div>
+        <div style="display:flex;gap:12px;flex-wrap:wrap;">
+          <button id="enable2faBtn">Enable 2FA</button>
+          <button id="disable2faBtn" class="btn-danger">Disable 2FA</button>
+        </div>
+        <div id="twoFaError" class="error"></div>
+        <div id="twoFaSuccess" class="success"></div>
+      </div>
+
+      <!-- Danger Zone -->
+      <div class="danger-zone" style="margin-bottom:20px;">
+        <h4>⚠️ Danger Zone</h4>
+
+        <p><strong>Deactivate Account</strong> — Your account will be disabled. You can reactivate it later from the login page.</p>
+        <div class="field password-field">
+          <label>Password</label>
+          <input type="password" id="deactivatePassword" placeholder="Enter password to deactivate" />
+          <span class="toggle-eye" data-target="deactivatePassword">👁</span>
+        </div>
+        <button id="deactivateBtn" class="btn-danger">Deactivate Account</button>
+        <div id="deactivateError" class="error"></div>
+        <div id="deactivateSuccess" class="success"></div>
+
+        <hr class="section-divider" />
+
+        <p><strong>Delete Account Permanently</strong> — This action is <u>irreversible</u>. All your data will be erased.</p>
+        <div class="field password-field">
+          <label>Password</label>
+          <input type="password" id="deletePassword" placeholder="Enter password to delete account" />
+          <span class="toggle-eye" data-target="deletePassword">👁</span>
+        </div>
+        <button id="deleteBtn" class="btn-danger">Delete Account Permanently</button>
+        <div id="deleteError" class="error"></div>
+        <div id="deleteSuccess" class="success"></div>
+      </div>
+
+    </div>
+    <script src="../env.js"></script>
+    <script src="settings.js"></script>
+  </body>
+</html>

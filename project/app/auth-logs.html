@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Auth Logs</title>
+    <link rel="stylesheet" href="../style.css" />
+    <link rel="stylesheet" href="../dashboard.css" />
+  </head>
+  <body class="dashboard-body">
+    <div class="dash-container">
+
+      <a href="dashboard.html" class="back-link">← Back to Dashboard</a>
+
+      <div class="card">
+        <h3>Auth Logs</h3>
+        <div id="logsBody">Loading...</div>
+        <div id="logsError" class="error" style="margin-top:10px;"></div>
+        <div class="pagination">
+          <button id="prevBtn" disabled>← Prev</button>
+          <span id="pageInfo" style="font-size:13px;color:#4a4a6a;">Page 1</span>
+          <button id="nextBtn">Next →</button>
+        </div>
+      </div>
+
+    </div>
+    <script src="../env.js"></script>
+    <script src="auth-logs.js"></script>
+  </body>
+</html>

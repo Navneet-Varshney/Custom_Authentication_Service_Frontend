@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Dashboard</title>
+    <link rel="stylesheet" href="../style.css" />
+    <link rel="stylesheet" href="../dashboard.css" />
+  </head>
+  <body class="dashboard-body">
+    <div class="dash-container">
+
+      <header class="dash-header">
+        <h1>My Account</h1>
+        <div class="dash-nav">
+          <button id="signoutBtn" class="btn-danger">Sign Out</button>
+        </div>
+      </header>
+
+      <div class="dash-grid">
+
+        <!-- Account Info Card -->
+        <div class="card" id="accountCard">
+          <h3>Account Details</h3>
+          <div id="accountInfo">Loading...</div>
+        </div>
+
+        <!-- Quick Links Card -->
+        <div class="card">
+          <h3>Navigation</h3>
+          <ul class="quick-links">
+            <li><a href="sessions.html">🖥️ Active Sessions</a></li>
+            <li><a href="auth-logs.html">📋 Auth Logs</a></li>
+            <li><a href="settings.html">⚙️ Account Settings</a></li>
+          </ul>
+        </div>
+
+      </div>
+
+      <div id="dashError" class="error" style="text-align:center;margin-top:20px;font-size:14px;"></div>
+      <div id="dashSuccess" class="success"></div>
+
+    </div>
+
+    <script src="../env.js"></script>
+    <script src="dashboard.js"></script>
+  </body>
+</html>
