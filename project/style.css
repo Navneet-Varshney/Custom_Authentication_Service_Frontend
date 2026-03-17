@@ -145,3 +145,88 @@ select:focus {
   padding: 6px 10px;
 }
 
+/* ===== DASHBOARD FORM FIELDS ===== */
+.dashboard-body .field {
+  margin-bottom: 20px;
+}
+
+.dashboard-body .field label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 600;
+  color: #2d3748;
+  font-size: 14px;
+}
+
+.dashboard-body .field input,
+.dashboard-body .field select {
+  width: 100%;
+  padding: 12px 14px;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  font-size: 14px;
+  background: white;
+  transition: all 0.3s ease;
+  box-sizing: border-box;
+}
+
+.dashboard-body .field input:focus,
+.dashboard-body .field select:focus {
+  border-color: #667eea;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+  outline: none;
+}
+
+.dashboard-body .field input::placeholder {
+  color: #a0aec0;
+}
+
+.dashboard-body .field input:disabled {
+  background: #f7f8ff;
+  cursor: not-allowed;
+  color: #cbd5e0;
+}
+
+.dashboard-body .password-field {
+  position: relative;
+}
+
+.dashboard-body .password-field .toggle-eye {
+  position: absolute;
+  right: 14px;
+  top: 40px;
+  cursor: pointer;
+  opacity: 0.6;
+  font-size: 18px;
+  transition: opacity 0.2s ease;
+}
+
+.dashboard-body .password-field .toggle-eye:hover {
+  opacity: 1;
+}
+
+/* ===== DASHBOARD BUTTONS ===== */
+.dashboard-body button {
+  width: auto;
+  padding: 12px 24px;
+  margin-top: 0;
+  margin-right: 12px;
+}
+
+.dashboard-body .btn-secondary {
+  margin-right: 12px;
+  margin-bottom: 12px;
+  margin-top: 0;
+}
+
+.dashboard-body .btn-danger {
+  background: #e53e3e;
+  margin-top: 0;
+  margin-right: 12px;
+}
+
+.dashboard-body .btn-danger:hover {
+  background: #c53030;
+}
+
+
