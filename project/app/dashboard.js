@@ -1,52 +1,298 @@
-const API_BASE = window.RUNTIME_ENV.API_BASE_URL;
+// Immediate startup check
+console.log("✅ dashboard.js loading...");
+
+if (!window.RUNTIME_ENV) {
+  console.error("❌ RUNTIME_ENV not defined!");
+} else {
+  console.log("✅ RUNTIME_ENV found");
+}
+
+const API_BASE = window.RUNTIME_ENV?.API_BASE_URL || "NOT_DEFINED";
+console.log("📍 API_BASE:", API_BASE);
 
 function getDeviceUUID() {
   let uuid = localStorage.getItem("deviceUUID");
   if (!uuid) { uuid = crypto.randomUUID(); localStorage.setItem("deviceUUID", uuid); }
+  console.log("   🆔 Device UUID:", uuid);
   return uuid;
 }
 
 function authHeaders() {
   const token = localStorage.getItem("accessToken");
   const headers = { "x-device-uuid": getDeviceUUID() };
-  if (token) headers["x-access-token"] = token;
+  if (token) {
+    headers["x-access-token"] = token;
+    console.log("   🔐 Token found (length:", token.length + ")");
+  } else {
+    console.warn("   ⚠️  No token in localStorage!");
+  }
+  console.log("   📤 Headers:", headers);
   return headers;
 }
 
 function saveNewToken(res) {
   const t = res.headers.get("x-access-token");
-  if (t) localStorage.setItem("accessToken", t);
+  if (t) {
+    localStorage.setItem("accessToken", t);
+    console.log("   💾 New token saved (length:", t.length + ")");
+  }
 }
 
 // ===== Load Account Details =====
 async function loadAccount() {
   const accountInfo = document.getElementById("accountInfo");
+  const accountStatus = document.getElementById("accountStatus");
+  
+  if (!accountInfo || !accountStatus) {
+    console.error("❌ DOM elements not found");
+    return;
+  }
+  
+  // Show loading state
+  accountInfo.innerHTML = `<div style="text-align: center; padding: 20px; color: #667eea;">Loading account information...</div>`;
+  
   try {
-    const res = await fetch(`${API_BASE}/auth/me`, {
+    const endpoint = `${API_BASE}/auth/me`;
+    console.log("Fetching from:", endpoint);
+    
+    const res = await fetch(endpoint, {
+      method: "GET",
       headers: authHeaders(),
       credentials: "include",
     });
+    
+    console.log("Response status:", res.status);
     saveNewToken(res);
 
-    if (res.status === 401) { window.location.href = "../auth/login.html"; return; }
+    if (res.status === 401) { 
+      window.location.href = "../auth/login.html"; 
+      return; 
+    }
 
     const data = await res.json();
-    if (!res.ok || !data.success) {
-      accountInfo.innerHTML = `<span class="error">${data.message || "Failed to load account."}</span>`;
+    console.log("Backend response:", data);
+    
+    if (!data.success || !data.data) {
+      accountInfo.innerHTML = `<div style="color: red; padding: 20px;">Failed to load account information</div>`;
       return;
     }
 
-    const u = data.data;
+    // ===== PARSE BACKEND RESPONSE - Handle Different Key Names =====
+    const backendData = data.data;
+    
+    // Extract values from backend response (it uses different key names!)
+    const firstName = backendData["First Name"] || "—";
+    const email = backendData["Email"] || "—";
+    const phone = backendData["Phone"] || "—";
+    const userId = backendData["User ID"] || "—";
+    
+    // Convert "Activated"/"Deactivated" string to boolean
+    const isActive = (backendData["Account Status"] === "Activated");
+    
+    // Convert "Yes"/"No" strings to boolean with fallbacks for backend key inconsistencies
+    const isEmailVerified = (backendData["isEmailVerified"] === "Yes") || (backendData["Email Verified"] === "Yes");
+    const isPhoneVerified = (backendData["isPhoneVerified"] === "Yes") || (backendData["Phone Verified"] === "Yes");
+    
+    // 2FA: Fallback to localStorage if backend returns wrong value
+    let isTwoFaEnabled = (backendData["2FA Enabled"] === "Yes");
+    
+    // If backend says "No" but localStorage has newer cached "enabled" state, use cache
+    if (!isTwoFaEnabled) {
+      const cached2FA = localStorage.getItem("twoFAUpdated");
+      if (cached2FA) {
+        try {
+          const parsed = JSON.parse(cached2FA);
+          const cacheAge = new Date().getTime() - parsed.timestamp;
+          // Use cache if less than 2 minutes old
+          if (cacheAge < 120000 && parsed.enabled === true) {
+            console.log("⚠️ Backend says 2FA disabled, but using cached 'enabled' state (age:", cacheAge + "ms)");
+            isTwoFaEnabled = true;
+          }
+        } catch (e) {
+          // Invalid cache, ignore
+        }
+      }
+    }
+    
+    const isBlocked = (backendData["Blocked Account"] === "Yes");
+    
+    // Parse dates
+    const createdAt = new Date(backendData["Account Created At"]);
+    const lastLoginAt = backendData["Last Login At"] ? new Date(backendData["Last Login At"]) : null;
+    
+    console.log("✅ Parsed data:", { firstName, email, phone, isActive, isEmailVerified, isTwoFaEnabled });
+    
+    // Update status badge
+    accountStatus.textContent = isActive ? "✓ Active" : "⚠ Inactive";
+    accountStatus.style.background = isActive ? "#dcfce7" : "#fef08a";
+    accountStatus.style.color = isActive ? "#166534" : "#854d0e";
+    
+    // ===== CALCULATE AND UPDATE HEALTH SCORE =====
+    const healthScoreEl = document.getElementById("healthScore");
+    const healthProgressEl = document.getElementById("healthProgress");
+    const twoFATipEl = document.getElementById("twoFATip");
+    
+    if (healthScoreEl && healthProgressEl) {
+      // Calculate health score based on:
+      // - Account active: 20 points
+      // - Email verified: 30 points
+      // - 2FA enabled: 35 points
+      // - Not blocked: 15 points
+      let score = 0;
+      if (isActive) score += 20;
+      if (isEmailVerified) score += 30;
+      if (isTwoFaEnabled) score += 35;
+      if (!isBlocked) score += 15;
+      
+      // Get current score for animation
+      const currentScore = parseInt(healthScoreEl.textContent) || 0;
+      
+      // Animate score change with smooth transition
+      if (currentScore !== score) {
+        console.log(`📊 Health score changing: ${currentScore}% → ${score}%`);
+        
+        // Add visual feedback animations
+        healthScoreEl.style.animation = "scoreGlow 0.6s cubic-bezier(0.4, 0, 0.2, 1), scoreScale 0.6s cubic-bezier(0.34, 1.56, 0.64, 1)";
+        healthProgressEl.style.animation = "none";
+        
+        // Trigger reflow to restart animation
+        void healthScoreEl.offsetWidth;
+        
+        // Change color based on 2FA status
+        healthScoreEl.style.color = isTwoFaEnabled ? "#10b981" : "#ef4444";
+        
+        // Animate the progress bar
+        healthProgressEl.style.transition = "width 0.8s cubic-bezier(0.34, 1.56, 0.64, 1)";
+        healthProgressEl.style.width = score + "%";
+        
+        // Add glow to progress bar
+        healthProgressEl.style.boxShadow = "0 0 20px rgba(102, 126, 234, 0.8), inset 0 0 8px rgba(255, 255, 255, 0.2)";
+        
+        // Animate the score text
+        let startScore = currentScore;
+        let animationFrames = 0;
+        const maxFrames = 20;
+        
+        const animateScore = () => {
+          animationFrames++;
+          const progress = animationFrames / maxFrames;
+          const newScore = Math.round(startScore + (score - startScore) * progress);
+          healthScoreEl.textContent = newScore + "%";
+          
+          if (animationFrames < maxFrames) {
+            requestAnimationFrame(animateScore);
+          } else {
+            healthScoreEl.textContent = score + "%";
+            // Reset color styling after animation
+            setTimeout(() => {
+              healthScoreEl.style.color = "";
+              healthScoreEl.style.animation = "";
+              healthProgressEl.style.boxShadow = "0 0 12px rgba(102, 126, 234, 0.6)";
+            }, 600);
+          }
+        };
+        
+        animateScore();
+      }
+      
+      // Update 2FA tip if not enabled
+      if (twoFATipEl && !isTwoFaEnabled) {
+        twoFATipEl.style.opacity = "1";
+        twoFATipEl.style.display = "flex";
+      } else if (twoFATipEl) {
+        twoFATipEl.style.display = "none";
+      }
+      
+      console.log("✅ Health score calculated:", score + "%");
+    }
+    
+    // Render account information
     accountInfo.innerHTML = `
-      <p><strong>Name:</strong> ${u.firstName || "—"}</p>
-      <p><strong>Email:</strong> ${u.email || "—"}</p>
-      <p><strong>Phone:</strong> ${u.phone || "—"}</p>
-      <p><strong>Role:</strong> ${u.role || "—"}</p>
-      <p><strong>2FA:</strong> ${u.isTwoFactorEnabled ? "✅ Enabled" : "❌ Disabled"}</p>
-      <p><strong>Status:</strong> ${u.isActive ? "🟢 Active" : "🔴 Inactive"}</p>
+      <div class="info-row">
+        <div>
+          <p>Name</p>
+          <strong>${firstName}</strong>
+        </div>
+        <div>
+          <p>Email</p>
+          <strong>${email}</strong>
+        </div>
+        <div>
+          <p>Phone</p>
+          <strong>${phone}</strong>
+        </div>
+      </div>
+      <div class="info-row">
+        <div>
+          <p>User ID</p>
+          <strong style="font-size: 12px; font-family: monospace;">${userId}</strong>
+        </div>
+        <div>
+          <p>Status</p>
+          <strong>${isActive ? '🟢 Active' : '🔴 Inactive'}</strong>
+        </div>
+        <div>
+          <p>Email Verified</p>
+          <strong>${isEmailVerified ? '✅ Yes' : '❌ No'}</strong>
+        </div>
+      </div>
     `;
+    
+    console.log("✅ Account information rendered successfully");
+    
+    // Update created date if element exists
+    const createdDateEl = document.getElementById("createdDate");
+    if (createdDateEl && createdAt) {
+      createdDateEl.textContent = createdAt.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+    }
+    
+    // Update last login if available
+    const lastLoginEl = document.getElementById("lastLogin");
+    if (lastLoginEl && lastLoginAt) {
+      const now = new Date();
+      const diffMs = now - lastLoginAt;
+      const diffMins = Math.floor(diffMs / 60000);
+      const diffHours = Math.floor(diffMs / 3600000);
+      const diffDays = Math.floor(diffMs / 86400000);
+      
+      let timeStr = "Just now";
+      if (diffMins > 0 && diffMins < 60) timeStr = `${diffMins}m ago`;
+      else if (diffHours > 0 && diffHours < 24) timeStr = `${diffHours}h ago`;
+      else if (diffDays > 0) timeStr = `${diffDays}d ago`;
+      
+      lastLoginEl.textContent = timeStr;
+    }
+    
+    // Load active sessions count
+    loadSessionsCount();
+    
   } catch (err) {
-    accountInfo.innerHTML = `<span class="error">Network error. Could not load account.</span>`;
+    console.error("Error loading account:", err);
+    accountInfo.innerHTML = `<div style="color: red; padding: 20px;">Error: ${err.message}</div>`;
+  }
+}
+
+// ===== Load Sessions Count =====
+async function loadSessionsCount() {
+  try {
+    const sessionsCountEl = document.getElementById("sessionsCount");
+    
+    if (!sessionsCountEl) return;
+    
+    const endpoint = `${API_BASE}/auth/active-sessions`;
+    const res = await fetch(endpoint, {
+      method: "GET",
+      headers: authHeaders(),
+      credentials: "include",
+    });
+    
+    const data = await res.json();
+    
+    if (data.success && Array.isArray(data.data)) {
+      sessionsCountEl.textContent = data.data.length;
+    }
+  } catch (err) {
+    console.error("Could not load sessions:", err);
   }
 }
 
@@ -78,4 +324,49 @@ document.getElementById("signoutBtn").addEventListener("click", async () => {
   }
 });
 
-loadAccount();
+// ===== 2FA TIP CLICK HANDLER =====
+document.addEventListener('DOMContentLoaded', () => {
+  const twoFATip = document.getElementById("twoFATip");
+  if (twoFATip) {
+    twoFATip.addEventListener("click", () => {
+      window.location.href = "settings.html?tab=security";
+    });
+  }
+});
+
+// ===== LISTEN FOR 2FA STATUS CHANGES =====
+// Listen for messages from settings page
+window.addEventListener('message', (event) => {
+  if (event.data && event.data.type === '2FA_STATUS_CHANGED') {
+    console.log("📢 Received 2FA status change notification:", event.data.enabled ? "ENABLED" : "DISABLED");
+    // Reload account data to get fresh 2FA status
+    setTimeout(() => {
+      console.log("🔄 Refreshing account data after 2FA change...");
+      loadAccount();
+    }, 1000);
+  }
+});
+
+// Listen for localStorage changes from settings page
+window.addEventListener('storage', (event) => {
+  if (event.key === 'twoFAUpdated') {
+    const data = JSON.parse(event.newValue || '{}');
+    console.log("📢 localStorage: 2FA status changed to:", data.enabled ? "ENABLED" : "DISABLED");
+    setTimeout(() => {
+      console.log("🔄 Refreshing account data after storage change...");
+      loadAccount();
+    }, 800);
+  }
+});
+
+// Ensure DOM is ready before calling loadAccount
+if (document.readyState === 'loading') {
+  console.log("⏳ DOM still loading, waiting for DOMContentLoaded...");
+  document.addEventListener('DOMContentLoaded', () => {
+    console.log("✅ DOMContentLoaded fired, calling loadAccount()");
+    loadAccount();
+  });
+} else {
+  console.log("✅ DOM already loaded, calling loadAccount() immediately");
+  loadAccount();
+}
