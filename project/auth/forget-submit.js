@@ -15,22 +15,26 @@ export function initFormSubmit({
     e.preventDefault();
 
     const phoneError = document.getElementById("phoneError");
+    const emailError = document.getElementById("emailError");
     const resetSuccess = document.getElementById("resetSuccess");
     const submitBtn = form.querySelector("button[type='submit']");
 
     resetSuccess.textContent = "";
     phoneError.textContent = "";
+    if (emailError) emailError.textContent = "";
 
     const selectedOption = countryCodeSelect.options[countryCodeSelect.selectedIndex];
     const requiredLength = Number(selectedOption.dataset.length);
 
     if (phoneInput.value && phoneInput.value.length !== requiredLength) {
-      alert(messages.phoneLength(requiredLength));
+      const errorMsg = messages.phoneLength(requiredLength);
+      phoneError.textContent = errorMsg;
       return;
     }
 
     if (emailInput.value && !emailRegex.test(emailInput.value.trim())) {
-      alert(messages.emailInvalid);
+      const errorMsg = messages.emailInvalid;
+      if (emailError) emailError.textContent = errorMsg;
       return;
     }
 
@@ -66,7 +70,7 @@ export function initFormSubmit({
 
       if (!res.ok || !data.success) {
         resetSuccess.textContent = "";
-        alert(data.message || "Failed to send reset link.");
+        phoneError.textContent = data.message || "Failed to send reset link.";
         return;
       }
 
@@ -84,10 +88,10 @@ export function initFormSubmit({
       applyAuthMode(AUTH_MODE, phoneField, emailField, phoneInput, emailInput, phoneDropdown);
 
     } catch (err) {
-      alert("Network error. Please check your connection.");
+      phoneError.textContent = "Network error. Please check your connection.";
     } finally {
       submitBtn.disabled = false;
-      submitBtn.textContent = "Submit";
+      submitBtn.textContent = "Send Reset Link";
     }
   });
 }

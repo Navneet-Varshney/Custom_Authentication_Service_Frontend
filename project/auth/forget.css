@@ -1,0 +1,247 @@
+/* ===== FORGET PASSWORD PAGE - TEAL/CYAN THEME ===== */
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Inter', 'Segoe UI', -apple-system, sans-serif;
+  background: linear-gradient(135deg, #0f2027 0%, #203a43 50%, #2c5364 100%);
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Animated Blobs */
+body::before,
+body::after {
+  content: '';
+  position: fixed;
+  border-radius: 50%;
+  filter: blur(120px);
+  opacity: 0.1;
+  z-index: 0;
+  animation: float 20s ease-in-out infinite;
+}
+
+body::before {
+  width: 400px;
+  height: 400px;
+  background: #00d4ff;
+  top: -100px;
+  left: -100px;
+  animation-delay: 0s;
+}
+
+body::after {
+  width: 350px;
+  height: 350px;
+  background: #0099cc;
+  bottom: -150px;
+  right: -100px;
+  animation-delay: 2s;
+}
+
+@keyframes float {
+  0%, 100% { transform: translate(0, 0); }
+  33% { transform: translate(50px, -50px); }
+  66% { transform: translate(-30px, 30px); }
+}
+
+form {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1.5px solid rgba(255, 255, 255, 0.2);
+  border-radius: 20px;
+  padding: 48px 40px;
+  max-width: 420px;
+  width: 95%;
+  z-index: 10;
+  position: relative;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+}
+
+h2 {
+  text-align: center;
+  font-size: 28px;
+  font-weight: 700;
+  color: #ffffff;
+  margin-bottom: 8px;
+  letter-spacing: -0.5px;
+}
+
+.subtitle {
+  text-align: center;
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.7);
+  margin-bottom: 32px;
+  line-height: 1.5;
+}
+
+/* Form Fields */
+.field {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 20px;
+}
+
+label {
+  font-size: 13px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.9);
+  margin-bottom: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+input,
+select {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1.2px solid rgba(255, 255, 255, 0.2);
+  border-radius: 10px;
+  padding: 12px 14px;
+  font-size: 14px;
+  color: #ffffff;
+  font-family: inherit;
+  transition: all 0.3s ease;
+}
+
+input::placeholder {
+  color: rgba(255, 255, 255, 0.5);
+}
+
+input:focus,
+select:focus {
+  outline: none;
+  background: rgba(255, 255, 255, 0.15);
+  border-color: rgba(0, 212, 255, 0.5);
+  box-shadow: 0 0 20px rgba(0, 212, 255, 0.2);
+}
+
+/* Phone Container */
+.phone-container {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.phone-container select {
+  min-width: 130px;
+}
+
+.phone-container input {
+  flex: 1;
+}
+
+/* Error Messages */
+.error {
+  font-size: 12px;
+  color: #ff6b6b;
+  background: rgba(255, 107, 107, 0.15);
+  border: 1.2px solid rgba(255, 107, 107, 0.4);
+  border-radius: 8px;
+  padding: 8px 10px;
+  margin-top: 4px;
+  font-weight: 500;
+  display: block;
+  line-height: 1.4;
+}
+
+.error:empty {
+  display: none;
+}
+
+/* Success Messages */
+.success {
+  font-size: 13px;
+  color: #51cf66;
+  background: rgba(81, 207, 102, 0.15);
+  border: 1.2px solid rgba(81, 207, 102, 0.4);
+  border-radius: 8px;
+  padding: 10px 12px;
+  margin-top: 8px;
+  font-weight: 500;
+  text-align: center;
+  line-height: 1.5;
+}
+
+.success:empty {
+  display: none;
+}
+
+/* Submit Button */
+button[type='submit'] {
+  width: 100%;
+  padding: 14px 16px;
+  margin-top: 24px;
+  background: linear-gradient(135deg, #00d4ff 0%, #0099cc 100%);
+  color: #ffffff;
+  border: none;
+  border-radius: 10px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 20px rgba(0, 212, 255, 0.3);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+button[type='submit']:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 30px rgba(0, 212, 255, 0.5);
+}
+
+button[type='submit']:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+button[type='submit']:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Switch Link */
+.switch {
+  text-align: center;
+  margin-top: 20px;
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.switch a {
+  color: #00d4ff;
+  text-decoration: none;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.switch a:hover {
+  color: #ffffff;
+  text-shadow: 0 0 10px rgba(0, 212, 255, 0.5);
+}
+
+/* Responsive */
+@media (max-width: 480px) {
+  form {
+    padding: 36px 24px;
+  }
+
+  h2 {
+    font-size: 24px;
+  }
+
+  .phone-container {
+    flex-direction: column;
+  }
+
+  .phone-container select {
+    min-width: 100%;
+  }
+}

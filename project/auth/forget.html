@@ -4,32 +4,39 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Forgot Password</title>
-    <link rel="stylesheet" href="../style.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="forget.css" />
   </head>
   <body>
     <form class="auth-form" autocomplete="off">
       <h2>Forgot Password</h2>
+      <p class="subtitle">Enter your contact details to reset your password</p>
 
       <div id="phoneField" class="field">
-        <label for="countryCode">Phone Number</label>
+        <label for="countryCode">Country Code</label>
         <div class="phone-container">
           <select id="countryCode"></select>
+          <input type="text" id="phone" placeholder="Enter phone number" />
         </div>
-        <input type="text" id="phone" placeholder="Enter phone number" />
         <small id="phoneError" class="error"></small>
       </div>
 
       <div id="emailField" class="field">
-        <label>Email ID</label>
-        <input type="email" id="email" placeholder="Enter email" />
+        <label for="email">Email Address</label>
+        <input type="email" id="email" placeholder="Enter email address" />
+        <small id="emailError" class="error"></small>
       </div>
 
-      <button type="submit">Submit</button>
+      <button type="submit">Send Reset Link</button>
       <div id="resetSuccess" class="success"></div>
 
       <p class="switch">
-        Remember your password?
-        <a href="login.html">Login</a>
+        Remember your password? <a href="login.html">Login Now</a>
       </p>
     </form>
 
