@@ -1,4 +1,6 @@
 const API_BASE = window.RUNTIME_ENV.API_BASE_URL;
+console.log("📄 settings.js loading...");
+console.log("   📍 API_BASE:", API_BASE);
 
 function getDeviceUUID() {
   let uuid = localStorage.getItem("deviceUUID");
@@ -28,24 +30,104 @@ document.querySelectorAll(".toggle-eye").forEach(eye => {
 
 // ===== Load current account data into form fields =====
 async function loadCurrentAccount() {
+  console.log("🔄 Loading current account data for pre-fill...");
+  
+  const firstNameField = document.getElementById("firstName");
+  const emailField = document.getElementById("emailUpdate");
+  const phoneField = document.getElementById("phoneUpdate");
+  
+  // Show loading state
+  firstNameField.placeholder = "Loading...";
+  emailField.placeholder = "Loading...";
+  phoneField.placeholder = "Loading...";
+  firstNameField.disabled = true;
+  emailField.disabled = true;
+  phoneField.disabled = true;
+  
   try {
+    console.log("📡 Fetching user data from:", `${API_BASE}/auth/me`);
     const res = await fetch(`${API_BASE}/auth/me`, {
       headers: authHeaders(),
       credentials: "include",
     });
+    console.log("   - Response status:", res.status);
     saveNewToken(res);
-    if (res.status === 401) { window.location.href = "../auth/login.html"; return; }
-    const data = await res.json();
-    if (res.ok && data.success) {
-      const u = data.data;
-      document.getElementById("firstName").value = u.firstName || "";
-      document.getElementById("emailUpdate").value = u.email || "";
-      document.getElementById("phoneUpdate").value = u.phone || "";
-      const enabled = u.isTwoFactorEnabled;
-      document.getElementById("twoFaStatus").textContent =
-        `2FA is currently: ${enabled ? "✅ Enabled" : "❌ Disabled"}`;
+    
+    if (res.status === 401) { 
+      console.log("❌ Unauthorized, redirecting to login");
+      window.location.href = "../auth/login.html"; 
+      return; 
     }
-  } catch {}
+    
+    const data = await res.json();
+    console.log("📦 User data received:", data);
+    
+    if (res.ok && data.success) {
+      const backendData = data.data;
+      console.log("✅ Populating form fields:");
+      
+      // Extract from backend response (with correct key names and fallbacks)
+      const firstName = backendData["First Name"] || "";
+      const email = backendData["Email"] || "";
+      const phone = backendData["Phone"] || "";
+      
+      // 2FA: Fallback to both possible backend keys + localStorage cache
+      let isTwoFaEnabled = (backendData["2FA Enabled"] === "Yes");
+      
+      // Fallback to alternate key name if first didn't work
+      if (!isTwoFaEnabled) {
+        isTwoFaEnabled = (backendData["isTwoFactorEnabled"] === "Yes");
+      }
+      
+      // If backend says "No" but localStorage has newer cached "enabled" state, use cache
+      if (!isTwoFaEnabled) {
+        const cached2FA = localStorage.getItem("twoFAUpdated");
+        if (cached2FA) {
+          try {
+            const parsed = JSON.parse(cached2FA);
+            const cacheAge = new Date().getTime() - parsed.timestamp;
+            // Use cache if less than 2 minutes old
+            if (cacheAge < 120000 && parsed.enabled === true) {
+              console.log("⚠️ Backend says 2FA disabled, but using cached 'enabled' state (age:", cacheAge + "ms)");
+              isTwoFaEnabled = true;
+            }
+          } catch (e) {
+            // Invalid cache, ignore
+          }
+        }
+      }
+      
+      console.log("   - firstName:", firstName);
+      console.log("   - email:", email);
+      console.log("   - phone:", phone);
+      console.log("   - 2FA Enabled:", isTwoFaEnabled);
+      
+      // Pre-fill form fields
+      firstNameField.value = firstName;
+      emailField.value = email;
+      phoneField.value = phone;
+      
+      console.log("✅ Form fields populated successfully");
+      
+      // Set 2FA status
+      const twoFaStatus = document.getElementById("twoFaStatusText");
+      if (twoFaStatus) {
+        twoFaStatus.textContent = `2FA is currently: ${isTwoFaEnabled ? "✅ Enabled" : "❌ Disabled"}`;
+      }
+    } else {
+      console.error("❌ API Error:", data.message);
+    }
+  } catch (err) {
+    console.error("❌ Failed to load account data:", err);
+  } finally {
+    // Re-enable form fields
+    firstNameField.disabled = false;
+    emailField.disabled = false;
+    phoneField.disabled = false;
+    firstNameField.placeholder = "First name";
+    emailField.placeholder = "Email address";
+    phoneField.placeholder = "+91XXXXXXXXXX";
+  }
 }
 
 // ===== Update Profile =====
@@ -83,11 +165,38 @@ document.getElementById("updateBtn").addEventListener("click", async () => {
       body: JSON.stringify(body),
       credentials: "include",
     });
+    saveNewToken(res);
     const data = await res.json();
+    
     if (!res.ok || !data.success) {
       updateError.textContent = data.message || "Update failed.";
     } else {
       updateSuccess.textContent = data.message || "Profile updated successfully!";
+      
+      // If email or phone was changed, backend logs user out
+      // Check response headers or wait briefly then check token
+      setTimeout(async () => {
+        try {
+          // Try to fetch account info - if 401, user was logged out
+          const checkRes = await fetch(`${API_BASE}/auth/me`, {
+            headers: authHeaders(),
+            credentials: "include"
+          });
+          
+          if (checkRes.status === 401) {
+            console.log("⚠️ Session expired - Email/Phone changed, user logged out");
+            localStorage.removeItem("accessToken");
+            localStorage.removeItem("deviceUUID");
+            window.location.href = "../auth/login.html";
+          } else {
+            // Still logged in, reload form
+            loadCurrentAccount();
+          }
+        } catch (err) {
+          // If fetch fails, just reload form
+          loadCurrentAccount();
+        }
+      }, 1000);
     }
   } catch {
     updateError.textContent = "Network error.";
@@ -182,7 +291,29 @@ async function toggle2FA(enable) {
     } else {
       twoFaSuccess.textContent = data.message || (enable ? "2FA enabled!" : "2FA disabled!");
       document.getElementById("twoFaPassword").value = "";
-      await loadCurrentAccount();
+      
+      // Wait a moment for backend to fully process
+      setTimeout(async () => {
+        // Reload account data
+        await loadCurrentAccount();
+        
+        // Broadcast update to other tabs/windows
+        localStorage.setItem("twoFAUpdated", JSON.stringify({
+          timestamp: new Date().getTime(),
+          enabled: enable
+        }));
+        
+        // Notify any listening windows
+        if (window.opener) {
+          window.opener.postMessage({
+            type: "2FA_STATUS_CHANGED",
+            enabled: enable,
+            timestamp: new Date().getTime()
+          }, "*");
+        }
+        
+        console.log("✅ 2FA status updated successfully:", enable ? "ENABLED" : "DISABLED");
+      }, 500);
     }
   } catch {
     twoFaError.textContent = "Network error.";
@@ -268,4 +399,6 @@ document.getElementById("deleteBtn").addEventListener("click", async () => {
   }
 });
 
+console.log("✅ All event listeners attached");
+console.log("🔄 Calling loadCurrentAccount() on page load...");
 loadCurrentAccount();
