@@ -195,12 +195,31 @@ async function loadAccount() {
         animateScore();
       }
       
-      // Update 2FA tip if not enabled
-      if (twoFATipEl && !isTwoFaEnabled) {
-        twoFATipEl.style.opacity = "1";
-        twoFATipEl.style.display = "flex";
-      } else if (twoFATipEl) {
-        twoFATipEl.style.display = "none";
+      // Update 2FA tip - show as enabled or show prompt to enable
+      if (twoFATipEl) {
+        if (!isTwoFaEnabled) {
+          // Show prompt to enable 2FA
+          twoFATipEl.innerHTML = `
+            <span class="material-icons tip-icon" style="color: #fbbf24;">info</span>
+            <span>Enable 2FA for extra security</span>
+          `;
+          twoFATipEl.style.background = "rgba(240, 147, 251, 0.1) !important";
+          twoFATipEl.style.borderLeft = "2px solid #f093fb";
+          twoFATipEl.style.opacity = "1";
+          twoFATipEl.style.display = "flex";
+          twoFATipEl.style.cursor = "pointer";
+        } else {
+          // Show 2FA as enabled with checkmark
+          twoFATipEl.innerHTML = `
+            <span class="material-icons tip-icon">check_circle</span>
+            <span>2FA Enabled</span>
+          `;
+          twoFATipEl.style.background = "rgba(255, 255, 255, 0.05)";
+          twoFATipEl.style.borderLeft = "none";
+          twoFATipEl.style.opacity = "1";
+          twoFATipEl.style.display = "flex";
+          twoFATipEl.style.cursor = "default";
+        }
       }
       
       console.log("✅ Health score calculated:", score + "%");
