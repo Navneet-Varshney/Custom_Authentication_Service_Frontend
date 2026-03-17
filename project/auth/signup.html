@@ -3,68 +3,126 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Auth UI</title>
-    <link rel="stylesheet" href="../style.css" />
+    <title>Create Account</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="signup.css" />
   </head>
   <body>
-    <form class="auth-form">
-      <h2>SIGN UP</h2>
-      <div class="field">
-        <label>Username</label>
-        <input
-          type="text"
-          id="username"
-          placeholder="Enter username"
-          autocomplete="off"
-          required
-        />
-        <small id="usernameError" class="error"></small>
-      </div>
+    <div class="page-wrapper">
 
-      <div id="phoneField" class="field">
-        <label for="countryCode">Phone Number</label>
-        <div class="phone-container">
-          <select id="countryCode"></select>
+      <!-- Left brand panel -->
+      <div class="brand-panel">
+        <div class="logo">
+          <div class="logo-icon">🔐</div>
+          <span class="logo-name">AuthService</span>
         </div>
-        <input type="text" id="phone" placeholder="Enter phone number" />
-        <small id="phoneError" class="error"></small>
+        <h1>Your security,<br/>our priority.</h1>
+        <p>Create a free account and get access to a powerful authentication system with 2FA, session management, and more.</p>
+        <ul class="feature-list">
+          <li><div class="icon">✅</div> Two-factor authentication (2FA)</li>
+          <li><div class="icon">📋</div> Full auth logs and activity history</li>
+          <li><div class="icon">🖥️</div> Multi-device session management</li>
+          <li><div class="icon">🔒</div> Secure JWT with token rotation</li>
+        </ul>
       </div>
 
-      <div id="emailField" class="field">
-        <label>Email ID</label>
-        <input type="email" id="email" placeholder="Enter email" />
-      </div>
+      <!-- Signup card -->
+      <div class="card">
+        <div class="card-header">
+          <h2>Create Account</h2>
+          <p>Fill in the details below to get started</p>
+        </div>
 
-      <div class="field password-field">
-        <label>Password <span class="asterik">*</span></label>
-        <input type="password" id="password" placeholder="Enter password" />
-        <span class="toggle-eye" data-target="password">👁</span>
-        <small id="passwordError" class="error"></small>
-      </div>
+        <!-- Step indicator -->
+        <div class="steps" id="stepsIndicator">
+          <div class="step active" id="step1">
+            <div class="step-dot">1</div>
+            <span class="step-label">Profile</span>
+          </div>
+          <div class="step-line"></div>
+          <div class="step" id="step2">
+            <div class="step-dot">2</div>
+            <span class="step-label">Contact</span>
+          </div>
+          <div class="step-line"></div>
+          <div class="step" id="step3">
+            <div class="step-dot">3</div>
+            <span class="step-label">Password</span>
+          </div>
+        </div>
 
-      <div class="field password-field">
-        <label>Confirm Password <span class="asterik">*</span></label>
-        <input
-          type="password"
-          id="confirmPassword"
-          placeholder="Confirm password"
-        />
-        <span class="toggle-eye" data-target="confirmPassword">👁</span>
-        <small id="confirmError" class="error"></small>
-      </div>
+        <form class="auth-form" id="signupForm" autocomplete="off">
 
-      <button type="submit">Create Account</button>
-      <div id="successMessage" class="success"></div>
-      <p class="switch">
-        Already have a account?
-        <a href="login.html">Login</a>
-      </p>
-    </form>
+          <!-- Step 1: Username -->
+          <div id="stepPanel1">
+            <div class="field">
+              <label>Username <small class="asterik">*</small></label>
+              <input type="text" id="username" placeholder="e.g. john" autocomplete="off" required />
+              <small id="usernameError" class="error"></small>
+            </div>
+          </div>
+
+          <!-- Step 2: Contact (phone / email) -->
+          <div id="stepPanel2" style="display:none;">
+            <div id="phoneField" class="field">
+              <label>Phone Number</label>
+              <div class="phone-row">
+                <select id="countryCode"></select>
+                <input type="text" id="phone" placeholder="e.g. 9876543210" />
+              </div>
+              <small id="phoneError" class="error"></small>
+            </div>
+            <div id="emailField" class="field">
+              <label>Email Address</label>
+              <input type="email" id="email" placeholder="you@example.com" />
+              <small id="emailError" class="error"></small>
+            </div>
+          </div>
+
+          <!-- Step 3: Password -->
+          <div id="stepPanel3" style="display:none;">
+            <div class="field password-field">
+              <label>Password <small class="asterik">*</small></label>
+              <input type="password" id="password" placeholder="Create a strong password" />
+              <span class="toggle-eye" data-target="password">👁</span>
+              <div class="strength-bar" id="strengthBar">
+                <span></span><span></span><span></span><span></span>
+              </div>
+              <div class="strength-text" id="strengthText"></div>
+              <small id="passwordError" class="error"></small>
+            </div>
+            <div class="field password-field">
+              <label>Confirm Password <small class="asterik">*</small></label>
+              <input type="password" id="confirmPassword" placeholder="Re-enter your password" />
+              <span class="toggle-eye" data-target="confirmPassword">👁</span>
+              <small id="confirmError" class="error"></small>
+            </div>
+          </div>
+
+          <!-- Next / Submit buttons -->
+          <div style="display:flex;gap:10px;margin-top:8px;">
+            <button type="button" id="backBtn" class="btn-primary" style="display:none;background:rgba(255,255,255,0.08);box-shadow:none;flex:0 0 44px;padding:13px 0;">←</button>
+            <button type="button" id="nextBtn" class="btn-primary" style="flex:1;">Continue →</button>
+            <button type="submit" id="submitBtn" class="btn-primary" style="flex:1;display:none;">Create Account 🚀</button>
+          </div>
+
+          <div id="successMessage"></div>
+        </form>
+
+        <div class="switch-link">
+          Already have an account? <a href="login.html">Sign in</a>
+        </div>
+      </div>
+    </div>
 
     <script src="../env.js"></script>
     <script src="countries.js"></script>
     <script src="validation.js"></script>
     <script src="messages.js"></script>
     <script type="module" src="main.js"></script>
+    <script src="signup.js"></script>
+
   </body>
 </html>

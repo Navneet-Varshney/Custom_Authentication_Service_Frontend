@@ -1,0 +1,218 @@
+/* ===== RESET SUCCESS PAGE - CELEBRATION THEME ===== */
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Inter', 'Segoe UI', -apple-system, sans-serif;
+  background: linear-gradient(135deg, #0d1b2a 0%, #1d3a5c 50%, #2c5aa0 100%);
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Animated Success Blobs */
+body::before,
+body::after {
+  content: '';
+  position: fixed;
+  border-radius: 50%;
+  filter: blur(130px);
+  opacity: 0.15;
+  z-index: 0;
+  animation: wave 25s ease-in-out infinite;
+}
+
+body::before {
+  width: 450px;
+  height: 450px;
+  background: #51cf66;
+  top: -150px;
+  left: -150px;
+  animation-delay: 0s;
+}
+
+body::after {
+  width: 400px;
+  height: 400px;
+  background: #15aabf;
+  bottom: -100px;
+  right: -100px;
+  animation-delay: 3s;
+}
+
+@keyframes wave {
+  0%, 100% { transform: translate(0, 0); }
+  25% { transform: translate(40px, -60px); }
+  50% { transform: translate(-30px, 40px); }
+  75% { transform: translate(50px, 50px); }
+}
+
+/* Success Box */
+.success-box {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1.5px solid rgba(255, 255, 255, 0.2);
+  border-radius: 24px;
+  padding: 60px 40px;
+  max-width: 480px;
+  width: 95%;
+  z-index: 10;
+  position: relative;
+  text-align: center;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+}
+
+/* Success Icon Animation */
+.check-icon {
+  font-size: 80px;
+  margin-bottom: 24px;
+  animation: popIn 0.8s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  animation-delay: 0.2s;
+  animation-fill-mode: both;
+}
+
+@keyframes popIn {
+  0% {
+    opacity: 0;
+    transform: scale(0);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.15);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* Title */
+h2 {
+  font-size: 32px;
+  font-weight: 700;
+  color: #51cf66;
+  margin-bottom: 12px;
+  letter-spacing: -0.8px;
+  animation: slideUp 0.8s ease;
+  animation-delay: 0.4s;
+  animation-fill-mode: both;
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Description */
+p {
+  font-size: 15px;
+  color: rgba(255, 255, 255, 0.8);
+  margin-bottom: 32px;
+  line-height: 1.6;
+  animation: slideUp 0.8s ease;
+  animation-delay: 0.6s;
+  animation-fill-mode: both;
+}
+
+/* Login Link Button */
+.login-link {
+  display: inline-block;
+  background: linear-gradient(135deg, #51cf66 0%, #15aabf 100%);
+  color: #ffffff;
+  text-decoration: none;
+  padding: 15px 48px;
+  border-radius: 12px;
+  font-size: 15px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 25px rgba(81, 207, 102, 0.3);
+  cursor: pointer;
+  border: none;
+  animation: slideUp 0.8s ease;
+  animation-delay: 0.8s;
+  animation-fill-mode: both;
+}
+
+.login-link:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 40px rgba(81, 207, 102, 0.4);
+}
+
+.login-link:active {
+  transform: translateY(-1px);
+}
+
+/* Confetti Particles */
+@keyframes confetti {
+  0% {
+    transform: translate(0, 0) rotate(0deg);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(var(--tx), var(--ty)) rotate(720deg);
+    opacity: 0;
+  }
+}
+
+.confetti {
+  position: fixed;
+  width: 12px;
+  height: 12px;
+  background: #51cf66;
+  border-radius: 50%;
+  z-index: 5;
+  pointer-events: none;
+  animation: confetti 3s ease-out forwards;
+}
+
+.confetti:nth-child(2) { background: #15aabf; }
+.confetti:nth-child(3) { background: #fbbf24; }
+.confetti:nth-child(4) { background: #51cf66; }
+.confetti:nth-child(5) { background: #f87171; }
+
+/* Responsive */
+@media (max-width: 480px) {
+  .success-box {
+    padding: 48px 28px;
+  }
+
+  h2 {
+    font-size: 26px;
+  }
+
+  .check-icon {
+    font-size: 60px;
+    margin-bottom: 16px;
+  }
+
+  p {
+    font-size: 14px;
+    margin-bottom: 24px;
+  }
+
+  .login-link {
+    padding: 12px 40px;
+    font-size: 13px;
+  }
+}
+
+/* Success Page Background Effects */
+body.success-page {
+  background: linear-gradient(135deg, #0d1b2a 0%, #1d3a5c 50%, #2c5aa0 100%);
+}
