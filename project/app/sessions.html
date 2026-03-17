@@ -4,21 +4,40 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Active Sessions</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
     <link rel="stylesheet" href="../style.css" />
     <link rel="stylesheet" href="../dashboard.css" />
   </head>
   <body class="dashboard-body">
     <div class="dash-container">
 
-      <a href="dashboard.html" class="back-link">← Back to Dashboard</a>
+      <!-- Back Navigation -->
+      <a href="dashboard.html" class="back-link">
+        <span class="material-icons">arrow_back</span>
+        Back to Dashboard
+      </a>
 
-      <div class="card">
-        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;">
-          <h3 style="margin:0;border:none;padding:0;">Active Sessions</h3>
-          <button id="signoutAllBtn" class="btn-danger">Sign Out All Devices</button>
+      <!-- Page Header -->
+      <header class="dash-header">
+        <div class="header-content">
+          <h1 class="header-title">
+            <span class="material-icons header-icon">devices</span>
+            Active Sessions
+          </h1>
+          <p class="header-subtitle">View and manage all your active sessions across devices</p>
         </div>
-        <hr style="border:none;border-top:2px solid #667eea;margin:12px 0 16px;" />
-        <div id="sessionsBody">Loading...</div>
+        <button id="signoutAllBtn" class="btn-signout" style="background: #f59e0b;">
+          <span class="material-icons">logout</span>
+          Sign Out All
+        </button>
+      </header>
+
+      <!-- Sessions Card -->
+      <div class="account-card">
+        <div id="sessionsBody" class="sessions-body">Loading...</div>
         <div id="sessionsError" class="error" style="margin-top:10px;"></div>
       </div>
 

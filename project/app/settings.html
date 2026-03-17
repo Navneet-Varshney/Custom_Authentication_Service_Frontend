@@ -4,106 +4,242 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Account Settings</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
     <link rel="stylesheet" href="../style.css" />
     <link rel="stylesheet" href="../dashboard.css" />
   </head>
   <body class="dashboard-body">
     <div class="dash-container">
 
-      <a href="dashboard.html" class="back-link">← Back to Dashboard</a>
+      <!-- Back Navigation -->
+      <a href="dashboard.html" class="back-link">
+        <span class="material-icons">arrow_back</span>
+        Back to Dashboard
+      </a>
 
-      <!-- Update Profile -->
-      <div class="card" style="margin-bottom:20px;">
-        <h3>Update Profile</h3>
-        <div class="two-col">
-          <div class="field">
-            <label>First Name</label>
-            <input type="text" id="firstName" placeholder="First name" />
-          </div>
-          <div class="field">
-            <label>Email</label>
-            <input type="email" id="emailUpdate" placeholder="Email address" />
-          </div>
+      <!-- Page Header -->
+      <header class="dash-header">
+        <div class="header-content">
+          <h1 class="header-title">
+            <span class="material-icons header-icon">settings</span>
+            Account Settings
+          </h1>
+          <p class="header-subtitle">Manage your account preferences and security</p>
         </div>
-        <div class="field">
-          <label>Phone (e.g. +919876543210)</label>
-          <input type="text" id="phoneUpdate" placeholder="+91XXXXXXXXXX" />
-        </div>
-        <button id="updateBtn">Update Profile</button>
-        <div id="updateError" class="error"></div>
-        <div id="updateSuccess" class="success"></div>
+      </header>
+
+      <!-- Tabs Navigation -->
+      <div class="settings-tabs">
+        <button class="tab-btn active" data-tab="profile">
+          <span class="material-icons">person</span>
+          Profile
+        </button>
+        <button class="tab-btn" data-tab="security">
+          <span class="material-icons">lock</span>
+          Security
+        </button>
+        <button class="tab-btn" data-tab="privacy">
+          <span class="material-icons">privacy_tip</span>
+          Privacy
+        </button>
       </div>
 
-      <!-- Change Password -->
-      <div class="card" style="margin-bottom:20px;">
-        <h3>Change Password</h3>
-        <div class="field password-field">
-          <label>Current Password</label>
-          <input type="password" id="currentPassword" placeholder="Current password" />
-          <span class="toggle-eye" data-target="currentPassword">👁</span>
-        </div>
-        <div class="two-col">
-          <div class="field password-field">
-            <label>New Password</label>
-            <input type="password" id="newPassword" placeholder="New password" />
-            <span class="toggle-eye" data-target="newPassword">👁</span>
+      <!-- Tab Content Container -->
+      <div class="tab-content">
+        
+        <!-- Profile Tab -->
+        <div id="profile" class="tab-pane active">
+          <div class="account-card">
+            <div class="account-header">
+              <span class="material-icons account-icon">person_outline</span>
+              <h2>Update Profile</h2>
+            </div>
+            <div class="two-col">
+              <div class="field">
+                <label>First Name</label>
+                <input type="text" id="firstName" placeholder="First name" />
+              </div>
+              <div class="field">
+                <label>Email</label>
+                <input type="email" id="emailUpdate" placeholder="Email address" />
+              </div>
+            </div>
+            <div class="field">
+              <label>Phone (e.g. +919876543210)</label>
+              <input type="text" id="phoneUpdate" placeholder="+91XXXXXXXXXX" />
+            </div>
+            <button id="updateBtn" class="btn-secondary" style="margin-top: 16px;">
+              <span class="material-icons">save</span>
+              Update Profile
+            </button>
+            <div id="updateError" class="error"></div>
+            <div id="updateSuccess" class="success"></div>
           </div>
-          <div class="field password-field">
-            <label>Confirm New Password</label>
-            <input type="password" id="confirmPassword" placeholder="Confirm new password" />
-            <span class="toggle-eye" data-target="confirmPassword">👁</span>
+        </div>
+
+        <!-- Security Tab -->
+        <div id="security" class="tab-pane">
+          
+          <!-- Change Password Section -->
+          <div class="account-card" style="margin-bottom: 24px;">
+            <div class="account-header">
+              <span class="material-icons account-icon">vpn_key</span>
+              <h2>Change Password</h2>
+            </div>
+            <div class="field password-field">
+              <label>Current Password</label>
+              <input type="password" id="currentPassword" placeholder="Current password" />
+              <span class="toggle-eye" data-target="currentPassword">👁</span>
+            </div>
+            <div class="two-col">
+              <div class="field password-field">
+                <label>New Password</label>
+                <input type="password" id="newPassword" placeholder="New password" />
+                <span class="toggle-eye" data-target="newPassword">👁</span>
+              </div>
+              <div class="field password-field">
+                <label>Confirm New Password</label>
+                <input type="password" id="confirmPassword" placeholder="Confirm new password" />
+                <span class="toggle-eye" data-target="confirmPassword">👁</span>
+              </div>
+            </div>
+            <button id="changePasswordBtn" class="btn-secondary" style="margin-top: 16px;">
+              <span class="material-icons">lock</span>
+              Change Password
+            </button>
+            <div id="changePasswordError" class="error"></div>
+            <div id="changePasswordSuccess" class="success"></div>
+          </div>
+
+          <!-- Two-Factor Authentication Section -->
+          <div class="account-card">
+            <div class="account-header">
+              <span class="material-icons account-icon">security</span>
+              <h2>Two-Factor Authentication (2FA)</h2>
+            </div>
+            <p id="twoFaStatusText" style="color: #718096; margin-bottom: 20px;">Checking status...</p>
+            <div class="field password-field">
+              <label>Password (required to toggle 2FA)</label>
+              <input type="password" id="twoFaPassword" placeholder="Enter your password" />
+              <span class="toggle-eye" data-target="twoFaPassword">👁</span>
+            </div>
+            <div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:16px;">
+              <button id="enable2faBtn" class="btn-secondary">
+                <span class="material-icons">check_circle</span>
+                Enable 2FA
+              </button>
+              <button id="disable2faBtn" class="btn-secondary" style="background:#718096;">
+                <span class="material-icons">block</span>
+                Disable 2FA
+              </button>
+            </div>
+            <div id="twoFaError" class="error"></div>
+            <div id="twoFaSuccess" class="success"></div>
           </div>
         </div>
-        <button id="changePasswordBtn">Change Password</button>
-        <div id="changePasswordError" class="error"></div>
-        <div id="changePasswordSuccess" class="success"></div>
-      </div>
 
-      <!-- Two-Factor Authentication -->
-      <div class="card" style="margin-bottom:20px;">
-        <h3>Two-Factor Authentication (2FA)</h3>
-        <p id="twoFaStatus">Checking status...</p>
-        <div class="field password-field">
-          <label>Password (required to toggle 2FA)</label>
-          <input type="password" id="twoFaPassword" placeholder="Enter your password" />
-          <span class="toggle-eye" data-target="twoFaPassword">👁</span>
+        <!-- Privacy Tab -->
+        <div id="privacy" class="tab-pane">
+          
+          <!-- Deactivate Account Section -->
+          <div class="account-card" style="margin-bottom: 24px;">
+            <div class="account-header">
+              <span class="material-icons account-icon" style="color: #f59e0b !important;">info</span>
+              <h2>Deactivate Account</h2>
+            </div>
+            <p style="color: #718096; margin-bottom: 16px;">Your account will be disabled temporarily. You can reactivate it anytime from the login page.</p>
+            <div class="field password-field">
+              <label>Password</label>
+              <input type="password" id="deactivatePassword" placeholder="Enter password to deactivate" />
+              <span class="toggle-eye" data-target="deactivatePassword">👁</span>
+            </div>
+            <button id="deactivateBtn" class="btn-secondary" style="background:#f59e0b;margin-top:16px;">
+              <span class="material-icons">pause_circle</span>
+              Deactivate Account
+            </button>
+            <div id="deactivateError" class="error"></div>
+            <div id="deactivateSuccess" class="success"></div>
+          </div>
+
+          <!-- Delete Account Section (Danger Zone) -->
+          <div class="danger-zone" style="margin-bottom: 20px; background: #fff5f5; border-color: #fc8181;">
+            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 20px;">
+              <span class="material-icons" style="color: #dc2626 !important; font-size: 28px !important;">warning</span>
+              <h3 style="margin: 0; color: #dc2626;">Delete Account Permanently</h3>
+            </div>
+            <p style="color: #742a2a; margin-bottom: 16px;"><strong>⚠️ This action is irreversible.</strong> All your data will be permanently erased from our servers. You will not be able to recover your account.</p>
+            <div class="field password-field">
+              <label>Password</label>
+              <input type="password" id="deletePassword" placeholder="Enter password to confirm deletion" />
+              <span class="toggle-eye" data-target="deletePassword">👁</span>
+            </div>
+            <button id="deleteBtn" class="btn-secondary" style="background: #dc2626; margin-top: 16px;">
+              <span class="material-icons">delete_forever</span>
+              Delete Account Permanently
+            </button>
+            <div id="deleteError" class="error"></div>
+            <div id="deleteSuccess" class="success"></div>
+          </div>
         </div>
-        <div style="display:flex;gap:12px;flex-wrap:wrap;">
-          <button id="enable2faBtn">Enable 2FA</button>
-          <button id="disable2faBtn" class="btn-danger">Disable 2FA</button>
-        </div>
-        <div id="twoFaError" class="error"></div>
-        <div id="twoFaSuccess" class="success"></div>
-      </div>
 
-      <!-- Danger Zone -->
-      <div class="danger-zone" style="margin-bottom:20px;">
-        <h4>⚠️ Danger Zone</h4>
-
-        <p><strong>Deactivate Account</strong> — Your account will be disabled. You can reactivate it later from the login page.</p>
-        <div class="field password-field">
-          <label>Password</label>
-          <input type="password" id="deactivatePassword" placeholder="Enter password to deactivate" />
-          <span class="toggle-eye" data-target="deactivatePassword">👁</span>
-        </div>
-        <button id="deactivateBtn" class="btn-danger">Deactivate Account</button>
-        <div id="deactivateError" class="error"></div>
-        <div id="deactivateSuccess" class="success"></div>
-
-        <hr class="section-divider" />
-
-        <p><strong>Delete Account Permanently</strong> — This action is <u>irreversible</u>. All your data will be erased.</p>
-        <div class="field password-field">
-          <label>Password</label>
-          <input type="password" id="deletePassword" placeholder="Enter password to delete account" />
-          <span class="toggle-eye" data-target="deletePassword">👁</span>
-        </div>
-        <button id="deleteBtn" class="btn-danger">Delete Account Permanently</button>
-        <div id="deleteError" class="error"></div>
-        <div id="deleteSuccess" class="success"></div>
       </div>
 
     </div>
+
+    <script>
+      // Tab switching functionality
+      document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const tabName = btn.getAttribute('data-tab');
+          
+          // Remove active from all buttons and panes
+          document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+          document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+          
+          // Add active to clicked button and corresponding pane
+          btn.classList.add('active');
+          document.getElementById(tabName).classList.add('active');
+        });
+      });
+
+      // Check URL parameter to auto-open a tab
+      document.addEventListener('DOMContentLoaded', () => {
+        const urlParams = new URLSearchParams(window.location.search);
+        const tabParam = urlParams.get('tab');
+        
+        if (tabParam && ['profile', 'security', 'privacy'].includes(tabParam)) {
+          const btn = document.querySelector(`[data-tab="${tabParam}"]`);
+          if (btn) {
+            // Remove active from all
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+            
+            // Activate requested tab
+            btn.classList.add('active');
+            document.getElementById(tabParam).classList.add('active');
+          }
+        }
+      });
+
+      // Eye toggle functionality
+      document.querySelectorAll('.toggle-eye').forEach(eye => {
+        eye.addEventListener('click', () => {
+          const targetId = eye.getAttribute('data-target');
+          const input = document.getElementById(targetId);
+          if (input.type === 'password') {
+            input.type = 'text';
+            eye.textContent = '🙈';
+          } else {
+            input.type = 'password';
+            eye.textContent = '👁';
+          }
+        });
+      });
+    </script>
+
     <script src="../env.js"></script>
     <script src="settings.js"></script>
   </body>

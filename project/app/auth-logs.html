@@ -4,22 +4,49 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Auth Logs</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
     <link rel="stylesheet" href="../style.css" />
     <link rel="stylesheet" href="../dashboard.css" />
   </head>
   <body class="dashboard-body">
     <div class="dash-container">
 
-      <a href="dashboard.html" class="back-link">← Back to Dashboard</a>
+      <!-- Back Navigation -->
+      <a href="dashboard.html" class="back-link">
+        <span class="material-icons">arrow_back</span>
+        Back to Dashboard
+      </a>
 
-      <div class="card">
-        <h3>Auth Logs</h3>
-        <div id="logsBody">Loading...</div>
+      <!-- Page Header -->
+      <header class="dash-header">
+        <div class="header-content">
+          <h1 class="header-title">
+            <span class="material-icons header-icon">history</span>
+            Authentication Logs
+          </h1>
+          <p class="header-subtitle">Track all login activity and authentication events</p>
+        </div>
+      </header>
+
+      <!-- Logs Card -->
+      <div class="account-card">
+        <div id="logsBody" class="logs-body">Loading...</div>
         <div id="logsError" class="error" style="margin-top:10px;"></div>
+        
+        <!-- Pagination -->
         <div class="pagination">
-          <button id="prevBtn" disabled>← Prev</button>
-          <span id="pageInfo" style="font-size:13px;color:#4a4a6a;">Page 1</span>
-          <button id="nextBtn">Next →</button>
+          <button id="prevBtn" disabled class="btn-secondary">
+            <span class="material-icons">arrow_back</span>
+            Previous
+          </button>
+          <span id="pageInfo" style="font-size:13px;color:#718096;font-weight:600;">Page 1</span>
+          <button id="nextBtn" class="btn-secondary">
+            Next
+            <span class="material-icons">arrow_forward</span>
+          </button>
         </div>
       </div>
 
