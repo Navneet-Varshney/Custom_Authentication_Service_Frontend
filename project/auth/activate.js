@@ -1,14 +1,6 @@
 const API_BASE = window.RUNTIME_ENV.API_BASE_URL;
 const AUTH_MODE = window.RUNTIME_ENV.AUTH_MODE;
 
-// ===== Toggle Eye =====
-document.querySelectorAll(".toggle-eye").forEach(eye => {
-  eye.addEventListener("click", () => {
-    const input = document.getElementById(eye.dataset.target);
-    input.type = input.type === "password" ? "text" : "password";
-  });
-});
-
 // ===== Apply Auth Mode =====
 const phoneField = document.getElementById("phoneField");
 const emailField = document.getElementById("emailField");
@@ -46,16 +38,35 @@ document.querySelector(".auth-form").addEventListener("submit", async (e) => {
   const btn = document.querySelector("button[type='submit']");
   const activateError = document.getElementById("activateError");
   const activateSuccess = document.getElementById("activateSuccess");
+  const phoneError = document.getElementById("phoneError");
+  const emailError = document.getElementById("emailError");
+  const passwordError = document.getElementById("passwordError");
+
   activateError.textContent = "";
   activateSuccess.textContent = "";
+  if (phoneError) phoneError.textContent = "";
+  if (emailError) emailError.textContent = "";
+  if (passwordError) passwordError.textContent = "";
 
   const password = document.getElementById("password").value;
-  if (!password) { activateError.textContent = "Password is required."; return; }
+  if (!password) { 
+    passwordError.textContent = "Password is required.";
+    return; 
+  }
 
   const emailVal = emailInput.value.trim();
   const phoneVal = phoneInput.value.trim();
 
-  if (!emailVal && !phoneVal) {
+  if (AUTH_MODE === "EMAIL" && !emailVal) {
+    emailError.textContent = "Email is required.";
+    return;
+  }
+  else if (AUTH_MODE === "PHONE" && !phoneVal) {
+    phoneError.textContent = "Phone number is required.";
+    return;
+  }
+
+  else if (!emailVal && !phoneVal) {
     activateError.textContent = "Please enter your email or phone number.";
     return;
   }

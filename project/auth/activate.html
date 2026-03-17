@@ -4,39 +4,64 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Activate Account</title>
-    <link rel="stylesheet" href="../style.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="activate.css" />
   </head>
   <body>
-    <form class="auth-form" autocomplete="off">
-      <h2>Activate Account</h2>
-      <p style="font-size:13px;color:#666;text-align:center;margin-bottom:16px;">
-        Your account is deactivated. Enter your credentials to reactivate it.
-      </p>
+    <div class="page-wrapper">
+      <div class="card">
+        <div class="card-header">
+          <div class="logo">
+            <div class="logo-icon">🔐</div>
+            <div class="logo-name">AuthService</div>
+          </div>
+          <h2>Activate Account</h2>
+          <p>Reactivate your account to regain access</p>
+        </div>
 
-      <div id="phoneField" class="field">
-        <label>Phone Number</label>
-        <div class="phone-container">
-          <select id="countryCode"></select>
-          <input type="text" id="phone" placeholder="Enter phone number" />
+        <form class="auth-form" autocomplete="off">
+          <!-- Phone Field -->
+          <div id="phoneField" class="field">
+            <label for="countryCode">Phone Number</label>
+            <div class="phone-container">
+              <select id="countryCode"></select>
+              <input type="text" id="phone" placeholder="Enter phone number" />
+            </div>
+            <small id="phoneError" class="error"></small>
+          </div>
+
+          <!-- Email Field -->
+          <div id="emailField" class="field">
+            <label for="email">Email Address</label>
+            <input type="email" id="email" placeholder="Enter your email" />
+            <small id="emailError" class="error"></small>
+          </div>
+
+          <!-- Password Field -->
+          <div class="field">
+            <label for="password">Password</label>
+            <input type="password" id="password" placeholder="Enter your password" required />
+            <small id="passwordError" class="error"></small>
+          </div>
+
+          <!-- Submit Button -->
+          <button type="submit">Activate Account</button>
+
+          <!-- Messages -->
+          <div id="activateSuccess" class="success"></div>
+          <div id="activateError" class="error"></div>
+        </form>
+
+        <!-- Links -->
+        <div class="links-section">
+          <p class="switch">
+            <a href="login.html">← Back to Login</a>
+          </p>
         </div>
       </div>
-
-      <div id="emailField" class="field">
-        <label>Email</label>
-        <input type="email" id="email" placeholder="Enter email address" />
-      </div>
-
-      <div class="field password-field">
-        <label>Password <span class="asterik">*</span></label>
-        <input type="password" id="password" placeholder="Enter password" required />
-        <span class="toggle-eye" data-target="password">👁</span>
-      </div>
-
-      <button type="submit">Activate Account</button>
-      <div id="activateError" class="error" style="text-align:center;margin-top:8px;"></div>
-      <div id="activateSuccess" class="success"></div>
-      <p class="switch"><a href="login.html">← Back to Login</a></p>
-    </form>
+    </div>
 
     <script src="../env.js"></script>
     <script src="countries.js"></script>
