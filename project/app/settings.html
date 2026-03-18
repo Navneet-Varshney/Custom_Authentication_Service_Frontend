@@ -12,6 +12,14 @@
     <link rel="stylesheet" href="../dashboard.css" />
   </head>
   <body class="dashboard-body">
+    <!-- Loading Overlay (for forms) -->
+    <div class="loading-overlay" id="loadingOverlay">
+      <div class="loading-box">
+        <div class="spinner"></div>
+        <p id="loadingText">Processing...</p>
+      </div>
+    </div>
+
     <div class="dash-container">
 
       <!-- Back Navigation -->
@@ -241,6 +249,7 @@
     </script>
 
     <script src="../env.js"></script>
+    <script src="../utils.js"></script>
     <script src="settings.js"></script>
   </body>
 </html>
