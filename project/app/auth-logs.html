@@ -12,6 +12,14 @@
     <link rel="stylesheet" href="../dashboard.css" />
   </head>
   <body class="dashboard-body">
+    <!-- Loading Overlay -->
+    <div class="loading-overlay" id="loadingOverlay">
+      <div class="loading-box">
+        <div class="spinner"></div>
+        <p id="loadingText">Loading Auth Logs...</p>
+      </div>
+    </div>
+
     <div class="dash-container">
 
       <!-- Back Navigation -->
@@ -52,6 +60,7 @@
 
     </div>
     <script src="../env.js"></script>
+    <script src="../utils.js"></script>
     <script src="auth-logs.js"></script>
   </body>
 </html>
