@@ -60,16 +60,21 @@ async function loadCurrentAccount() {
     }
     
     const data = await res.json();
-    console.log("📦 User data received:", data);
+    console.log("📦 Full User data received:", JSON.stringify(data, null, 2));
     
     if (res.ok && data.success) {
       const backendData = data.data;
-      console.log("✅ Populating form fields:");
+      console.log("🔍 Backend Data Keys:", Object.keys(backendData));
       
       // Extract from backend response (with correct key names and fallbacks)
-      const firstName = backendData["First Name"] || "";
-      const email = backendData["Email"] || "";
-      const phone = backendData["Phone"] || "";
+      const firstName = backendData["First Name"] || backendData["firstName"] || "";
+      const email = backendData["Email"] || backendData["email"] || "";
+      const phone = backendData["Phone"] || backendData["phone"] || "";
+      
+      console.log("✅ Extracted values:");
+      console.log("   - firstName:", firstName, "| from key: 'First Name'");
+      console.log("   - email:", email, "| from key: 'Email'");
+      console.log("   - phone:", phone, "| from key: 'Phone'");
       
       // 2FA: Fallback to both possible backend keys + localStorage cache
       let isTwoFaEnabled = (backendData["2FA Enabled"] === "Yes");
@@ -97,9 +102,6 @@ async function loadCurrentAccount() {
         }
       }
       
-      console.log("   - firstName:", firstName);
-      console.log("   - email:", email);
-      console.log("   - phone:", phone);
       console.log("   - 2FA Enabled:", isTwoFaEnabled);
       
       // Pre-fill form fields
@@ -143,17 +145,29 @@ document.getElementById("updateBtn").addEventListener("click", async () => {
   const email = document.getElementById("emailUpdate").value.trim();
   const phoneRaw = document.getElementById("phoneUpdate").value.trim();
 
+  console.log("🔍 Update Profile - Form Values:");
+  console.log("   - firstName:", firstName);
+  console.log("   - email:", email);
+  console.log("   - phoneRaw:", phoneRaw);
+
   if (firstName) body.firstName = firstName;
   if (email) body.email = email;
   if (phoneRaw) {
     const match = phoneRaw.match(/^\+(\d{1,3})(\d+)$/);
     if (!match) {
       updateError.textContent = "Phone must be in format +91XXXXXXXXXX";
+      console.error("❌ Phone validation failed:", phoneRaw);
       return;
     }
     body.countryCode = match[1];
     body.localNumber = match[2];
+    console.log("   - Phone parsed - countryCode:", match[1], "localNumber:", match[2]);
   }
+
+  console.log("📤 Sending Update Request:");
+  console.log("   - Endpoint:", `${API_BASE}/account/update-details`);
+  console.log("   - Method: PATCH");
+  console.log("   - Payload:", JSON.stringify(body, null, 2));
 
   btn.disabled = true;
   btn.textContent = "Updating...";
@@ -165,13 +179,24 @@ document.getElementById("updateBtn").addEventListener("click", async () => {
       body: JSON.stringify(body),
       credentials: "include",
     });
+    
+    console.log("📥 Response Status:", res.status);
+    console.log("   - Headers:", {
+      'content-type': res.headers.get('content-type'),
+      'x-access-token': res.headers.get('x-access-token') ? 'Present' : 'Missing'
+    });
+    
     saveNewToken(res);
     const data = await res.json();
     
+    console.log("📦 Response Data:", data);
+    
     if (!res.ok || !data.success) {
       updateError.textContent = data.message || "Update failed.";
+      console.error("❌ Update failed:", data);
     } else {
       updateSuccess.textContent = data.message || "Profile updated successfully!";
+      console.log("✅ Profile update successful");
       
       // If email or phone was changed, backend logs user out
       // Check response headers or wait briefly then check token
@@ -190,16 +215,19 @@ document.getElementById("updateBtn").addEventListener("click", async () => {
             window.location.href = "../auth/login.html";
           } else {
             // Still logged in, reload form
+            console.log("✅ Session still active, reloading form");
             loadCurrentAccount();
           }
         } catch (err) {
           // If fetch fails, just reload form
+          console.error("⚠️ Session check failed:", err);
           loadCurrentAccount();
         }
       }, 1000);
     }
-  } catch {
+  } catch (err) {
     updateError.textContent = "Network error.";
+    console.error("❌ Network error in update profile:", err);
   } finally {
     btn.disabled = false;
     btn.textContent = "Update Profile";
