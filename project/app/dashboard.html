@@ -12,6 +12,29 @@
     <link rel="stylesheet" href="../dashboard.css" />
   </head>
   <body class="dashboard-body">
+    <!-- Page Loader -->
+    <div class="page-loader" id="pageLoader">
+      <div class="loader-container">
+        <div class="loader-brand">
+          <span class="material-icons">dashboard</span>
+          <span>Dashboard</span>
+        </div>
+        <div class="progress-bar-container">
+          <div class="progress-bar"></div>
+        </div>
+        <div class="loader-text">Loading your account</div>
+        <div class="loading-status">Please wait...</div>
+      </div>
+    </div>
+
+    <!-- Loading Overlay (for forms) -->
+    <div class="loading-overlay" id="loadingOverlay">
+      <div class="loading-box">
+        <div class="spinner"></div>
+        <p id="loadingText">Processing...</p>
+      </div>
+    </div>
+
     <script>
       // Catch all errors
       window.addEventListener('error', (event) => {
@@ -53,6 +76,48 @@
     
     <div class="dash-container">
 
+      <!-- Top Navigation Bar -->
+      <nav class="top-nav">
+        <div class="nav-brand">
+          <span class="material-icons nav-logo">security</span>
+          <span class="brand-name">SecureAuth</span>
+        </div>
+        <ul class="nav-menu">
+          <li><a href="dashboard.html" class="nav-link active">Dashboard</a></li>
+          <li><a href="sessions.html" class="nav-link">Sessions</a></li>
+          <li><a href="auth-logs.html" class="nav-link">Logs</a></li>
+          <li><a href="settings.html" class="nav-link">Settings</a></li>
+        </ul>
+        <div class="nav-actions">
+          <button id="navNotifications" class="nav-button" title="Notifications">
+            <span class="material-icons">notifications</span>
+            <span class="notification-badge" id="notificationBadge">3</span>
+          </button>
+          <button id="navProfile" class="nav-button" title="Profile">
+            <span class="material-icons">account_circle</span>
+          </button>
+        </div>
+      </nav>
+
+      <!-- Notifications Panel -->
+      <div class="notifications-panel" id="notificationsPanel">
+        <div class="notifications-header">
+          <h3>Notifications</h3>
+          <button id="closeNotifications" class="close-btn" title="Close">
+            <span class="material-icons">close</span>
+          </button>
+        </div>
+        <div class="notifications-list" id="notificationsList">
+          <!-- Notifications will be populated here -->
+        </div>
+        <div class="notifications-footer">
+          <a href="#" id="clearAllNotifications">Clear All</a>
+        </div>
+      </div>
+
+      <!-- Notifications Overlay -->
+      <div class="notifications-overlay" id="notificationsOverlay"></div>
+
       <!-- Welcome Header -->
       <header class="dash-header">
         <div class="header-content">
@@ -91,10 +156,10 @@
                 <p>Your security score</p>
               </div>
             </div>
-            <span class="health-score" id="healthScore">85%</span>
+            <span class="health-score" id="healthScore">65%</span>
           </div>
           <div class="health-bar">
-            <div class="health-progress" id="healthProgress" style="width: 85%;"></div>
+            <div class="health-progress" id="healthProgress" style="width: 65%;"></div>
           </div>
           <div class="health-tips">
             <div class="tip-item">
@@ -225,6 +290,53 @@
       <div id="dashError" class="error"></div>
       <div id="dashSuccess" class="success"></div>
 
+      <!-- Footer -->
+      <footer class="dash-footer">
+        <div class="footer-content">
+          <div class="footer-section">
+            <h4>SecureAuth</h4>
+            <p>Enterprise-grade authentication and account management platform</p>
+          </div>
+          <div class="footer-section">
+            <h4>Quick Links</h4>
+            <ul>
+              <li><a href="dashboard.html">Dashboard</a></li>
+              <li><a href="sessions.html">Active Sessions</a></li>
+              <li><a href="auth-logs.html">Auth Logs</a></li>
+              <li><a href="settings.html">Settings</a></li>
+            </ul>
+          </div>
+          <div class="footer-section">
+            <h4>Security</h4>
+            <ul>
+              <li><a href="settings.html?tab=security">Two-Factor Auth</a></li>
+              <li><a href="settings.html?tab=security">Password Manager</a></li>
+              <li><a href="auth-logs.html">Login History</a></li>
+              <li><a href="sessions.html">Manage Devices</a></li>
+            </ul>
+          </div>
+          <div class="footer-section">
+            <h4>Support</h4>
+            <ul>
+              <li><a href="#">Documentation</a></li>
+              <li><a href="#">Help Center</a></li>
+              <li><a href="#">Report Issue</a></li>
+              <li><a href="#">Contact Us</a></li>
+            </ul>
+          </div>
+        </div>
+        <div class="footer-bottom">
+          <p>&copy; 2026 SecureAuth. All rights reserved.</p>
+          <div class="footer-links">
+            <a href="#">Privacy Policy</a>
+            <span class="separator">|</span>
+            <a href="#">Terms of Service</a>
+            <span class="separator">|</span>
+            <a href="#">Cookies</a>
+          </div>
+        </div>
+      </footer>
+
     </div>
 
     <script>
@@ -258,6 +370,7 @@
       }
     </script>
     
+    <script src="../utils.js"></script>
     <script src="dashboard.js"></script>
     <script>
       // Final check after scripts load
