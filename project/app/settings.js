@@ -20,14 +20,6 @@ function saveNewToken(res) {
   if (t) localStorage.setItem("accessToken", t);
 }
 
-// ===== Toggle Eye =====
-document.querySelectorAll(".toggle-eye").forEach(eye => {
-  eye.addEventListener("click", () => {
-    const input = document.getElementById(eye.dataset.target);
-    input.type = input.type === "password" ? "text" : "password";
-  });
-});
-
 // ===== Load current account data into form fields =====
 async function loadCurrentAccount() {
   console.log("🔄 Loading current account data for pre-fill...");

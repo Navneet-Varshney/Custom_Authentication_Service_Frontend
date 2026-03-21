@@ -194,7 +194,7 @@ select:focus {
 .dashboard-body .password-field .toggle-eye {
   position: absolute;
   right: 14px;
-  top: 40px;
+  top: 35px;
   cursor: pointer;
   opacity: 0.6;
   font-size: 18px;
