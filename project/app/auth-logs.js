@@ -55,25 +55,40 @@ async function loadLogs(page) {
   logsError.textContent = "";
 
   try {
-    const res = await fetch(`${API_BASE}/auth/auth-logs?page=${page}&limit=${LIMIT}`, {
+    const url = `${API_BASE}/auth/auth-logs?page=${page}&limit=${LIMIT}`;
+    console.log("🔍 Fetching auth logs from:", url);
+    
+    const res = await fetch(url, {
       headers: authHeaders(),
       credentials: "include",
     });
+    
+    console.log("📊 Response status:", res.status);
     saveNewToken(res);
 
-    if (res.status === 401) { window.location.href = "../auth/login.html"; return; }
+    if (res.status === 401) { 
+      console.log("❌ Unauthorized");
+      window.location.href = "../auth/login.html"; 
+      return; 
+    }
 
     const data = await res.json();
+    console.log("📦 Response data:", JSON.stringify(data, null, 2));
+    
     if (!res.ok || !data.success) {
+      console.log("❌ Request failed:", data.message);
       logsBody.innerHTML = "";
       logsError.textContent = data.message || "Failed to load logs.";
       return;
     }
 
-    // Handle different response shapes from backend
-    const logs = data.data?.logs || data.logs || (Array.isArray(data.data) ? data.data : []);
+    // Backend returns format:
+    // { success: true, logs: [...], meta: { totalLogs, totalPages, ... } }
+    const logs = data.logs || (Array.isArray(data.data) ? data.data : []);
     const total = data.meta?.totalLogs ?? logs.length;
     const totalPages = data.meta?.totalPages ?? Math.max(1, Math.ceil(total / LIMIT));
+
+    console.log("✅ Found", logs.length, "logs");
 
     if (logs.length === 0) {
       logsBody.innerHTML = "<p>No auth logs found.</p>";
@@ -108,8 +123,9 @@ async function loadLogs(page) {
     nextBtn.disabled = page >= totalPages;
 
   } catch (err) {
+    console.error("❌ Network error:", err);
     logsBody.innerHTML = "";
-    logsError.textContent = "Network error.";
+    logsError.textContent = "Network error: " + err.message;
   }
 }
 

@@ -56,6 +56,11 @@ export function initFormSubmit({
     submitBtn.textContent = "Sending...";
 
     try {
+      console.log("📧 Forgot Password attempt:");
+      console.log("   Email:", emailInput.value || "empty");
+      console.log("   Phone:", localNumber || "empty");
+      console.log("   Request body:", requestBody);
+      
       const res = await fetch(`${API_BASE}/password/forgot-password`, {
         method: "POST",
         headers: {
@@ -68,12 +73,18 @@ export function initFormSubmit({
 
       const data = await res.json();
 
+      console.log("📡 Forgot password response:");
+      console.log("   Status:", res.status);
+      console.log("   Data:", data);
+
       if (!res.ok || !data.success) {
+        console.log("❌ Failed to send reset link");
         resetSuccess.textContent = "";
         phoneError.textContent = data.message || "Failed to send reset link.";
         return;
       }
 
+      console.log("✅ Reset link sent successfully");
       // Store info for OTP/reset page
       const contactMode = data.data?.contactMode || (emailInput.value ? "EMAIL" : "PHONE");
       localStorage.setItem("otpDeliveryMode", contactMode);
@@ -88,6 +99,7 @@ export function initFormSubmit({
       applyAuthMode(AUTH_MODE, phoneField, emailField, phoneInput, emailInput, phoneDropdown);
 
     } catch (err) {
+      console.log("❌ Forgot password error:", err);
       phoneError.textContent = "Network error. Please check your connection.";
     } finally {
       submitBtn.disabled = false;

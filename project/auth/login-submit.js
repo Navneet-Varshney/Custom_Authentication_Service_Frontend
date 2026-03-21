@@ -57,8 +57,24 @@ export function initFormSubmit({ form, phoneInput, emailInput, passwordInput, co
       const data = await res.json();
 
       if (!res.ok || !data.success) {
-        if (loginError) loginError.textContent = data.message || "Login failed.";
-        else alert(data.message || "Login failed.");
+        // For AccessDenied errors, use warning field (contains deactivation message)
+        let displayMsg = data.message || "Login failed.";
+        
+        if (data.type === "AccessDenied" && data.warning) {
+          displayMsg = data.warning;
+        }
+        
+        // Check if account is deactivated and show activation link
+        if (displayMsg.toLowerCase().includes("deactivated")) {
+          if (loginError) {
+            loginError.innerHTML = `${displayMsg} <a href="activate.html">Activate now</a>`;
+          } else {
+            alert(displayMsg);
+          }
+        } else {
+          if (loginError) loginError.textContent = displayMsg;
+          else alert(displayMsg);
+        }
         return;
       }
 

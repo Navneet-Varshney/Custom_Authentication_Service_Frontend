@@ -359,22 +359,37 @@ document.getElementById("deactivateBtn").addEventListener("click", async () => {
   btn.textContent = "Deactivating...";
 
   try {
+    console.log("🔐 Deactivate attempt:");
+    console.log("   Password:", password ? "✅ provided" : "❌ missing");
+    console.log("   Auth headers:", authHeaders());
+    
+    const requestBody = { password };
+    console.log("   Request body:", requestBody);
+    
     const res = await fetch(`${API_BASE}/account/deactivate`, {
       method: "POST",
       headers: authHeaders(),
-      body: JSON.stringify({ password }),
+      body: JSON.stringify(requestBody),
       credentials: "include",
     });
     const data = await res.json();
+    
+    console.log("📡 Deactivate response:");
+    console.log("   Status:", res.status);
+    console.log("   Data:", data);
+    
     if (!res.ok || !data.success) {
+      console.log("❌ Deactivation failed");
       deactivateError.textContent = data.message || "Failed to deactivate account.";
       btn.disabled = false;
       btn.textContent = "Deactivate Account";
       return;
     }
+    console.log("✅ Deactivation successful");
     deactivateSuccess.textContent = data.message || "Account deactivated. Redirecting...";
     setTimeout(() => { window.location.href = "../auth/login.html"; }, 2000);
-  } catch {
+  } catch (err) {
+    console.log("❌ Deactivate error:", err);
     deactivateError.textContent = "Network error.";
     btn.disabled = false;
     btn.textContent = "Deactivate Account";
