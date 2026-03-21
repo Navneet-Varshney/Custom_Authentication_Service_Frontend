@@ -137,40 +137,6 @@ body::before {
   letter-spacing: 0.5px;
 }
 
-.dots {
-  display: flex;
-  gap: 4px;
-  justify-content: center;
-  margin-top: -8px;
-}
-
-.dot {
-  width: 6px;
-  height: 6px;
-  background: #667eea;
-  border-radius: 50%;
-  animation: dotPulse 1.5s ease-in-out infinite;
-}
-
-.dot:nth-child(2) {
-  animation-delay: 0.2s;
-}
-
-.dot:nth-child(3) {
-  animation-delay: 0.4s;
-}
-
-@keyframes dotPulse {
-  0%, 100% {
-    opacity: 0.4;
-    transform: scale(1);
-  }
-  50% {
-    opacity: 1;
-    transform: scale(1.2);
-  }
-}
-
 .subtitle {
   font-size: 13px;
   color: #94a3b8;
