@@ -10,6 +10,10 @@ export function initValidation({
     input.addEventListener("input", () => {
       const successMessage = document.getElementById("successMessage");
       if (successMessage) successMessage.textContent = "";
+      const resetSuccess = document.getElementById("resetSuccess");
+      if (resetSuccess) resetSuccess.textContent = "";
+      const forgotError = document.getElementById("forgotError");
+      if (forgotError) forgotError.textContent = "";
     });
   });
 
@@ -25,6 +29,17 @@ export function initValidation({
       phoneError.textContent = `You must enter ${requiredLength} digits`;
     } else {
       phoneError.textContent = "";
+    }
+  });
+
+  emailInput.addEventListener("input", () => {
+    const emailError = document.getElementById("emailError");
+    if (!emailInput.value) {
+      emailError.textContent = "";
+    } else if (!emailRegex.test(emailInput.value.trim())) {
+      emailError.textContent = messages.emailInvalid;
+    } else {
+      emailError.textContent = "";
     }
   });
 }
