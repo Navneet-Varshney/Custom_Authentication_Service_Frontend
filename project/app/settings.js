@@ -261,10 +261,23 @@ document.getElementById("changePasswordBtn").addEventListener("click", async () 
     if (!res.ok || !data.success) {
       changePasswordError.textContent = data.message || "Failed to change password.";
     } else {
-      changePasswordSuccess.textContent = data.message || "Password changed successfully!";
+      // Terminate session after password change
+      console.log("🔐 Password changed - terminating session...");
+      localStorage.removeItem("accessToken");
+      localStorage.removeItem("refreshToken");
+      
+      // Clear password fields
       document.getElementById("currentPassword").value = "";
       document.getElementById("newPassword").value = "";
       document.getElementById("confirmPassword").value = "";
+      
+      // Show success message with logout notice
+      changePasswordSuccess.textContent = "✅ Password changed successfully! Session terminated - redirecting to login...";
+      
+      // Redirect to login after delay
+      setTimeout(() => {
+        window.location.href = "../auth/login.html";
+      }, 2000);
     }
   } catch {
     changePasswordError.textContent = "Network error.";
