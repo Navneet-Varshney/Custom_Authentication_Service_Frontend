@@ -14,8 +14,7 @@ export function initFormSubmit({
   form.addEventListener("submit", async e => {
     e.preventDefault();
 
-    const phoneError = document.getElementById("phoneError");
-    const emailError = document.getElementById("emailError");
+    const validationError = document.getElementById("validationError");
     const formError = document.getElementById("formError");
     const resetSuccess = document.getElementById("resetSuccess");
     const forgotError = document.getElementById("forgotError");
@@ -24,8 +23,7 @@ export function initFormSubmit({
     // Clear all previous messages
     resetSuccess.textContent = "";
     forgotError.textContent = "";
-    phoneError.textContent = "";
-    if (emailError) emailError.textContent = "";
+    validationError.textContent = "";
     formError.textContent = "";
 
     const selectedOption = countryCodeSelect.options[countryCodeSelect.selectedIndex];
@@ -33,13 +31,13 @@ export function initFormSubmit({
 
     if (phoneInput.value && phoneInput.value.length !== requiredLength) {
       const errorMsg = messages.phoneLength(requiredLength);
-      phoneError.textContent = errorMsg;
+      validationError.textContent = errorMsg;
       return;
     }
 
     if (emailInput.value && !emailRegex.test(emailInput.value.trim())) {
       const errorMsg = messages.emailInvalid;
-      if (emailError) emailError.textContent = errorMsg;
+      forgotError.textContent = errorMsg;
       return;
     }
 
