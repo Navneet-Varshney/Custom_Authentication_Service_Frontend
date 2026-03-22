@@ -88,6 +88,13 @@ export function initFormSubmit({ form, phoneInput, emailInput, passwordInput, co
           localStorage.removeItem("justResetPassword");
           localStorage.removeItem("resetPasswordEmail");
           
+          // Store access token before redirecting
+          const accessToken = res.headers.get("x-access-token");
+          if (accessToken) {
+            localStorage.setItem("accessToken", accessToken);
+            console.log("✅ Access token stored after password reset");
+          }
+          
           successMessage.textContent = messages.loginSuccess;
           setTimeout(() => { window.location.href = "../app/dashboard.html"; }, 1000);
           return;
