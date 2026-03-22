@@ -18,10 +18,12 @@ export function initFormSubmit({
     const emailError = document.getElementById("emailError");
     const formError = document.getElementById("formError");
     const resetSuccess = document.getElementById("resetSuccess");
+    const forgotError = document.getElementById("forgotError");
     const submitBtn = form.querySelector("button[type='submit']");
 
     // Clear all previous messages
     resetSuccess.textContent = "";
+    forgotError.textContent = "";
     phoneError.textContent = "";
     if (emailError) emailError.textContent = "";
     formError.textContent = "";
@@ -62,7 +64,8 @@ export function initFormSubmit({
       console.log("📧 Forgot Password attempt:");
       console.log("   Email:", emailInput.value || "empty");
       console.log("   Phone:", localNumber || "empty");
-      console.log("   Request body:", requestBody);
+      console.log("   Country Code:", countryCode);
+      console.log("   Request body:", JSON.stringify(requestBody, null, 2));
       
       const res = await fetch(`${API_BASE}/password/forgot-password`, {
         method: "POST",
@@ -84,9 +87,9 @@ export function initFormSubmit({
         console.log("❌ Failed to send reset link");
         resetSuccess.textContent = "";
         
-        // Display backend error in the main form error area
+        // Display backend error message
         const errorMessage = data.message || data.error || "Failed to send reset link. Please try again.";
-        formError.textContent = errorMessage;
+        forgotError.textContent = errorMessage;
         
         return;
       }
@@ -99,7 +102,17 @@ export function initFormSubmit({
       localStorage.setItem("signupEmail", emailInput.value || "");
       localStorage.setItem("signupPhone", localNumber ? `+${countryCode}${localNumber}` : "");
 
-      window.location.href = "otp.html";
+      console.log("💾 Stored in localStorage:");
+      console.log("   otpDeliveryMode:", contactMode);
+      console.log("   otpPurpose: PASSWORD_RESET");
+      console.log("   signupEmail:", emailInput.value || "empty");
+      console.log("   signupPhone:", localNumber ? `+${countryCode}${localNumber}` : "empty");
+
+      resetSuccess.textContent = "Password reset link sent! Redirecting...";
+      setTimeout(() => {
+        console.log("→ Redirecting to otp.html");
+        window.location.href = "otp.html";
+      }, 1000);
       // Reset form
       phoneInput.value = "";
       emailInput.value = "";
@@ -107,7 +120,7 @@ export function initFormSubmit({
 
     } catch (err) {
       console.log("❌ Forgot password error:", err);
-      phoneError.textContent = "Network error. Please check your connection.";
+      forgotError.textContent = "Network error. Please check your connection.";
     } finally {
       submitBtn.disabled = false;
       submitBtn.textContent = "Send Reset Link";
