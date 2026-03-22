@@ -36,6 +36,12 @@ export function initFormSubmit({
     const deliveryMode = localStorage.getItem("otpDeliveryMode");
     const code = localStorage.getItem("resetCode");
 
+    console.log("🔑 Password Reset Flow:");
+    console.log("   Email:", email || "none");
+    console.log("   Phone:", phone || "none");
+    console.log("   Delivery Mode:", deliveryMode);
+    console.log("   Reset Code:", code || "MISSING!");
+
     if (!code) {
       passwordError.textContent = "Session expired. Please restart the forgot-password flow.";
       return;
@@ -64,6 +70,18 @@ export function initFormSubmit({
     submitBtn.textContent = "Resetting...";
 
     try {
+      console.log("📤 Sending Password Reset Request:");
+      console.log("   Endpoint:", `${API_BASE}/password/reset-password`);
+      console.log("   Request Body:", {
+        code: requestBody.code,
+        newPassword: "***hidden***",
+        confirmPassword: "***hidden***",
+        email: requestBody.email || "not included",
+        countryCode: requestBody.countryCode || "not included",
+        localNumber: requestBody.localNumber || "not included",
+        phone: requestBody.phone || "not included"
+      });
+
       const res = await fetch(`${API_BASE}/password/reset-password`, {
         method: "POST",
         headers: {
@@ -75,6 +93,11 @@ export function initFormSubmit({
       });
 
       const data = await res.json();
+
+      console.log("📥 Password Reset Response:");
+      console.log("   Status:", res.status);
+      console.log("   Success:", data.success);
+      console.log("   Message:", data.message);
 
       if (!res.ok || !data.success) {
         passwordError.textContent = data.message || "Password reset failed.";
