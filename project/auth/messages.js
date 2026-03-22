@@ -1,6 +1,7 @@
 window.messages = {
   passwordWeak: "Min 8 chars, 1 upper, 1 lower, 1 number & 1 special char",
   passwordsMismatch: "Passwords do not match",
+  phoneRequired: "Please enter your phone number",
   phoneLength: (len) => `Phone number must be ${len} digits`,
   nameInvalid: "Enter valid user name",
   emailInvalid: "Enter valid email address",
