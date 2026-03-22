@@ -80,31 +80,18 @@ export function initFormSubmit({ form, phoneInput, emailInput, passwordInput, co
 
       // 2FA required — redirect to OTP
       if (data.requires2FA) {
-        // Check if this is post-password-reset flow
+        // Store context for post-password-reset login
         const isPostPasswordReset = localStorage.getItem("justResetPassword") === "true";
         
-        if (isPostPasswordReset) {
-          // Skip OTP after password reset — go directly to dashboard
-          localStorage.removeItem("justResetPassword");
-          localStorage.removeItem("resetPasswordEmail");
-          
-          // Store access token before redirecting
-          const accessToken = res.headers.get("x-access-token");
-          if (accessToken) {
-            localStorage.setItem("accessToken", accessToken);
-            console.log("✅ Access token stored after password reset");
-          }
-          
-          successMessage.textContent = messages.loginSuccess;
-          setTimeout(() => { window.location.href = "../app/dashboard.html"; }, 1000);
-          return;
-        }
-        
-        // Normal 2FA flow for regular login
         localStorage.setItem("otpDeliveryMode", emailInput.value ? "EMAIL" : "PHONE");
         localStorage.setItem("otpPurpose", "DEVICE_VERIFICATION");
         localStorage.setItem("signupEmail", emailInput.value || "");
         localStorage.setItem("signupPhone", localNumber ? `+${countryCode}${localNumber}` : "");
+        
+        // Mark context for OTP page messaging
+        if (isPostPasswordReset) {
+          localStorage.setItem("isPasswordResetFlow", "true");
+        }
         
         window.location.href = "otp.html";
         return;
