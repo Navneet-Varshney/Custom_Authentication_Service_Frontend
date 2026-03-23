@@ -261,8 +261,8 @@ otpForm.addEventListener("submit", async (e) => {
         // 2FA complete — go to dashboard
         window.location.href = "../app/dashboard.html";
       } else {
-        // Signup verification complete — go to login
-        window.location.href = "login.html";
+        // Signup verification complete — go to dashboard
+        window.location.href = "../app/dashboard.html";
       }
     }, 1200);
 
