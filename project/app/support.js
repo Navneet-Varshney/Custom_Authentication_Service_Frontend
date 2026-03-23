@@ -158,5 +158,40 @@ document.addEventListener('keydown', (e) => {
   }
 });
 
+// Accordion Functionality for Help Center
+document.addEventListener('DOMContentLoaded', () => {
+  console.log('[Support] Initializing accordion functionality');
+  
+  const accordionHeaders = document.querySelectorAll('.accordion-header');
+  
+  accordionHeaders.forEach((header) => {
+    header.addEventListener('click', () => {
+      const accordionItem = header.parentElement;
+      const accordionBody = accordionItem.querySelector('.accordion-body');
+      const isActive = header.classList.contains('active');
+      
+      // Close all other accordions in the same parent
+      const sameParent = header.closest('.accordion');
+      sameParent.querySelectorAll('.accordion-header').forEach((h) => {
+        if (h !== header) {
+          h.classList.remove('active');
+          h.parentElement.querySelector('.accordion-body').classList.remove('active');
+        }
+      });
+      
+      // Toggle current accordion
+      if (isActive) {
+        header.classList.remove('active');
+        accordionBody.classList.remove('active');
+        console.log('[Support] Accordion closed');
+      } else {
+        header.classList.add('active');
+        accordionBody.classList.add('active');
+        console.log('[Support] Accordion opened');
+      }
+    });
+  });
+});
+
 console.log('[Support] All event handlers attached successfully');
 
