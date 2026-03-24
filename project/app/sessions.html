@@ -11,7 +11,7 @@
     <link rel="stylesheet" href="../style.css" />
     <link rel="stylesheet" href="../dashboard.css" />
   </head>
-  <body class="dashboard-body">
+  <body class="dashboard-body theme-light">
     <!-- Loading Overlay -->
     <div class="loading-overlay" id="loadingOverlay">
       <div class="loading-box">
@@ -37,10 +37,15 @@
           </h1>
           <p class="header-subtitle">View and manage all your active sessions across devices</p>
         </div>
-        <button id="signoutAllBtn" class="btn-signout" style="background: #f59e0b;">
-          <span class="material-icons">logout</span>
-          Sign Out All
-        </button>
+        <div class="header-actions">
+          <button class="btn-secondary theme-page-toggle" data-theme-toggle title="Switch to dark mode" aria-label="Switch to dark mode">
+            <span class="material-icons" data-theme-icon>dark_mode</span>
+          </button>
+          <button id="signoutAllBtn" class="btn-signout" style="background: #f59e0b;">
+            <span class="material-icons">logout</span>
+            Sign Out All
+          </button>
+        </div>
       </header>
 
       <!-- Sessions Card -->
@@ -51,6 +56,7 @@
 
     </div>
     <script src="../env.js"></script>
+    <script src="theme-toggle.js"></script>
     <script src="../utils.js"></script>
     <script src="sessions.js"></script>
   </body>
