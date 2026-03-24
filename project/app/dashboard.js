@@ -523,7 +523,6 @@ document.addEventListener('DOMContentLoaded', () => {
   
   // Setup navigation buttons
   const navNotifications = document.getElementById("navNotifications");
-  const navProfile = document.getElementById("navProfile");
   const navProfileBtn = document.getElementById("navProfile");
   
   if (navNotifications) {
