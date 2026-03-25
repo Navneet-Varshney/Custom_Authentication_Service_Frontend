@@ -249,7 +249,6 @@
 .modal-close:hover {
   background: #667eea;
   color: white;
-  transform: rotate(90deg);
 }
 
 /* Modal Sections */
