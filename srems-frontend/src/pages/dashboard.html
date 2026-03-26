@@ -1,0 +1,96 @@
+<div class="page-container">
+  <div class="page-header">
+    <div class="page-title-section">
+      <h1 class="page-title">Dashboard</h1>
+      <p class="page-subtitle">Project overview and quick actions</p>
+    </div>
+    <button class="btn btn-primary" id="btnNewProject">
+      <span class="btn-icon">➕</span> New Project
+    </button>
+  </div>
+
+  <!-- Key Metrics -->
+  <div class="metrics-grid">
+    <div class="metric-card">
+      <h3 class="metric-label">Active Projects</h3>
+      <p class="metric-value" id="activeProjects">0</p>
+    </div>
+    <div class="metric-card">
+      <h3 class="metric-label">Total Requirements</h3>
+      <p class="metric-value" id="totalRequirements">0</p>
+    </div>
+    <div class="metric-card">
+      <h3 class="metric-label">Project Completion</h3>
+      <p class="metric-value" id="completionRate">0%</p>
+    </div>
+    <div class="metric-card">
+      <h3 class="metric-label">Team Members</h3>
+      <p class="metric-value" id="teamMembers">0</p>
+    </div>
+  </div>
+
+  <!-- Recent Projects -->
+  <section class="dashboard-section">
+    <div class="section-header">
+      <h2>Recent Projects</h2>
+      <a href="#/projects" class="link-secondary">View all →</a>
+    </div>
+    <div id="recentProjectsList" class="projects-mini-grid">
+      <div class="loading-spinner">
+        <div class="spinner"></div>
+        Loading projects...
+      </div>
+    </div>
+  </section>
+
+  <!-- Quick Actions -->
+  <section class="dashboard-section">
+    <h2>Quick Actions</h2>
+    <div class="quick-actions-grid">
+      <a href="#/requirements" class="action-card">
+        <div class="action-icon">📋</div>
+        <h3>Manage Requirements</h3>
+        <p>QFD & FAST analysis</p>
+      </a>
+      <a href="#/scope" class="action-card">
+        <div class="action-icon">🎯</div>
+        <h3>Define Scope</h3>
+        <p>Inclusions, exclusions, constraints</p>
+      </a>
+      <a href="#/elaboration" class="action-card">
+        <div class="action-icon">🔍</div>
+        <h3>Elaborate Details</h3>
+        <p>Add acceptance criteria</p>
+      </a>
+      <a href="#/negotiation" class="action-card">
+        <div class="action-icon">🗳️</div>
+        <h3>Stakeholder Voting</h3>
+        <p>Prioritize requirements</p>
+      </a>
+      <a href="#/negotiation" class="action-card">
+        <div class="action-icon">📄</div>
+        <h3>Generate SRS</h3>
+        <p>Create specification document</p>
+      </a>
+      <a href="#/validation" class="action-card">
+        <div class="action-icon">✅</div>
+        <h3>Validate & Approve</h3>
+        <p>Quality assurance</p>
+      </a>
+    </div>
+  </section>
+
+  <!-- Recent Activity -->
+  <section class="dashboard-section">
+    <div class="section-header">
+      <h2>Recent Activity</h2>
+      <a href="#/activity" class="link-secondary">View all →</a>
+    </div>
+    <div id="recentActivityList" class="activity-feed">
+      <div class="loading-spinner">
+        <div class="spinner"></div>
+        Loading activity...
+      </div>
+    </div>
+  </section>
+</div>
