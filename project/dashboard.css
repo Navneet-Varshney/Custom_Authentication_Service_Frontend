@@ -905,7 +905,7 @@ button {
   color: #ef4444;
 }
 
-.stat-item {
+.metric-card .stat-item {
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -921,13 +921,18 @@ button {
 }
 
 .stat-value {
-  margin: 0;
-  background: linear-gradient(135deg, #667eea, #764ba2);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  font-size: 24px;
+  display: inline;
+  color: #2d3748;
+  font-size: 32px;
   font-weight: 800;
+}
+
+.stat-value + .stat-unit {
+  display: inline-block;
+  font-size: 30px;
+  color: #667eea;
+  font-weight: 600;
+  margin-left: 2px;
 }
 
 .metric-value {
@@ -2552,16 +2557,19 @@ textarea.loading {
 
 .stat-content {
   flex: 1;
-  min-width: 0;
 }
 
 .stat-number {
   margin: 0 0 4px 0;
-  color: #2d3748;
+  color: #667EEA;
   font-size: 32px;
   font-weight: 800;
   line-height: 1.2;
   letter-spacing: -0.5px;
+  white-space: nowrap;
+  display: flex;
+  align-items: center;
+  gap: 0;
 }
 
 .stat-decimals {
@@ -2571,6 +2579,7 @@ textarea.loading {
 }
 
 .stat-unit {
+  display: inline;
   font-size: 20px;
   color: #667eea;
   font-weight: 600;
@@ -2634,7 +2643,7 @@ textarea.loading {
 }
 
 .dashboard-body.theme-light .stat-number {
-  color: #1a202c;
+  color: #667eea;
 }
 
 .dashboard-body.theme-light .stat-title {
