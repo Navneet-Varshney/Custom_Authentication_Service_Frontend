@@ -15,7 +15,8 @@ function animateStatCounters() {
   const statNumbers = document.querySelectorAll('.stat-number[data-target]');
   
   statNumbers.forEach(element => {
-    const target = parseInt(element.getAttribute('data-target'));
+    const target = parseFloat(element.getAttribute('data-target'));
+    const isPercent = element.getAttribute('data-format') === 'percent';
     const duration = 1500; // 1.5 seconds
     const startTime = performance.now();
     
@@ -25,11 +26,17 @@ function animateStatCounters() {
       
       // Easing function for smooth animation
       const easeOutQuad = 1 - Math.pow(1 - progress, 2);
-      const current = Math.floor(target * easeOutQuad);
+      const current = target * easeOutQuad;
       
-      // Format with + symbol for large numbers
-      let displayValue = current.toLocaleString();
-      if (target >= 100) displayValue += '+';
+      // Format number - handle decimals for percentages
+      let displayValue;
+      if (isPercent && current < target) {
+        displayValue = current.toFixed(1); // Show one decimal for percentages
+      } else if (current >= 1000) {
+        displayValue = Math.floor(current).toLocaleString();
+      } else {
+        displayValue = Math.floor(current).toString();
+      }
       
       element.textContent = displayValue;
       
@@ -39,16 +46,6 @@ function animateStatCounters() {
     };
     
     requestAnimationFrame(animate);
-  });
-  
-  // Animate progress bars
-  const progressBars = document.querySelectorAll('.stat-bar-fill');
-  progressBars.forEach((bar, index) => {
-    setTimeout(() => {
-      bar.style.animation = `growWidth ${1.2}s cubic-bezier(0.34, 1.56, 0.64, 1) forwards`;
-      const targetWidth = bar.style.width;
-      bar.style.setProperty('--target-width', targetWidth);
-    }, index * 100); // Stagger the animations
   });
 }
 
