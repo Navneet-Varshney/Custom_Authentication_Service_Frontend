@@ -38,7 +38,11 @@ function animateStatCounters() {
         displayValue = Math.floor(current).toString();
       }
       
-      element.textContent = displayValue;
+      // Update only the stat-value span, preserving suffix symbols
+      const valueSpan = element.querySelector('.stat-value');
+      if (valueSpan) {
+        valueSpan.textContent = displayValue;
+      }
       
       if (progress < 1) {
         requestAnimationFrame(animate);
