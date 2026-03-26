@@ -1,0 +1,191 @@
+<div class="page-container">
+  <div class="page-header">
+    <div class="page-title-section">
+      <h1 class="page-title">Requirements</h1>
+      <p class="page-subtitle">QFD & FAST Analysis - Classify requirements</p>
+    </div>
+    <div class="header-buttons">
+      <button class="btn btn-secondary" id="btnImportReqs">
+        <span class="btn-icon">📥</span> Import CSV
+      </button>
+      <button class="btn btn-primary" id="btnAddRequirement">
+        <span class="btn-icon">➕</span> Add Requirement
+      </button>
+    </div>
+  </div>
+
+  <!-- View Toggle -->
+  <div class="view-toggle">
+    <button class="btn btn-sm btn-outline view-toggle-btn active" data-view="qfd">QFD Matrix</button>
+    <button class="btn btn-sm btn-outline view-toggle-btn" data-view="list">List View</button>
+    <button class="btn btn-sm btn-outline view-toggle-btn" data-view="fast">FAST View</button>
+  </div>
+
+  <!-- QFD/FAST Matrix View -->
+  <div id="qfdView" class="qfd-matrix-wrapper">
+    <div class="qfd-matrices">
+      <!-- Functional Requirements -->
+      <div class="qfd-column">
+        <h3 class="qfd-header">Functional Requirements</h3>
+        <div class="qfd-column-content" data-category="functional">
+          <div class="placeholder">Drag requirements here...</div>
+        </div>
+      </div>
+
+      <!-- Non-Functional Requirements -->
+      <div class="qfd-column">
+        <h3 class="qfd-header">Non-Functional Requirements</h3>
+        <div class="qfd-column-content" data-category="non-functional">
+          <div class="placeholder">Drag requirements here...</div>
+        </div>
+      </div>
+
+      <!-- Excited Requirements -->
+      <div class="qfd-column">
+        <h3 class="qfd-header">Excited Requirements</h3>
+        <div class="qfd-column-content" data-category="excited">
+          <div class="placeholder">Drag requirements here...</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Unclassified Requirements Pool -->
+    <div class="unclassified-requirements">
+      <h3>Unclassified Requirements (Drag to categorize)</h3>
+      <div id="unclassifiedPool" class="requirements-pool">
+        <div class="loading-spinner">
+          <div class="spinner"></div>
+          Loading requirements...
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- List View -->
+  <div id="listView" class="hidden">
+    <div class="filters-bar">
+      <div class="filter-group">
+        <label for="filterType" class="filter-label">Type</label>
+        <select id="filterType" class="filter-select">
+          <option value="">All Types</option>
+          <option value="functional">Functional</option>
+          <option value="non-functional">Non-Functional</option>
+          <option value="excited">Excited</option>
+          <option value="unclassified">Unclassified</option>
+        </select>
+      </div>
+      <div class="filter-group">
+        <label for="searchReqs" class="filter-label">Search</label>
+        <input type="text" id="searchReqs" class="filter-input" placeholder="Search requirements..." />
+      </div>
+    </div>
+    <div class="table-responsive">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Description</th>
+            <th>Type</th>
+            <th>Category</th>
+            <th>Priority</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="requirementsTableBody">
+          <tr><td colspan="7" class="text-center">Loading...</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- FAST View -->
+  <div id="fastView" class="hidden">
+    <div class="fast-hierarchy">
+      <div class="fast-column fast-why">
+        <h3>WHY<small>Intentions</small></h3>
+        <ul id="fastWhy"></ul>
+      </div>
+      <div class="fast-column fast-how">
+        <h3>HOW<small>Functions</small></h3>
+        <ul id="fastHow"></ul>
+      </div>
+      <div class="fast-column fast-what">
+        <h3>WHAT<small>Features</small></h3>
+        <ul id="fastWhat"></ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Add/Edit Requirement Modal -->
+<div id="requirementModal" class="modal hidden">
+  <div class="modal-content modal-lg">
+    <div class="modal-header">
+      <h2 id="reqModalTitle">Add Requirement</h2>
+      <button class="modal-close" data-close-modal="requirementModal">&times;</button>
+    </div>
+    <form id="requirementForm" class="form-stack">
+      <div class="form-group">
+        <label for="reqDescription" class="form-label">Description *</label>
+        <textarea id="reqDescription" class="form-control" rows="3" required maxlength="500"></textarea>
+        <span class="form-error" id="error-reqDescription"></span>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="reqType" class="form-label">Type *</label>
+          <select id="reqType" class="form-control" required>
+            <option value="">Select Type</option>
+            <option value="functional">Functional</option>
+            <option value="non-functional">Non-Functional</option>
+            <option value="excited">Excited</option>
+          </select>
+          <span class="form-error" id="error-reqType"></span>
+        </div>
+
+        <div class="form-group">
+          <label for="reqPriority" class="form-label">Priority *</label>
+          <select id="reqPriority" class="form-control" required>
+            <option value="">Select Priority</option>
+            <option value="critical">Critical</option>
+            <option value="high">High</option>
+            <option value="medium">Medium</option>
+            <option value="low">Low</option>
+          </select>
+          <span class="form-error" id="error-reqPriority"></span>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="reqRationalContext" class="form-label">Rationale/Context</label>
+        <textarea id="reqRationalContext" class="form-control" rows="2" maxlength="300"></textarea>
+      </div>
+
+      <div class="form-actions">
+        <button type="button" class="btn btn-secondary" data-close-modal="requirementModal">Cancel</button>
+        <button type="submit" class="btn btn-primary">Save Requirement</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Import CSV Modal -->
+<div id="importModal" class="modal hidden">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h2>Import Requirements from CSV</h2>
+      <button class="modal-close" data-close-modal="importModal">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label for="csvFile" class="form-label">CSV File (description, type, priority)</label>
+        <input type="file" id="csvFile" class="form-control" accept=".csv" />
+      </div>
+      <div class="form-actions">
+        <button type="button" class="btn btn-secondary" data-close-modal="importModal">Cancel</button>
+        <button type="button" class="btn btn-primary" id="btnImportCSV">Import</button>
+      </div>
+    </div>
+  </div>
+</div>
