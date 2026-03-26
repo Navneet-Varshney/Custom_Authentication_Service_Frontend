@@ -1,0 +1,85 @@
+<div class="page-container">
+  <div class="page-header">
+    <div class="page-title-section">
+      <h1 class="page-title">Features</h1>
+      <p class="page-subtitle">High-level features and decomposition</p>
+    </div>
+    <button class="btn btn-primary" id="btnAddFeature">
+      <span class="btn-icon">➕</span> Add Feature
+    </button>
+  </div>
+
+  <!-- Features Tree View -->
+  <div class="features-container">
+    <div id="featuresTree" class="features-tree">
+      <div class="loading-spinner">
+        <div class="spinner"></div>
+        Loading features...
+      </div>
+    </div>
+  </div>
+
+  <!-- Empty State -->
+  <div id="emptyFeatures" class="empty-state hidden">
+    <div class="empty-state-icon">🎯</div>
+    <h3>No Features Yet</h3>
+    <p>Add your first high-level feature to decompose requirements</p>
+    <button class="btn btn-primary" id="btnAddFeatureEmpty">Add Feature</button>
+  </div>
+</div>
+
+<!-- Add/Edit Feature Modal -->
+<div id="featureModal" class="modal hidden">
+  <div class="modal-content modal-lg">
+    <div class="modal-header">
+      <h2 id="featureModalTitle">Add Feature</h2>
+      <button class="modal-close" data-close-modal="featureModal">&times;</button>
+    </div>
+    <form id="featureForm" class="form-stack">
+      <div class="form-group">
+        <label for="featureName" class="form-label">Feature Name *</label>
+        <input type="text" id="featureName" class="form-control" required maxlength="100" />
+        <span class="form-error" id="error-featureName"></span>
+      </div>
+
+      <div class="form-group">
+        <label for="featureDescription" class="form-label">Description</label>
+        <textarea id="featureDescription" class="form-control" rows="3" maxlength="500"></textarea>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="featurePriority" class="form-label">Priority</label>
+          <select id="featurePriority" class="form-control">
+            <option value="">Select Priority</option>
+            <option value="critical">Critical</option>
+            <option value="high">High</option>
+            <option value="medium">Medium</option>
+            <option value="low">Low</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="featureComplexity" class="form-label">Complexity</label>
+          <select id="featureComplexity" class="form-control">
+            <option value="">Select Complexity</option>
+            <option value="simple">Simple</option>
+            <option value="moderate">Moderate</option>
+            <option value="complex">Complex</option>
+            <option value="very-complex">Very Complex</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="featureEstimate" class="form-label">Effort (Hours)</label>
+        <input type="number" id="featureEstimate" class="form-control" min="0" step="0.5" />
+      </div>
+
+      <div class="form-actions">
+        <button type="button" class="btn btn-secondary" data-close-modal="featureModal">Cancel</button>
+        <button type="submit" class="btn btn-primary">Save Feature</button>
+      </div>
+    </form>
+  </div>
+</div>

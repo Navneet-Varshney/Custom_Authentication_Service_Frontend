@@ -1,0 +1,117 @@
+<div class="page-container">
+  <div class="page-header">
+    <div class="page-title-section">
+      <h1 class="page-title">Projects</h1>
+      <p class="page-subtitle">Manage your software projects and requirements</p>
+    </div>
+    <button class="btn btn-primary" id="btnCreateProject">
+      <span class="btn-icon">➕</span> New Project
+    </button>
+  </div>
+
+  <!-- Filter Section -->
+  <div class="filters-bar">
+    <div class="filter-group">
+      <label for="filterStatus" class="filter-label">Status</label>
+      <select id="filterStatus" class="filter-select">
+        <option value="">All Statuses</option>
+        <option value="inception">Inception</option>
+        <option value="elicitation">Elicitation</option>
+        <option value="elaboration">Elaboration</option>
+        <option value="negotiation">Negotiation</option>
+        <option value="specification">Specification</option>
+        <option value="validation">Validation</option>
+        <option value="on-hold">On Hold</option>
+        <option value="completed">Completed</option>
+        <option value="archived">Archived</option>
+      </select>
+    </div>
+    <div class="filter-group">
+      <label for="searchProjects" class="filter-label">Search</label>
+      <input type="text" id="searchProjects" class="filter-input" placeholder="Project name..." />
+    </div>
+  </div>
+
+  <!-- Projects Grid -->
+  <div id="projectsContainer" class="projects-grid">
+    <div class="loading-spinner">
+      <div class="spinner"></div>
+      <p>Loading projects...</p>
+    </div>
+  </div>
+
+  <!-- Empty State -->
+  <div id="emptyProjects" class="empty-state hidden">
+    <div class="empty-state-icon">📁</div>
+    <h3>No Projects Yet</h3>
+    <p>Create a new project to get started with requirements engineering</p>
+    <button class="btn btn-primary" id="btnCreateProjectEmpty">Create First Project</button>
+  </div>
+</div>
+
+<!-- Project Modal -->
+<div id="projectModal" class="modal hidden">
+  <div class="modal-content modal-lg">
+    <div class="modal-header">
+      <h2 id="projectModalTitle">Create New Project</h2>
+      <button class="modal-close" data-close-modal="projectModal">&times;</button>
+    </div>
+    <form id="projectForm" class="form-stack">
+      <div class="form-group">
+        <label for="projectName" class="form-label">Project Name *</label>
+        <input type="text" id="projectName" class="form-control" required maxlength="100" />
+        <span class="form-error" id="error-projectName"></span>
+      </div>
+
+      <div class="form-group">
+        <label for="projectDescription" class="form-label">Description</label>
+        <textarea id="projectDescription" class="form-control" rows="4" maxlength="500"></textarea>
+        <span class="form-error" id="error-projectDescription"></span>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="projectManager" class="form-label">Project Manager *</label>
+          <input type="text" id="projectManager" class="form-control" required />
+          <span class="form-error" id="error-projectManager"></span>
+        </div>
+        <div class="form-group">
+          <label for="projectBudget" class="form-label">Budget (USD)</label>
+          <input type="number" id="projectBudget" class="form-control" min="0" step="0.01" />
+          <span class="form-error" id="error-projectBudget"></span>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="startDate" class="form-label">Start Date *</label>
+          <input type="date" id="startDate" class="form-control" required />
+          <span class="form-error" id="error-startDate"></span>
+        </div>
+        <div class="form-group">
+          <label for="endDate" class="form-label">End Date</label>
+          <input type="date" id="endDate" class="form-control" />
+          <span class="form-error" id="error-endDate"></span>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="projectType" class="form-label">Project Type *</label>
+        <select id="projectType" class="form-control" required>
+          <option value="">Select Type</option>
+          <option value="web">Web Application</option>
+          <option value="mobile">Mobile Application</option>
+          <option value="desktop">Desktop Application</option>
+          <option value="embedded">Embedded System</option>
+          <option value="other">Other</option>
+        </select>
+        <span class="form-error" id="error-projectType"></span>
+      </div>
+
+      <div class="form-actions">
+        <button type="button" class="btn btn-secondary" data-close-modal="projectModal">Cancel</button>
+        <button type="submit" class="btn btn-primary">Save Project</button>
+      </div>
+    </form>
+  </div>
+</div>

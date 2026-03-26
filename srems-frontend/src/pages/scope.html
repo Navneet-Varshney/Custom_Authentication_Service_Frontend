@@ -1,0 +1,110 @@
+<div class="page-container">
+  <div class="page-header">
+    <div class="page-title-section">
+      <h1 class="page-title">Scope Management</h1>
+      <p class="page-subtitle">Define project scope and boundaries</p>
+    </div>
+    <button class="btn btn-primary" id="btnAddScope">
+      <span class="btn-icon">➕</span> Add Scope Item
+    </button>
+  </div>
+
+  <!-- Filters -->
+  <div class="filters-bar">
+    <div class="filter-group">
+      <label for="filterScopeType" class="filter-label">Type</label>
+      <select id="filterScopeType" class="filter-select">
+        <option value="">All Types</option>
+        <option value="included">Included</option>
+        <option value="excluded">Excluded</option>
+        <option value="constraint">Constraint</option>
+      </select>
+    </div>
+    <div class="filter-group">
+      <label for="searchScope" class="filter-label">Search</label>
+      <input type="text" id="searchScope" class="filter-input" placeholder="Search scope items..." />
+    </div>
+  </div>
+
+  <!-- Scope Items Container -->
+  <div class="scope-container">
+    <div class="scope-section">
+      <h3 class="section-title included-title">Included in Scope</h3>
+      <div id="includedScope" class="scope-items">
+        <div class="loading-spinner">
+          <div class="spinner"></div>
+          Loading...
+        </div>
+      </div>
+    </div>
+
+    <div class="scope-section">
+      <h3 class="section-title excluded-title">Excluded from Scope</h3>
+      <div id="excludedScope" class="scope-items">
+        <div class="loading-spinner">
+          <div class="spinner"></div>
+          Loading...
+        </div>
+      </div>
+    </div>
+
+    <div class="scope-section">
+      <h3 class="section-title constraint-title">Constraints</h3>
+      <div id="constraintScope" class="scope-items">
+        <div class="loading-spinner">
+          <div class="spinner"></div>
+          Loading...
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Add/Edit Scope Modal -->
+<div id="scopeModal" class="modal hidden">
+  <div class="modal-content modal-lg">
+    <div class="modal-header">
+      <h2 id="scopeModalTitle">Add Scope Item</h2>
+      <button class="modal-close" data-close-modal="scopeModal">&times;</button>
+    </div>
+    <form id="scopeForm" class="form-stack">
+      <div class="form-group">
+        <label for="scopeType" class="form-label">Type *</label>
+        <select id="scopeType" class="form-control" required>
+          <option value="">Select Type</option>
+          <option value="included">Included in Scope</option>
+          <option value="excluded">Excluded from Scope</option>
+          <option value="constraint">Constraint</option>
+        </select>
+        <span class="form-error" id="error-scopeType"></span>
+      </div>
+
+      <div class="form-group">
+        <label for="scopeDescription" class="form-label">Description *</label>
+        <textarea id="scopeDescription" class="form-control" rows="4" required maxlength="500"></textarea>
+        <span class="form-error" id="error-scopeDescription"></span>
+      </div>
+
+      <div class="form-group">
+        <label for="scopeRationale" class="form-label">Rationale/Justification</label>
+        <textarea id="scopeRationale" class="form-control" rows="3" maxlength="300"></textarea>
+      </div>
+
+      <div class="form-group">
+        <label for="scopeImpact" class="form-label">Estimated Impact</label>
+        <select id="scopeImpact" class="form-control">
+          <option value="">Select Impact</option>
+          <option value="low">Low</option>
+          <option value="medium">Medium</option>
+          <option value="high">High</option>
+          <option value="critical">Critical</option>
+        </select>
+      </div>
+
+      <div class="form-actions">
+        <button type="button" class="btn btn-secondary" data-close-modal="scopeModal">Cancel</button>
+        <button type="submit" class="btn btn-primary">Save Scope Item</button>
+      </div>
+    </form>
+  </div>
+</div>

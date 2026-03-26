@@ -1,0 +1,102 @@
+<div class="page-container">
+  <div class="page-header">
+    <div class="page-title-section">
+      <h1 class="page-title">Stakeholders</h1>
+      <p class="page-subtitle">Manage project stakeholders and roles</p>
+    </div>
+    <button class="btn btn-primary" id="btnAddStakeholder">
+      <span class="btn-icon">➕</span> Add Stakeholder
+    </button>
+  </div>
+
+  <!-- Stakeholders Grid -->
+  <div id="stakeholdersContainer" class="stakeholders-grid">
+    <div class="loading-spinner">
+      <div class="spinner"></div>
+      Loading stakeholders...
+    </div>
+  </div>
+
+  <!-- Empty State -->
+  <div id="emptyStakeholders" class="empty-state hidden">
+    <div class="empty-state-icon">👥</div>
+    <h3>No Stakeholders Yet</h3>
+    <p>Add stakeholders who will be involved in requirements engineering</p>
+    <button class="btn btn-primary" id="btnAddStakeholderEmpty">Add First Stakeholder</button>
+  </div>
+</div>
+
+<!-- Add/Edit Stakeholder Modal -->
+<div id="stakeholderModal" class="modal hidden">
+  <div class="modal-content modal-lg">
+    <div class="modal-header">
+      <h2 id="stakeholderModalTitle">Add Stakeholder</h2>
+      <button class="modal-close" data-close-modal="stakeholderModal">&times;</button>
+    </div>
+    <form id="stakeholderForm" class="form-stack">
+      <div class="form-row">
+        <div class="form-group">
+          <label for="stakeholderName" class="form-label">Name *</label>
+          <input type="text" id="stakeholderName" class="form-control" required maxlength="100" />
+          <span class="form-error" id="error-stakeholderName"></span>
+        </div>
+
+        <div class="form-group">
+          <label for="stakeholderEmail" class="form-label">Email *</label>
+          <input type="email" id="stakeholderEmail" class="form-control" required maxlength="100" />
+          <span class="form-error" id="error-stakeholderEmail"></span>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="stakeholderRole" class="form-label">Role *</label>
+          <select id="stakeholderRole" class="form-control" required>
+            <option value="">Select Role</option>
+            <option value="product-owner">Product Owner</option>
+            <option value="business-analyst">Business Analyst</option>
+            <option value="developer">Developer</option>
+            <option value="qa-engineer">QA Engineer</option>
+            <option value="architect">Architect</option>
+            <option value="project-manager">Project Manager</option>
+            <option value="sponsor">Sponsor</option>
+            <option value="end-user">End User</option>
+          </select>
+          <span class="form-error" id="error-stakeholderRole"></span>
+        </div>
+
+        <div class="form-group">
+          <label for="stakeholderDepartment" class="form-label">Department</label>
+          <input type="text" id="stakeholderDepartment" class="form-control" maxlength="50" />
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="stakeholderPhone" class="form-label">Phone</label>
+          <input type="tel" id="stakeholderPhone" class="form-control" maxlength="20" />
+        </div>
+
+        <div class="form-group">
+          <label for="stakeholderAvailability" class="form-label">Availability</label>
+          <select id="stakeholderAvailability" class="form-control">
+            <option value="">Select</option>
+            <option value="full-time">Full Time</option>
+            <option value="part-time">Part Time</option>
+            <option value="as-needed">As Needed</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="stakeholderInvolvement" class="form-label">Area of Involvement</label>
+        <textarea id="stakeholderInvolvement" class="form-control" rows="2" maxlength="300" placeholder="What will this stakeholder be involved in?"></textarea>
+      </div>
+
+      <div class="form-actions">
+        <button type="button" class="btn btn-secondary" data-close-modal="stakeholderModal">Cancel</button>
+        <button type="submit" class="btn btn-primary">Save Stakeholder</button>
+      </div>
+    </form>
+  </div>
+</div>
