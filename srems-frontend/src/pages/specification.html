@@ -1,0 +1,101 @@
+<div class="page-container">
+  <div class="page-header">
+    <div class="page-title-section">
+      <h1 class="page-title">Specification (SRS)</h1>
+      <p class="page-subtitle">Software Requirements Specification document</p>
+    </div>
+    <div class="header-buttons">
+      <button class="btn btn-secondary" id="btnExportSRS">
+        <span class="btn-icon">📥</span> Export PDF
+      </button>
+      <button class="btn btn-secondary" id="btnPrintSRS">
+        <span class="btn-icon">🖨️</span> Print
+      </button>
+    </div>
+  </div>
+
+  <!-- SRS Viewer -->
+  <div id="srsViewer" class="srs-document">
+    <!-- Title Page -->
+    <section class="srs-section title-page">
+      <h1>Software Requirements Specification</h1>
+      <div class="title-meta">
+        <p><strong>Project:</strong> <span id="srsProjectName">—</span></p>
+        <p><strong>Version:</strong> <span id="srsVersion">1.0</span></p>
+        <p><strong>Date:</strong> <span id="srsDate">—</span></p>
+        <p><strong>Status:</strong> <span id="srsStatus" class="badge">Draft</span></p>
+      </div>
+    </section>
+
+    <!-- Table of Contents -->
+    <section class="srs-section toc">
+      <h2>Table of Contents</h2>
+      <ol id="tocList">
+        <li><a href="#functional">Functional Requirements</a></li>
+        <li><a href="#non-functional">Non-Functional Requirements</a></li>
+        <li><a href="#constraints">Constraints</a></li>
+        <li><a href="#acceptance">Acceptance Criteria</a></li>
+      </ol>
+    </section>
+
+    <!-- Functional Requirements -->
+    <section class="srs-section" id="functional">
+      <h2>Functional Requirements</h2>
+      <div id="functionalReqs" class="requirements-list">
+        <p class="loading">Loading requirements...</p>
+      </div>
+    </section>
+
+    <!-- Non-Functional Requirements -->
+    <section class="srs-section" id="non-functional">
+      <h2>Non-Functional Requirements</h2>
+      <div id="nonFunctionalReqs" class="requirements-list">
+        <p class="loading">Loading requirements...</p>
+      </div>
+    </section>
+
+    <!-- Project Scope -->
+    <section class="srs-section" id="constraints">
+      <h2>Project Scope & Constraints</h2>
+      <div class="scope-section">
+        <h3>In Scope</h3>
+        <ul id="inScopeItems" class="scope-items-list">
+          <li class="loading">Loading scope...</li>
+        </ul>
+      </div>
+      <div class="scope-section">
+        <h3>Out of Scope</h3>
+        <ul id="outOfScopeItems" class="scope-items-list">
+          <li class="loading">Loading scope...</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- Acceptance Criteria -->
+    <section class="srs-section" id="acceptance">
+      <h2>Key Acceptance Criteria</h2>
+      <div id="acceptanceCriteria" class="acceptance-list">
+        <p class="loading">Loading criteria...</p>
+      </div>
+    </section>
+
+    <!-- Appendices -->
+    <section class="srs-section appendix">
+      <h2>Appendix: Metadata</h2>
+      <table class="metadata-table">
+        <tr>
+          <td><strong>Created:</strong></td>
+          <td id="srsCreated">—</td>
+        </tr>
+        <tr>
+          <td><strong>Last Updated:</strong></td>
+          <td id="srsUpdated">—</td>
+        </tr>
+        <tr>
+          <td><strong>Stakeholders:</strong></td>
+          <td id="srsStakeholders">—</td>
+        </tr>
+      </table>
+    </section>
+  </div>
+</div>
