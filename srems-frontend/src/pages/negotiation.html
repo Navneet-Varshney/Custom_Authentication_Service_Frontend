@@ -1,0 +1,110 @@
+<div class="page-container">
+  <div class="page-header">
+    <div class="page-title-section">
+      <h1 class="page-title">Negotiation & Prioritization</h1>
+      <p class="page-subtitle">Stakeholder voting and priority negotiation</p>
+    </div>
+    <button class="btn btn-primary" id="btnStartVoting">
+      <span class="btn-icon">🗳️</span> Start Voting
+    </button>
+  </div>
+
+  <!-- Voting Summary -->
+  <div class="voting-summary">
+    <div class="summary-card">
+      <h4>Total Requirements</h4>
+      <div class="summary-value" id="totalReqs">0</div>
+    </div>
+    <div class="summary-card">
+      <h4>Votes Completed</h4>
+      <div class="summary-value" id="votesCompleted">0</div>
+    </div>
+    <div class="summary-card">
+      <h4>Avg Priority Score</h4>
+      <div class="summary-value" id="avgScore">0.0</div>
+    </div>
+  </div>
+
+  <!-- Priority Matrix -->
+  <div class="priority-matrix">
+    <div class="matrix-container">
+      <div class="matrix-axis-y">
+        <div class="axis-label">Impact</div>
+        <div class="matrix-row high">High</div>
+        <div class="matrix-row medium">Medium</div>
+        <div class="matrix-row low">Low</div>
+      </div>
+      <div class="matrix-content">
+        <div id="priorityMatrix" class="priority-grid">
+          <!-- Populated by JavaScript -->
+        </div>
+        <div class="matrix-axis-x">
+          <div class="axis-label"></div>
+          <div>Effort Required</div>
+          <div>Low</div>
+          <div>Medium</div>
+          <div>High</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Requirements List for Voting -->
+  <div id="votingContainer" class="voting-items">
+    <div class="loading-spinner">
+      <div class="spinner"></div>
+      Loading requirements...
+    </div>
+  </div>
+</div>
+
+<!-- Voting Modal -->
+<div id="votingModal" class="modal hidden">
+  <div class="modal-content modal-lg">
+    <div class="modal-header">
+      <h2>Cast Your Vote</h2>
+      <button class="modal-close" data-close-modal="votingModal">&times;</button>
+    </div>
+    <form id="votingForm" class="form-stack">
+      <div class="requirement-preview" id="votingReqPreview"></div>
+
+      <div class="form-group">
+        <label for="vote-importance" class="form-label">Importance (1-10) *</label>
+        <div class="rating-input">
+          <input type="range" id="vote-importance" class="form-control" min="1" max="10" value="5" />
+          <span id="importance-value" class="rating-value">5</span>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="vote-effort" class="form-label">Estimated Effort (1-10) *</label>
+        <div class="rating-input">
+          <input type="range" id="vote-effort" class="form-control" min="1" max="10" value="5" />
+          <span id="effort-value" class="rating-value">5</span>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="vote-risk" class="form-label">Risk Level (1-10)</label>
+        <div class="rating-input">
+          <input type="range" id="vote-risk" class="form-control" min="1" max="10" value="5" />
+          <span id="risk-value" class="rating-value">5</span>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="vote-comment" class="form-label">Comments</label>
+        <textarea id="vote-comment" class="form-control" rows="3" maxlength="300" placeholder="Add your thoughts..."></textarea>
+      </div>
+
+      <div class="voting-score">
+        <p>Priority Score: <strong id="calculatedScore">0</strong>/100</p>
+      </div>
+
+      <div class="form-actions">
+        <button type="button" class="btn btn-secondary" data-close-modal="votingModal">Cancel</button>
+        <button type="submit" class="btn btn-primary">Submit Vote</button>
+      </div>
+    </form>
+  </div>
+</div>
