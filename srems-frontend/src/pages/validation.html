@@ -1,0 +1,108 @@
+<div class="page-container">
+  <div class="page-header">
+    <div class="page-title-section">
+      <h1 class="page-title">Validation</h1>
+      <p class="page-subtitle">Verify requirements completeness and acceptance</p>
+    </div>
+    <button class="btn btn-primary" id="btnStartValidation">
+      <span class="btn-icon">✓</span> Start Validation
+    </button>
+  </div>
+
+  <!-- Validation Progress -->
+  <div class="validation-progress">
+    <div class="prog-card">
+      <h4>Total Requirements</h4>
+      <p id="valTotal" class="prog-value">0</p>
+    </div>
+    <div class="prog-card">
+      <h4>Validated</h4>
+      <p id="valValidated" class="prog-value">0</p>
+    </div>
+    <div class="prog-card">
+      <h4>Issues Found</h4>
+      <p id="valIssues" class="prog-value">0</p>
+    </div>
+    <div class="prog-card">
+      <h4>Approval Status</h4>
+      <p id="valStatus" class="badge">Not Started</p>
+    </div>
+  </div>
+
+  <!-- Validation Checklist -->
+  <div id="validationContainer" class="validation-items">
+    <div class="loading-spinner">
+      <div class="spinner"></div>
+      Loading requirements...
+    </div>
+  </div>
+</div>
+
+<!-- Validation Modal -->
+<div id="validationModal" class="modal hidden">
+  <div class="modal-content modal-lg">
+    <div class="modal-header">
+      <h2>Validate Requirement</h2>
+      <button class="modal-close" data-close-modal="validationModal">&times;</button>
+    </div>
+    <form id="validationForm" class="form-stack">
+      <div class="requirement-preview" id="valReqPreview"></div>
+
+      <div class="validation-checklist">
+        <label class="checkbox-item">
+          <input type="checkbox" id="val-complete" />
+          <span>Requirement is complete and clear</span>
+        </label>
+        <label class="checkbox-item">
+          <input type="checkbox" id="val-testable" />
+          <span>Requirement is testable</span>
+        </label>
+        <label class="checkbox-item">
+          <input type="checkbox" id="val-traceable" />
+          <span>Requirement is traceable</span>
+        </label>
+        <label class="checkbox-item">
+          <input type="checkbox" id="val-consistent" />
+          <span>Requirement is consistent with others</span>
+        </label>
+        <label class="checkbox-item">
+          <input type="checkbox" id="val-feasible" />
+          <span>Requirement is technically feasible</span>
+        </label>
+      </div>
+
+      <div class="form-group">
+        <label for="val-rating" class="form-label">Overall Quality Rating</label>
+        <div class="rating-buttons">
+          <button type="button" class="rating-btn" data-rating="1">👎 Poor</button>
+          <button type="button" class="rating-btn" data-rating="2">😐 Fair</button>
+          <button type="button" class="rating-btn" data-rating="3" selected>👍 Good</button>
+          <button type="button" class="rating-btn" data-rating="4">⭐ Excellent</button>
+        </div>
+        <input type="hidden" id="val-rating" value="3" />
+      </div>
+
+      <div class="form-group">
+        <label for="val-issues" class="form-label">Issues Found</label>
+        <textarea id="val-issues" class="form-control" rows="3" maxlength="500" placeholder="Note any issues..."></textarea>
+      </div>
+
+      <div class="form-group">
+        <label for="val-comments" class="form-label">Validation Comments</label>
+        <textarea id="val-comments" class="form-control" rows="2" maxlength="300"></textarea>
+      </div>
+
+      <div class="form-group">
+        <label class="checkbox-item">
+          <input type="checkbox" id="val-approved" />
+          <span><strong>Requirement Approved</strong></span>
+        </label>
+      </div>
+
+      <div class="form-actions">
+        <button type="button" class="btn btn-secondary" data-close-modal="validationModal">Cancel</button>
+        <button type="submit" class="btn btn-primary">Submit Validation</button>
+      </div>
+    </form>
+  </div>
+</div>
