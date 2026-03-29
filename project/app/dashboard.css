@@ -1,0 +1,299 @@
+/* Dashboard Styles */
+
+:root {
+  --primary-color: #667eea;
+  --primary-dark: #764ba2;
+  --secondary-color: #f093fb;
+  --text-dark: #333;
+  --text-light: #666;
+  --bg-light: #f5f7fa;
+  --border-color: #e0e0e0;
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.1);
+  --shadow-md: 0 4px 15px rgba(0, 0, 0, 0.12);
+  --shadow-lg: 0 12px 40px rgba(102, 126, 234, 0.15);
+}
+
+/* Software Management Section */
+.software-management-section {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: 80px 40px;
+  margin: 60px 0;
+  border-radius: 12px;
+  box-shadow: var(--shadow-lg);
+  overflow: hidden;
+  position: relative;
+}
+
+.software-management-section::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  right: -10%;
+  width: 400px;
+  height: 400px;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, transparent 70%);
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+.sm-container {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 60px;
+  align-items: center;
+  position: relative;
+  z-index: 1;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.sm-content h2 {
+  font-size: 36px;
+  margin-bottom: 20px;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.sm-content > p {
+  font-size: 16px;
+  margin-bottom: 35px;
+  opacity: 0.95;
+  line-height: 1.6;
+}
+
+.sm-subtitle {
+  font-size: 13px;
+  margin-top: 20px;
+  opacity: 0.8;
+}
+
+/* Software Management Button */
+.btn-software-management {
+  background: white;
+  color: #667eea;
+  border: none;
+  padding: 16px 40px;
+  font-size: 16px;
+  font-weight: 600;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  position: relative;
+  overflow: hidden;
+}
+
+.btn-software-management::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  border-radius: 50%;
+  background: rgba(102, 126, 234, 0.1);
+  transform: translate(-50%, -50%);
+  transition: width 0.6s, height 0.6s;
+}
+
+.btn-software-management:hover::before {
+  width: 300px;
+  height: 300px;
+}
+
+.btn-software-management:hover {
+  background: #f0f4ff;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.25);
+}
+
+.btn-software-management:active {
+  transform: translateY(0);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.btn-icon {
+  font-size: 20px;
+  display: inline-block;
+}
+
+.btn-text {
+  font-weight: 600;
+  position: relative;
+  z-index: 1;
+}
+
+.btn-arrow {
+  font-size: 18px;
+  font-weight: 700;
+  position: relative;
+  z-index: 1;
+  transition: transform 0.3s ease;
+}
+
+.btn-software-management:hover .btn-arrow {
+  transform: translateX(4px);
+}
+
+/* Visual Section */
+.sm-visual {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.visual-icon {
+  width: 200px;
+  height: 200px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  animation: float 3s ease-in-out infinite;
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-20px);
+  }
+}
+
+/* Navigation Software Management Button */
+.nav-divider {
+  width: 1px;
+  height: 24px;
+  background: rgba(0, 0, 0, 0.1);
+  margin: 0 8px;
+  border-radius: 1px;
+}
+
+.nav-software-btn {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white !important;
+  padding: 8px 16px !important;
+  border-radius: 6px !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  font-size: 13px !important;
+  font-weight: 600 !important;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3) !important;
+  position: relative !important;
+  overflow: hidden !important;
+}
+
+.nav-software-btn::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.2);
+  transform: translate(-50%, -50%);
+  transition: width 0.4s, height 0.4s;
+  z-index: 0;
+}
+
+.nav-software-btn:hover::before {
+  width: 200px;
+  height: 200px;
+}
+
+.nav-software-btn:hover {
+  transform: translateY(-2px) !important;
+  box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4) !important;
+}
+
+.nav-software-btn:active {
+  transform: translateY(0) !important;
+}
+
+.nav-software-btn .material-icons {
+  font-size: 18px !important;
+  position: relative !important;
+  z-index: 1 !important;
+}
+
+.btn-label {
+  position: relative;
+  z-index: 1;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .software-management-section {
+    padding: 50px 30px;
+    margin: 40px 0;
+  }
+
+  .sm-container {
+    grid-template-columns: 1fr;
+    gap: 40px;
+  }
+
+  .sm-content h2 {
+    font-size: 28px;
+  }
+
+  .sm-content > p {
+    font-size: 14px;
+  }
+
+  .btn-software-management {
+    padding: 14px 30px;
+    font-size: 14px;
+    gap: 8px;
+  }
+
+  .visual-icon {
+    width: 150px;
+    height: 150px;
+  }
+
+  .visual-icon .material-icons {
+    font-size: 60px !important;
+  }
+
+  .software-management-section::before {
+    width: 300px;
+    height: 300px;
+  }
+}
+
+@media (max-width: 480px) {
+  .software-management-section {
+    padding: 40px 20px;
+  }
+
+  .sm-content h2 {
+    font-size: 22px;
+  }
+
+  .sm-content > p {
+    font-size: 13px;
+  }
+
+  .btn-software-management {
+    width: 100%;
+    justify-content: center;
+    padding: 12px 20px;
+    font-size: 14px;
+  }
+
+  .visual-icon {
+    display: none;
+  }
+}
