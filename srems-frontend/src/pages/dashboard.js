@@ -10,6 +10,7 @@ export class DashboardPage {
 
   init() {
     this.attachEventListeners();
+    this.animateStatCounters();
     this.loadDashboardData();
   }
 
@@ -17,6 +18,44 @@ export class DashboardPage {
     document.getElementById('btnNewProject')?.addEventListener('click', () => {
       window.location.hash = '#/projects';
     });
+  }
+
+  /**
+   * Animate stat counters from 0 to target value
+   */
+  animateStatCounters() {
+    const counters = document.querySelectorAll('.stat-hero-value');
+    
+    counters.forEach(counter => {
+      const targetValue = parseInt(counter.getAttribute('data-count'), 10);
+      if (!isNaN(targetValue)) {
+        this.animateCounter(counter, 0, targetValue, 1500);
+      }
+    });
+  }
+
+  /**
+   * Animate a counter with easing function
+   */
+  animateCounter(element, start, end, duration) {
+    const startTime = performance.now();
+    
+    const animate = (currentTime) => {
+      const elapsed = currentTime - startTime;
+      const progress = Math.min(elapsed / duration, 1);
+      
+      // Easing function: ease-out-quart
+      const easeProgress = 1 - Math.pow(1 - progress, 4);
+      const current = Math.floor(start + (end - start) * easeProgress);
+      
+      element.textContent = current;
+      
+      if (progress < 1) {
+        requestAnimationFrame(animate);
+      }
+    };
+    
+    requestAnimationFrame(animate);
   }
 
   async loadDashboardData() {
