@@ -7,6 +7,67 @@ import { store } from './store/store.js';
 import { showToast } from './utils/helpers.js';
 import { STORAGE_KEYS } from './utils/constants.js';
 
+// ═══════════════════════════════════════════════════════════════════════════
+// DEVICE MANAGEMENT FUNCTIONS
+// ═══════════════════════════════════════════════════════════════════════════
+
+/**
+ * Get Device UUID - generated once per browser, stored in localStorage
+ * Required by backend for device authentication
+ */
+function getDeviceUUID() {
+  let uuid = localStorage.getItem('deviceUUID');
+  if (!uuid) {
+    uuid = crypto.randomUUID();
+    localStorage.setItem('deviceUUID', uuid);
+  }
+  return uuid;
+}
+
+/**
+ * Get Device Type - auto-detect from user agent
+ * Returns: MOBILE, TABLET, or LAPTOP
+ */
+function getDeviceType() {
+  const ua = navigator.userAgent.toLowerCase();
+  if (/mobile|android|iphone/.test(ua)) return 'MOBILE';
+  if (/tablet|ipad/.test(ua)) return 'TABLET';
+  return 'LAPTOP';
+}
+
+/**
+ * Get Device Name - extract from user agent string
+ */
+function getDeviceName() {
+  return navigator.userAgent.split(')')[0].split('(')[1] || 'Browser';
+}
+
+/**
+ * Build auth headers with device info and token
+ * Call this in ALL API requests
+ */
+function authHeaders() {
+  const token = localStorage.getItem('accessToken');
+  const headers = {
+    'x-device-uuid': getDeviceUUID()
+  };
+  if (token) {
+    headers['x-access-token'] = token;
+  }
+  return headers;
+}
+
+/**
+ * Save new token from response header
+ * Backend sends token in response header: x-access-token
+ */
+function saveNewToken(res) {
+  const token = res.headers.get('x-access-token');
+  if (token) {
+    localStorage.setItem('accessToken', token);
+  }
+}
+
 class App {
   constructor() {
     this.store = store;
@@ -19,6 +80,21 @@ class App {
   async init() {
     try {
       console.log('[App] Initializing...');
+      
+      // ✅ CHECK AUTHENTICATION TOKEN
+      const token = localStorage.getItem('accessToken');
+      const deviceUUID = localStorage.getItem('deviceUUID');
+      
+      if (!token) {
+        console.log('[App] ⚠️  No authentication token found. Redirecting to login...');
+        showToast('Session expired. Please login again.', 'warning');
+        // Redirect to Authentication Dashboard
+        window.location.href = 'http://localhost:5500';
+        return;
+      }
+      
+      console.log('[App] ✅ Auth token found');
+      console.log('[App] ✅ Device UUID:', deviceUUID);
       
       // Load persisted state
       this.store.loadPersistedState();
@@ -75,6 +151,24 @@ class App {
             sidebar.classList.remove('show');
           }
         });
+      });
+    }
+
+    // Handle theme toggle
+    const themeToggle = document.getElementById('themeToggle');
+    if (themeToggle) {
+      themeToggle.addEventListener('click', () => {
+        const currentTheme = this.store.getState('ui')?.theme || 'light';
+        const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+        this.store.setTheme(newTheme);
+      });
+    }
+
+    // Handle logout button
+    const logoutBtn = document.getElementById('logout-btn');
+    if (logoutBtn) {
+      logoutBtn.addEventListener('click', () => {
+        this.logout();
       });
     }
 
@@ -335,11 +429,25 @@ class App {
     document.documentElement.setAttribute('data-theme', theme);
     
     if (theme === 'dark') {
-      document.body.style.backgroundColor = '#1e1e1e';
-      document.body.style.color = '#f0f0f0';
+      document.documentElement.style.setProperty('--color-bg', '#1a1a1a');
+      document.documentElement.style.setProperty('--color-bg-alt', '#0f0f0f');
+      document.documentElement.style.setProperty('--color-text', '#f0f0f0');
+      document.documentElement.style.setProperty('--color-text-light', '#e0e0e0');
+      document.documentElement.style.setProperty('--color-text-lighter', '#b0b0b0');
+      document.documentElement.style.setProperty('--color-border', '#333333');
+      document.documentElement.style.setProperty('--color-border-dark', '#555555');
+      document.body.classList.add('dark-mode');
+      document.body.classList.remove('light-mode');
     } else {
-      document.body.style.backgroundColor = '#f5f5f5';
-      document.body.style.color = '#333';
+      document.documentElement.style.setProperty('--color-bg', '#FFFFFF');
+      document.documentElement.style.setProperty('--color-bg-alt', '#F8FAFC');
+      document.documentElement.style.setProperty('--color-text', '#0F172A');
+      document.documentElement.style.setProperty('--color-text-light', '#475569');
+      document.documentElement.style.setProperty('--color-text-lighter', '#64748B');
+      document.documentElement.style.setProperty('--color-border', '#E2E8F0');
+      document.documentElement.style.setProperty('--color-border-dark', '#CBD5E1');
+      document.body.classList.remove('dark-mode');
+      document.body.classList.add('light-mode');
     }
   }
 
@@ -379,12 +487,24 @@ class App {
   }
 
   /**
-   * Logout
+   * Logout - clear tokens and redirect to login
    */
   logout() {
+    // Clear authentication tokens from localStorage
+    localStorage.removeItem('accessToken');
+    localStorage.removeItem('deviceUUID');
+    localStorage.removeItem('deviceName');
+    
+    // Clear store
     this.store.logout();
-    this.navigateTo('/login');
-    this.showSuccess('Logged out successfully');
+    
+    // Show message and redirect to auth dashboard
+    showToast('Logged out successfully', 'success');
+    
+    // Redirect to Authentication Dashboard
+    setTimeout(() => {
+      window.location.href = 'http://localhost:5500';
+    }, 1000);
   }
 
   /**
