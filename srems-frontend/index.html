@@ -28,54 +28,162 @@
       <p>Loading SREMS...</p>
     </div>
 
-    <!-- Navigation Header -->
+    <!-- Navigation Header (Fixed Top) -->
     <header class="app-header">
       <div class="header-content">
+        <!-- Logo & Brand -->
         <div class="header-left">
+          <button class="sidebar-toggle" id="sidebarToggle" title="Toggle sidebar">
+            <span class="hamburger">☰</span>
+          </button>
           <h1 class="app-logo">
             <span class="logo-icon">📋</span>
             <span class="logo-text">SREMS</span>
           </h1>
-          <nav class="main-nav">
-            <ul>
-              <li><a href="#/" data-link="/" class="nav-link">Dashboard</a></li>
-              <li><a href="#/projects" data-link="/projects" class="nav-link">Projects</a></li>
-              <li><a href="#/activity" data-link="/activity" class="nav-link">Activity</a></li>
-            </ul>
-          </nav>
         </div>
-        
+
+        <!-- User Menu & Settings (Right Side) -->
         <div class="header-right">
-          <button class="btn-theme-toggle" id="themeToggle" title="Toggle theme">🌙</button>
+          <div class="search-bar">
+            <input type="text" id="globalSearch" class="search-input" placeholder="Search..." />
+            <span class="search-icon">🔍</span>
+          </div>
+          <button class="btn-theme-toggle" id="themeToggle" title="Toggle dark mode">🌙</button>
           <div class="user-menu">
-            <span id="user-name" class="user-name">User</span>
+            <div class="user-info">
+              <span id="user-name" class="user-name">User</span>
+              <span class="user-role">Admin</span>
+            </div>
             <button id="logout-btn" class="btn btn-sm btn-outline-primary">Logout</button>
           </div>
         </div>
       </div>
     </header>
 
-    <!-- Main Content Area -->
-    <main class="app-main" id="page-content">
-      <!-- Content loads here dynamically -->
-      <div class="page-loading">
-        <div class="spinner"></div>
-        <p>Loading...</p>
-      </div>
-    </main>
+    <!-- Main Layout (Sidebar + Content) -->
+    <div class="content-wrapper">
+      <!-- Sidebar Navigation -->
+      <aside class="sidebar" id="mainSidebar">
+        <nav class="sidebar-nav">
+          <div class="nav-section">
+            <h3 class="nav-section-title">MAIN</h3>
+            <ul class="sidebar-menu">
+              <li>
+                <a href="#/" data-link="/" class="sidebar-menu-item" data-page="dashboard">
+                  <span class="menu-icon">📊</span>
+                  <span class="menu-text">Dashboard</span>
+                </a>
+              </li>
+              <li>
+                <a href="#/projects" data-link="/projects" class="sidebar-menu-item" data-page="projects">
+                  <span class="menu-icon">📁</span>
+                  <span class="menu-text">Projects</span>
+                </a>
+              </li>
+            </ul>
+          </div>
+
+          <div class="nav-section">
+            <h3 class="nav-section-title">REQUIREMENTS ENGINEERING</h3>
+            <ul class="sidebar-menu">
+              <li>
+                <a href="#/requirements" data-link="/requirements" class="sidebar-menu-item" data-page="requirements">
+                  <span class="menu-icon">📝</span>
+                  <span class="menu-text">Requirements</span>
+                </a>
+              </li>
+              <li>
+                <a href="#/scope" data-link="/scope" class="sidebar-menu-item" data-page="scope">
+                  <span class="menu-icon">🎯</span>
+                  <span class="menu-text">Scope</span>
+                </a>
+              </li>
+              <li>
+                <a href="#/features" data-link="/features" class="sidebar-menu-item" data-page="features">
+                  <span class="menu-icon">⭐</span>
+                  <span class="menu-text">Features</span>
+                </a>
+              </li>
+              <li>
+                <a href="#/elaboration" data-link="/elaboration" class="sidebar-menu-item" data-page="elaboration">
+                  <span class="menu-icon">🔍</span>
+                  <span class="menu-text">Elaboration</span>
+                </a>
+              </li>
+              <li>
+                <a href="#/negotiation" data-link="/negotiation" class="sidebar-menu-item" data-page="negotiation">
+                  <span class="menu-icon">🤝</span>
+                  <span class="menu-text">Negotiation</span>
+                </a>
+              </li>
+              <li>
+                <a href="#/specification" data-link="/specification" class="sidebar-menu-item" data-page="specification">
+                  <span class="menu-icon">📋</span>
+                  <span class="menu-text">Specification</span>
+                </a>
+              </li>
+              <li>
+                <a href="#/validation" data-link="/validation" class="sidebar-menu-item" data-page="validation">
+                  <span class="menu-icon">✅</span>
+                  <span class="menu-text">Validation</span>
+                </a>
+              </li>
+            </ul>
+          </div>
+
+          <div class="nav-section">
+            <h3 class="nav-section-title">TEAM</h3>
+            <ul class="sidebar-menu">
+              <li>
+                <a href="#/stakeholders" data-link="/stakeholders" class="sidebar-menu-item" data-page="stakeholders">
+                  <span class="menu-icon">👥</span>
+                  <span class="menu-text">Stakeholders</span>
+                </a>
+              </li>
+              <li>
+                <a href="#/activity" data-link="/activity" class="sidebar-menu-item" data-page="activity">
+                  <span class="menu-icon">📊</span>
+                  <span class="menu-text">Activity Log</span>
+                </a>
+              </li>
+            </ul>
+          </div>
+        </nav>
+
+        <!-- Sidebar Footer -->
+        <div class="sidebar-footer">
+          <div class="sidebar-info">
+            <div class="info-item">
+              <span class="info-label">Version</span>
+              <span class="info-value">1.0.0</span>
+            </div>
+          </div>
+        </div>
+      </aside>
+
+      <!-- Main Content Area -->
+      <main class="main-content" id="page-content">
+        <!-- Page content loads here dynamically -->
+        <div class="page-loading">
+          <div class="spinner"></div>
+          <p>Loading...</p>
+        </div>
+      </main>
+    </div>
 
     <!-- Modal Container -->
-    <div class="modal-backdrop"></div>
     <div class="modal" id="appModal">
-      <div class="modal-header">
-        <h2 class="modal-title" id="modalTitle">Modal</h2>
-        <button class="modal-close-btn" aria-label="Close">×</button>
-      </div>
-      <div class="modal-body" id="modalBody">
-        <!-- Modal content loaded here -->
-      </div>
-      <div class="modal-footer" id="modalFooter">
-        <!-- Footer buttons -->
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2 class="modal-title" id="modalTitle">Dialog</h2>
+          <button class="modal-close-btn" aria-label="Close">×</button>
+        </div>
+        <div class="modal-body" id="modalBody">
+          <!-- Modal content loaded here -->
+        </div>
+        <div class="modal-footer" id="modalFooter">
+          <!-- Footer buttons -->
+        </div>
       </div>
     </div>
 
