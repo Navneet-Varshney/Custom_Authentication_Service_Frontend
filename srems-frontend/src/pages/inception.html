@@ -1,0 +1,45 @@
+<div class="page-container">
+  <div class="page-header">
+    <div class="page-title-section">
+      <h1 class="page-title">Project Inception</h1>
+      <p class="page-subtitle">Define project vision, goals, and initial scope</p>
+    </div>
+    <button class="btn btn-primary" id="btnCreateInception">
+      <span class="btn-icon">➕</span> New Inception Document
+    </button>
+  </div>
+
+  <!-- Filter Section -->
+  <div class="filters-bar">
+    <div class="filter-group">
+      <label for="filterStatus" class="filter-label">Status</label>
+      <select id="filterStatus" class="filter-select">
+        <option value="">All Status</option>
+        <option value="draft">Draft</option>
+        <option value="review">In Review</option>
+        <option value="approved">Approved</option>
+        <option value="archived">Archived</option>
+      </select>
+    </div>
+    <div class="filter-group">
+      <label for="searchInception" class="filter-label">Search</label>
+      <input type="text" id="searchInception" class="filter-input" placeholder="Search inception documents..." />
+    </div>
+  </div>
+
+  <!-- Inception Documents -->
+  <div id="inceptionContainer" class="cards-container">
+    <div class="loading-spinner">
+      <div class="spinner"></div>
+      <p>Loading inception documents...</p>
+    </div>
+  </div>
+
+  <!-- Empty State -->
+  <div id="emptyInception" class="empty-state hidden">
+    <div class="empty-state-icon">🎯</div>
+    <h3>No Inception Documents</h3>
+    <p>Create a project inception document to define your project's vision and goals</p>
+    <button class="btn btn-primary" id="btnCreateInceptionEmpty">Create First Inception</button>
+  </div>
+</div>
