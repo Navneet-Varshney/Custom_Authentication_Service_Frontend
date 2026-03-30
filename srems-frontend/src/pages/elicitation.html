@@ -1,0 +1,60 @@
+<div class="page-container">
+  <div class="page-header">
+    <div class="page-title-section">
+      <h1 class="page-title">Requirements Elicitation</h1>
+      <p class="page-subtitle">Extract and gather requirements from stakeholders</p>
+    </div>
+    <button class="btn btn-primary" id="btnCreateElicitation">
+      <span class="btn-icon">➕</span> New Elicitation
+    </button>
+  </div>
+
+  <!-- Filter Section -->
+  <div class="filters-bar">
+    <div class="filter-group">
+      <label for="filterMethod" class="filter-label">Method</label>
+      <select id="filterMethod" class="filter-select">
+        <option value="">All Methods</option>
+        <option value="interview">Interview</option>
+        <option value="workshop">Workshop</option>
+        <option value="survey">Survey</option>
+        <option value="observation">Observation</option>
+      </select>
+    </div>
+    <div class="filter-group">
+      <label for="searchElicitation" class="filter-label">Search</label>
+      <input type="text" id="searchElicitation" class="filter-input" placeholder="Search elicitations..." />
+    </div>
+  </div>
+
+  <!-- Elicitation Records Table -->
+  <div id="elicitationContainer" class="table-container">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Method</th>
+          <th>Stakeholder</th>
+          <th>Date</th>
+          <th>Status</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody id="elicitationTableBody">
+        <tr class="loading">
+          <td colspan="6">
+            <div class="loading-spinner"><div class="spinner"></div><p>Loading elicitations...</p></div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Empty State -->
+  <div id="emptyElicitation" class="empty-state hidden">
+    <div class="empty-state-icon">📋</div>
+    <h3>No Elicitations Yet</h3>
+    <p>Start gathering requirements from your stakeholders</p>
+    <button class="btn btn-primary" id="btnCreateElicitationEmpty">Create First Elicitation</button>
+  </div>
+</div>
