@@ -324,7 +324,13 @@ class App {
    * Initialize page controller
    */
   async initializePageController(route) {
-    const cleanRoute = route.split('?')[0];
+    let cleanRoute = route.split('?')[0];
+    
+    // Normalize empty route to dashboard
+    if (!cleanRoute || cleanRoute === '') {
+      cleanRoute = '/';
+    }
+    
     const controllers = {
       'projects': () => import('../pages/projects.js').then(m => new m.ProjectsPage()),
       'requirements': () => import('../pages/requirements.js').then(m => new m.RequirementsPage()),
