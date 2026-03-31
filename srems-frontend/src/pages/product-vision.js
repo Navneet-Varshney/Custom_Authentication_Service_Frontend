@@ -1,4 +1,4 @@
-import { showToast, debounce } from '../utils/helpers.js';
+import { showToast, debounce } from '../js/utils/helpers.js';
 import productVisionService from '../js/services/product-vision.service.js';
 
 export class ProductVisionPage {

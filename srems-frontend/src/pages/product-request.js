@@ -1,4 +1,4 @@
-import { showToast, debounce } from '../utils/helpers.js';
+import { showToast, debounce } from '../js/utils/helpers.js';
 import productRequestService from '../js/services/product-request.service.js';
 
 export class ProductRequestPage {
@@ -28,12 +28,15 @@ export class ProductRequestPage {
       container.innerHTML = '<div class="loading-spinner"><div class="spinner"></div><p>Loading product requests...</p></div>';
 
       const data = await productRequestService.getProductRequests();
-      this.requests = data.data || data || [];
+      this.requests = Array.isArray(data) ? data : [];
       this.filteredRequests = this.requests;
       this.renderProductRequests();
     } catch (error) {
       console.error('Failed to load product requests:', error);
       showToast(error.message || 'Failed to load product requests', 'error');
+      // Initialize with empty arrays to prevent .filter() errors
+      this.requests = [];
+      this.filteredRequests = [];
       this.showEmptyState();
     }
   }
@@ -42,6 +45,11 @@ export class ProductRequestPage {
     const priority = document.getElementById('filterPriority').value;
     const status = document.getElementById('filterRequestStatus').value;
     const search = document.getElementById('searchProductRequest').value.toLowerCase();
+
+    // Ensure requests is always an array
+    if (!Array.isArray(this.requests)) {
+      this.requests = [];
+    }
 
     this.filteredRequests = this.requests.filter(item => {
       const priorityMatch = !priority || item.priority === priority;

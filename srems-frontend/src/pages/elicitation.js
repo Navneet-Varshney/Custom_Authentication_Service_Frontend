@@ -1,4 +1,4 @@
-import { showToast, debounce } from '../utils/helpers.js';
+import { showToast, debounce } from '../js/utils/helpers.js';
 import elicitationService from '../js/services/elicitation.service.js';
 
 export class ElicitationPage {
@@ -27,12 +27,15 @@ export class ElicitationPage {
       tableBody.innerHTML = '<tr class="loading"><td colspan="6"><div class="loading-spinner"><div class="spinner"></div><p>Loading...</p></div></td></tr>';
 
       const data = await elicitationService.getElicitations();
-      this.elicitations = data.data || data || [];
+      this.elicitations = Array.isArray(data) ? data : [];
       this.filteredElicitations = this.elicitations;
       this.renderElicitations();
     } catch (error) {
       console.error('Failed to load elicitations:', error);
       showToast(error.message || 'Failed to load elicitations', 'error');
+      // Initialize with empty arrays to prevent .filter() errors
+      this.elicitations = [];
+      this.filteredElicitations = [];
       this.showEmptyState();
     }
   }
@@ -40,6 +43,11 @@ export class ElicitationPage {
   applyFilters() {
     const method = document.getElementById('filterMethod').value;
     const search = document.getElementById('searchElicitation').value.toLowerCase();
+
+    // Ensure elicitations is always an array
+    if (!Array.isArray(this.elicitations)) {
+      this.elicitations = [];
+    }
 
     this.filteredElicitations = this.elicitations.filter(item => {
       const methodMatch = !method || item.method === method;

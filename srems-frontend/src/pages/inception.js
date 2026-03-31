@@ -1,4 +1,4 @@
-import { showToast, debounce } from '../utils/helpers.js';
+import { showToast, debounce } from '../js/utils/helpers.js';
 import inceptionService from '../js/services/inception.service.js';
 
 export class InceptionPage {
@@ -27,12 +27,15 @@ export class InceptionPage {
       container.innerHTML = '<div class="loading-spinner"><div class="spinner"></div><p>Loading inception documents...</p></div>';
 
       const data = await inceptionService.getInceptions();
-      this.inceptions = data.data || data || [];
+      this.inceptions = Array.isArray(data) ? data : [];
       this.filteredInceptions = this.inceptions;
       this.renderInceptions();
     } catch (error) {
       console.error('Failed to load inceptions:', error);
       showToast(error.message || 'Failed to load inception documents', 'error');
+      // Initialize with empty arrays to prevent .map() errors
+      this.inceptions = [];
+      this.filteredInceptions = [];
       this.showEmptyState();
     }
   }
@@ -40,6 +43,11 @@ export class InceptionPage {
   applyFilters() {
     const status = document.getElementById('filterStatus').value;
     const search = document.getElementById('searchInception').value.toLowerCase();
+
+    // Ensure inceptions is always an array
+    if (!Array.isArray(this.inceptions)) {
+      this.inceptions = [];
+    }
 
     this.filteredInceptions = this.inceptions.filter(item => {
       const statusMatch = !status || item.status === status;
