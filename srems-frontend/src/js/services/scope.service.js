@@ -18,7 +18,15 @@ class ScopeService {
    * Get scopes by project
    */
   async getScopesByProject(projectId) {
-    return apiClient.get(`${API_CONFIG.ENDPOINTS.SCOPE}/list/${projectId}`);
+    const response = await apiClient.get(`${API_CONFIG.ENDPOINTS.SCOPE}/list/${projectId}`);
+    
+    // Check if response was successful
+    if (!response.success) {
+      throw new Error(response.message || 'Failed to fetch scopes');
+    }
+    
+    // Return the data array
+    return response.data || [];
   }
 
   /**

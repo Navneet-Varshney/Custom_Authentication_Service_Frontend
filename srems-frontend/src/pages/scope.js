@@ -30,10 +30,13 @@ export class ScopePage {
         return;
       }
 
-      this.scopeItems = await ScopeService.getScopesByProject(projectId);
+      const data = await scopeService.getScopesByProject(projectId);
+      this.scopeItems = Array.isArray(data) ? data : [];
       this.renderScope();
     } catch (error) {
       showToast(error.message || 'Failed to load scope items', 'error');
+      // Initialize with empty array to prevent errors
+      this.scopeItems = [];
     }
   }
 
@@ -125,10 +128,10 @@ export class ScopePage {
       const projectId = store.getState().currentProject;
       
       if (this.editingId) {
-        await ScopeService.updateScope(this.editingId, formData);
+        await scopeService.updateScope(this.editingId, formData);
         showToast('Scope item updated', 'success');
       } else {
-        await ScopeService.createScope(projectId, formData);
+        await scopeService.createScope(projectId, formData);
         showToast('Scope item created', 'success');
       }
 
@@ -144,7 +147,7 @@ export class ScopePage {
     if (!confirmed) return;
 
     try {
-      await ScopeService.deleteScope(id);
+      await scopeService.deleteScope(id);
       showToast('Scope item deleted', 'success');
       await this.loadScope();
     } catch (error) {
