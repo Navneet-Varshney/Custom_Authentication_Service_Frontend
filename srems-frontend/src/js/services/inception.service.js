@@ -21,9 +21,17 @@ class InceptionService {
    * Get all inception documents
    */
   async getInceptions(page = 1, pageSize = 10) {
-    return apiClient.get(
+    const response = await apiClient.get(
       `${API_CONFIG.ENDPOINTS.INCEPTION}/list?page=${page}&pageSize=${pageSize}`
     );
+    
+    // Check if response was successful
+    if (!response.success) {
+      throw new Error(response.message || 'Failed to fetch inceptions');
+    }
+    
+    // Return the data array
+    return response.data || [];
   }
 
   /**
