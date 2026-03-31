@@ -140,8 +140,18 @@ class App {
     const sidebarToggle = document.getElementById('sidebarToggle');
     const sidebar = document.getElementById('mainSidebar');
     if (sidebarToggle && sidebar) {
-      sidebarToggle.addEventListener('click', () => {
+      sidebarToggle.addEventListener('click', (e) => {
+        e.stopPropagation();
         sidebar.classList.toggle('show');
+      });
+
+      // Close sidebar when clicking outside
+      document.addEventListener('click', (e) => {
+        if (sidebar.classList.contains('show') && 
+            !sidebar.contains(e.target) && 
+            e.target !== sidebarToggle) {
+          sidebar.classList.remove('show');
+        }
       });
 
       // Close sidebar when a link is clicked
@@ -441,27 +451,16 @@ class App {
   updateTheme(state) {
     const theme = state.ui.theme;
     document.documentElement.setAttribute('data-theme', theme);
+    const themeToggleBtn = document.getElementById('themeToggle');
     
     if (theme === 'dark') {
-      document.documentElement.style.setProperty('--color-bg', '#1a1a1a');
-      document.documentElement.style.setProperty('--color-bg-alt', '#0f0f0f');
-      document.documentElement.style.setProperty('--color-text', '#f0f0f0');
-      document.documentElement.style.setProperty('--color-text-light', '#e0e0e0');
-      document.documentElement.style.setProperty('--color-text-lighter', '#b0b0b0');
-      document.documentElement.style.setProperty('--color-border', '#333333');
-      document.documentElement.style.setProperty('--color-border-dark', '#555555');
       document.body.classList.add('dark-mode');
       document.body.classList.remove('light-mode');
+      if (themeToggleBtn) themeToggleBtn.textContent = '◑';
     } else {
-      document.documentElement.style.setProperty('--color-bg', '#FFFFFF');
-      document.documentElement.style.setProperty('--color-bg-alt', '#F8FAFC');
-      document.documentElement.style.setProperty('--color-text', '#0F172A');
-      document.documentElement.style.setProperty('--color-text-light', '#475569');
-      document.documentElement.style.setProperty('--color-text-lighter', '#64748B');
-      document.documentElement.style.setProperty('--color-border', '#E2E8F0');
-      document.documentElement.style.setProperty('--color-border-dark', '#CBD5E1');
       document.body.classList.remove('dark-mode');
       document.body.classList.add('light-mode');
+      if (themeToggleBtn) themeToggleBtn.textContent = '◐';
     }
   }
 
