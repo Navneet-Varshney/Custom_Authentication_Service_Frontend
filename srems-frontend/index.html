@@ -4,55 +4,49 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="description" content="Software Requirement Engineering Management System - Frontend">
-  <meta name="theme-color" content="#007BFF">
-  
-  <title>SREMS - Management Dashboard</title>
-  
-  <!-- Favicon -->
-  <link rel="icon" type="image/x-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='75' font-size='75' fill='%23007BFF'>S</text></svg>">
-  
-  <!-- CSS Files -->
-  <link rel="stylesheet" href="./src/styles/main.css">
-  
-  <!-- Meta tags for SEO -->
+  <meta name="theme-color" content="#0b6fbf">
   <meta name="author" content="SREMS Team">
   <meta name="copyright" content="2026">
+
+  <title>SREMS | Requirements Engineering Workspace</title>
+
+  <link rel="icon" type="image/x-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%230b6fbf'/><text x='50' y='67' text-anchor='middle' font-size='56' font-weight='700' fill='white'>S</text></svg>">
+  <link rel="stylesheet" href="./src/styles/main.css">
 </head>
-<body>
-  <!-- Main Application Container -->
+<body class="light-mode">
   <div id="app" class="app-container">
-    
-    <!-- Loading indicator -->
-    <div id="app-loading" class="app-loading hidden">
+    <div id="app-loading" class="app-loading hidden" aria-live="polite">
       <div class="spinner"></div>
       <p>Loading SREMS...</p>
     </div>
 
-    <!-- Navigation Header (Fixed Top) -->
     <header class="app-header">
       <div class="header-content">
-        <!-- Logo & Brand -->
         <div class="header-left">
-          <button class="sidebar-toggle" id="sidebarToggle" title="Toggle sidebar">
+          <button class="sidebar-toggle" id="sidebarToggle" title="Toggle sidebar" aria-label="Toggle sidebar">
             <span class="hamburger">☰</span>
           </button>
-          <h1 class="app-logo">
-            <span class="logo-icon">📋</span>
+          <h1 class="app-logo" aria-label="SREMS">
+            <span class="logo-icon" aria-hidden="true">SR</span>
             <span class="logo-text">SREMS</span>
           </h1>
         </div>
 
-        <!-- User Menu & Settings (Right Side) -->
         <div class="header-right">
-          <div class="search-bar">
-            <input type="text" id="globalSearch" class="search-input" placeholder="Search..." />
-            <span class="search-icon">🔍</span>
-          </div>
-          <button class="btn-theme-toggle" id="themeToggle" title="Toggle dark mode">🌙</button>
+          <label class="search-bar" for="globalSearch" aria-label="Global Search">
+            <input type="text" id="globalSearch" class="search-input" placeholder="Search projects, requirements, stakeholders..." />
+            <span class="search-icon" aria-hidden="true">⌕</span>
+          </label>
+
+          <button class="btn-theme-toggle" id="themeToggle" title="Toggle dark mode" aria-label="Toggle theme">◐</button>
+
+          <a href="http://127.0.0.1:5500/project/app/dashboard.html" class="btn btn-md btn-outline-primary" title="Go to Management Dashboard" style="margin-right: 12px; display: flex; align-items: center; gap: 6px;">🏢 <span>Management</span></a>
+
           <div class="user-menu">
+            <div class="user-avatar" aria-hidden="true">AD</div>
             <div class="user-info">
               <span id="user-name" class="user-name">User</span>
-              <span class="user-role">Admin</span>
+              <span class="user-role">Administrator</span>
             </div>
             <button id="logout-btn" class="btn btn-sm btn-outline-primary">Logout</button>
           </div>
@@ -60,23 +54,21 @@
       </div>
     </header>
 
-    <!-- Main Layout (Sidebar + Content) -->
     <div class="content-wrapper">
-      <!-- Sidebar Navigation -->
-      <aside class="sidebar" id="mainSidebar">
+      <aside class="sidebar" id="mainSidebar" aria-label="Primary">
         <nav class="sidebar-nav">
           <div class="nav-section">
-            <h3 class="nav-section-title">MAIN</h3>
+            <h3 class="nav-section-title">Main</h3>
             <ul class="sidebar-menu">
               <li>
                 <a href="#/" data-link="/" class="sidebar-menu-item" data-page="dashboard">
-                  <span class="menu-icon">📊</span>
+                  <span class="menu-icon" aria-hidden="true">DB</span>
                   <span class="menu-text">Dashboard</span>
                 </a>
               </li>
               <li>
                 <a href="#/projects" data-link="/projects" class="sidebar-menu-item" data-page="projects">
-                  <span class="menu-icon">📁</span>
+                  <span class="menu-icon" aria-hidden="true">PR</span>
                   <span class="menu-text">Projects</span>
                 </a>
               </li>
@@ -84,383 +76,69 @@
           </div>
 
           <div class="nav-section">
-            <h3 class="nav-section-title">REQUIREMENTS ENGINEERING</h3>
+            <h3 class="nav-section-title">Requirements Engineering</h3>
             <ul class="sidebar-menu">
-              <li>
-                <a href="#/inception" data-link="/inception" class="sidebar-menu-item" data-page="inception">
-                  <span class="menu-icon">📋</span>
-                  <span class="menu-text">Inception</span>
-                </a>
-              </li>
-              <li>
-                <a href="#/elicitation" data-link="/elicitation" class="sidebar-menu-item" data-page="elicitation">
-                  <span class="menu-icon">📋</span>
-                  <span class="menu-text">Elicitation</span>
-                </a>
-              </li>
-              <li>
-                <a href="#/product-request" data-link="/product-request" class="sidebar-menu-item" data-page="product-request">
-                  <span class="menu-icon">📋</span>
-                  <span class="menu-text">Product Request</span>
-                </a>
-              </li>
-              <li>
-                <a href="#/product-vision" data-link="/product-vision" class="sidebar-menu-item" data-page="product-vision">
-                  <span class="menu-icon">📋</span>
-                  <span class="menu-text">Product Vision</span>
-                </a>
-              </li>
-              <li>
-                <a href="#/requirements" data-link="/requirements" class="sidebar-menu-item" data-page="requirements">
-                  <span class="menu-icon">📝</span>
-                  <span class="menu-text">Requirements</span>
-                </a>
-              </li>
-              <li>
-                <a href="#/scope" data-link="/scope" class="sidebar-menu-item" data-page="scope">
-                  <span class="menu-icon">🎯</span>
-                  <span class="menu-text">Scope</span>
-                </a>
-              </li>
-              <li>
-                <a href="#/features" data-link="/features" class="sidebar-menu-item" data-page="features">
-                  <span class="menu-icon">⭐</span>
-                  <span class="menu-text">Features</span>
-                </a>
-              </li>
-              <li>
-                <a href="#/elaboration" data-link="/elaboration" class="sidebar-menu-item" data-page="elaboration">
-                  <span class="menu-icon">🔍</span>
-                  <span class="menu-text">Elaboration</span>
-                </a>
-              </li>
-              <li>
-                <a href="#/negotiation" data-link="/negotiation" class="sidebar-menu-item" data-page="negotiation">
-                  <span class="menu-icon">🤝</span>
-                  <span class="menu-text">Negotiation</span>
-                </a>
-              </li>
-              <li>
-                <a href="#/specification" data-link="/specification" class="sidebar-menu-item" data-page="specification">
-                  <span class="menu-icon">📋</span>
-                  <span class="menu-text">Specification</span>
-                </a>
-              </li>
-              <li>
-                <a href="#/validation" data-link="/validation" class="sidebar-menu-item" data-page="validation">
-                  <span class="menu-icon">✅</span>
-                  <span class="menu-text">Validation</span>
-                </a>
-              </li>
+              <li><a href="#/inception" data-link="/inception" class="sidebar-menu-item" data-page="inception"><span class="menu-icon" aria-hidden="true">IN</span><span class="menu-text">Inception</span></a></li>
+              <li><a href="#/elicitation" data-link="/elicitation" class="sidebar-menu-item" data-page="elicitation"><span class="menu-icon" aria-hidden="true">EL</span><span class="menu-text">Elicitation</span></a></li>
+              <li><a href="#/product-request" data-link="/product-request" class="sidebar-menu-item" data-page="product-request"><span class="menu-icon" aria-hidden="true">RQ</span><span class="menu-text">Product Request</span></a></li>
+              <li><a href="#/product-vision" data-link="/product-vision" class="sidebar-menu-item" data-page="product-vision"><span class="menu-icon" aria-hidden="true">PV</span><span class="menu-text">Product Vision</span></a></li>
+              <li><a href="#/requirements" data-link="/requirements" class="sidebar-menu-item" data-page="requirements"><span class="menu-icon" aria-hidden="true">RE</span><span class="menu-text">Requirements</span></a></li>
+              <li><a href="#/scope" data-link="/scope" class="sidebar-menu-item" data-page="scope"><span class="menu-icon" aria-hidden="true">SC</span><span class="menu-text">Scope</span></a></li>
+              <li><a href="#/features" data-link="/features" class="sidebar-menu-item" data-page="features"><span class="menu-icon" aria-hidden="true">FT</span><span class="menu-text">Features</span></a></li>
+              <li><a href="#/elaboration" data-link="/elaboration" class="sidebar-menu-item" data-page="elaboration"><span class="menu-icon" aria-hidden="true">EB</span><span class="menu-text">Elaboration</span></a></li>
+              <li><a href="#/negotiation" data-link="/negotiation" class="sidebar-menu-item" data-page="negotiation"><span class="menu-icon" aria-hidden="true">NG</span><span class="menu-text">Negotiation</span></a></li>
+              <li><a href="#/specification" data-link="/specification" class="sidebar-menu-item" data-page="specification"><span class="menu-icon" aria-hidden="true">SP</span><span class="menu-text">Specification</span></a></li>
+              <li><a href="#/validation" data-link="/validation" class="sidebar-menu-item" data-page="validation"><span class="menu-icon" aria-hidden="true">VL</span><span class="menu-text">Validation</span></a></li>
             </ul>
           </div>
 
           <div class="nav-section">
-            <h3 class="nav-section-title">TEAM</h3>
+            <h3 class="nav-section-title">Team</h3>
             <ul class="sidebar-menu">
-              <li>
-                <a href="#/stakeholders" data-link="/stakeholders" class="sidebar-menu-item" data-page="stakeholders">
-                  <span class="menu-icon">👥</span>
-                  <span class="menu-text">Stakeholders</span>
-                </a>
-              </li>
-              <li>
-                <a href="#/activity" data-link="/activity" class="sidebar-menu-item" data-page="activity">
-                  <span class="menu-icon">📊</span>
-                  <span class="menu-text">Activity Log</span>
-                </a>
-              </li>
+              <li><a href="#/stakeholders" data-link="/stakeholders" class="sidebar-menu-item" data-page="stakeholders"><span class="menu-icon" aria-hidden="true">ST</span><span class="menu-text">Stakeholders</span></a></li>
+              <li><a href="#/activity" data-link="/activity" class="sidebar-menu-item" data-page="activity"><span class="menu-icon" aria-hidden="true">AL</span><span class="menu-text">Activity Log</span></a></li>
             </ul>
           </div>
         </nav>
 
-        <!-- Sidebar Footer -->
         <div class="sidebar-footer">
           <div class="sidebar-info">
             <div class="info-item">
               <span class="info-label">Version</span>
               <span class="info-value">1.0.0</span>
             </div>
+            <div class="info-item">
+              <span class="info-label">Workspace</span>
+              <span class="info-value">Production</span>
+            </div>
           </div>
         </div>
       </aside>
 
-      <!-- Main Content Area -->
-      <main class="main-content" id="page-content">
-        <!-- Page content loads here dynamically -->
+      <main class="main-content" id="page-content" role="main">
         <div class="page-loading">
           <div class="spinner"></div>
-          <p>Loading...</p>
+          <p>Loading workspace...</p>
         </div>
       </main>
     </div>
 
-    <!-- Modal Container -->
-    <div class="modal" id="appModal">
+    <div class="modal-backdrop" id="globalModalBackdrop"></div>
+
+    <div class="modal" id="appModal" aria-hidden="true">
       <div class="modal-content">
         <div class="modal-header">
           <h2 class="modal-title" id="modalTitle">Dialog</h2>
           <button class="modal-close-btn" aria-label="Close">×</button>
         </div>
-        <div class="modal-body" id="modalBody">
-          <!-- Modal content loaded here -->
-        </div>
-        <div class="modal-footer" id="modalFooter">
-          <!-- Footer buttons -->
-        </div>
+        <div class="modal-body" id="modalBody"></div>
+        <div class="modal-footer" id="modalFooter"></div>
       </div>
     </div>
 
-    <!-- Toast Container -->
     <div id="toast-container" class="toast-container"></div>
-
   </div>
 
-  <!-- Scripts -->
-  <!-- Main application script -->
   <script type="module" src="./src/js/app.js"></script>
-
-
-  <style>
-    /* Additional app-specific styles */
-    .app-container {
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-    }
-
-    .app-header {
-      background: white;
-      border-bottom: 1px solid #eee;
-      box-shadow: var(--shadow-base);
-      position: sticky;
-      top: 0;
-      z-index: 100;
-    }
-
-    .header-content {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: var(--spacing-base) var(--spacing-lg);
-      max-width: 1400px;
-      margin: 0 auto;
-      width: 100%;
-    }
-
-    .header-left {
-      display: flex;
-      align-items: center;
-      gap: var(--spacing-lg);
-    }
-
-    .app-logo {
-      display: flex;
-      align-items: center;
-      gap: var(--spacing-base);
-      margin: 0;
-      font-size: var(--font-size-xl);
-    }
-
-    .logo-icon {
-      font-size: var(--font-size-2xl);
-    }
-
-    .main-nav ul {
-      display: flex;
-      list-style: none;
-      gap: var(--spacing-lg);
-    }
-
-    .nav-link {
-      padding: var(--spacing-sm) var(--spacing-base);
-      transition: color var(--transition-fast);
-    }
-
-    .nav-link:hover {
-      color: var(--color-primary);
-      text-decoration: none;
-    }
-
-    .app-main {
-      flex: 1;
-      display: flex;
-      max-width: 1400px;
-      width: 100%;
-      margin: 0 auto;
-    }
-
-    .app-sidebar {
-      width: 250px;
-      background: white;
-      border-right: 1px solid #eee;
-      padding: var(--spacing-lg);
-    }
-
-    .sidebar-nav ul {
-      list-style: none;
-    }
-
-    .sidebar-nav li {
-      margin: var(--spacing-base) 0;
-    }
-
-    .sidebar-link {
-      display: block;
-      padding: var(--spacing-base);
-      border-radius: var(--border-radius-base);
-      transition: all var(--transition-fast);
-    }
-
-    .sidebar-link:hover {
-      background: #f0f0f0;
-      text-decoration: none;
-      color: var(--color-primary);
-    }
-
-    .app-content {
-      flex: 1;
-      padding: var(--spacing-lg);
-      overflow-y: auto;
-    }
-
-    .page {
-      display: none;
-    }
-
-    .page.active {
-      display: block;
-    }
-
-    .page-header {
-      margin-bottom: var(--spacing-xl);
-    }
-
-    .page-header h1 {
-      margin: 0;
-    }
-
-    .page-subtitle {
-      color: #999;
-      margin: var(--spacing-sm) 0 0 0;
-    }
-
-    .dashboard-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-      gap: var(--spacing-lg);
-      margin-bottom: var(--spacing-xl);
-    }
-
-    .stat-card {
-      background: white;
-      padding: var(--spacing-lg);
-      border-radius: var(--border-radius-lg);
-      box-shadow: var(--shadow-base);
-      display: flex;
-      gap: var(--spacing-lg);
-    }
-
-    .stat-icon {
-      font-size: var(--font-size-2xl);
-    }
-
-    .stat-content h3 {
-      margin: 0;
-      font-size: var(--font-size-sm);
-      color: #999;
-      text-transform: uppercase;
-    }
-
-    .stat-value {
-      margin: var(--spacing-base) 0 0 0;
-      font-size: var(--font-size-2xl);
-      font-weight: var(--font-weight-bold);
-      color: var(--color-primary);
-    }
-
-    .quick-actions,
-    .recent-activity {
-      background: white;
-      padding: var(--spacing-lg);
-      border-radius: var(--border-radius-lg);
-      margin-bottom: var(--spacing-lg);
-    }
-
-    .action-buttons {
-      display: flex;
-      gap: var(--spacing-base);
-      margin-top: var(--spacing-base);
-    }
-
-    .activity-list {
-      margin-top: var(--spacing-base);
-    }
-
-    .project-card {
-      cursor: pointer;
-      transition: all var(--transition-base);
-    }
-
-    .project-card:hover {
-      box-shadow: var(--shadow-lg);
-      transform: translateY(-2px);
-    }
-
-    .project-meta {
-      display: flex;
-      gap: var(--spacing-base);
-      margin-top: var(--spacing-base);
-      align-items: center;
-    }
-
-    .btn-theme-toggle {
-      background: none;
-      border: none;
-      font-size: var(--font-size-lg);
-      cursor: pointer;
-      padding: var(--spacing-sm);
-      transition: transform var(--transition-fast);
-    }
-
-    .btn-theme-toggle:hover {
-      transform: scale(1.1);
-    }
-
-    .app-loading {
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      min-height: 100vh;
-    }
-
-    @media (max-width: 768px) {
-      .app-main {
-        flex-direction: column;
-      }
-
-      .app-sidebar {
-        width: 100%;
-        border-right: none;
-        border-bottom: 1px solid #eee;
-        padding: var(--spacing-base);
-      }
-
-      .main-nav {
-        display: none;
-      }
-
-      .header-content {
-        flex-direction: column;
-        gap: var(--spacing-base);
-      }
-
-      .dashboard-grid {
-        grid-template-columns: 1fr;
-      }
-    }
-  </style>
-
 </body>
 </html>
