@@ -289,6 +289,98 @@ export const API_OPTIONS = {
   CACHE_DURATION: 300000    // 5 minutes
 };
 
+// ═════════════════════════════════════════════════════════════════════════════
+// FORM VALIDATION HELPER FUNCTIONS
+// ═════════════════════════════════════════════════════════════════════════════
+
+/**
+ * Validate form data against field definitions
+ * @param {HTMLFormElement} formElement - Form to validate
+ * @param {Object} fieldDefinitions - Field config from FORM_FIELDS
+ * @returns {Object} { isValid: boolean, errors: {fieldId: errorMessage} }
+ */
+export function validateFormData(formElement, fieldDefinitions) {
+  const errors = {};
+  
+  if (!formElement || !fieldDefinitions) {
+    return { isValid: true, errors: {} };
+  }
+  
+  Object.values(fieldDefinitions).forEach(field => {
+    const element = formElement.querySelector(`[name="${field.id}"], [id="${field.id}"]`);
+    if (!element) return;
+    
+    const value = element.value.trim();
+    
+    // Check required
+    if (field.required && (!value || value.length === 0)) {
+      errors[field.id] = `${field.label} is required`;
+      return;
+    }
+    
+    // Run validation rule if provided
+    if (field.validation && typeof field.validation === 'function') {
+      const error = field.validation(value);
+      if (error) {
+        errors[field.id] = error;
+      }
+    }
+  });
+  
+  return {
+    isValid: Object.keys(errors).length === 0,
+    errors
+  };
+}
+
+/**
+ * Display form validation errors
+ * @param {HTMLFormElement} formElement - Form element
+ * @param {Object} errors - Map of fieldId to error message
+ */
+export function displayFormErrors(formElement, errors = {}) {
+  // Clear previous errors
+  clearFormErrors(formElement);
+  
+  if (!formElement) return;
+  
+  // Display new errors
+  Object.entries(errors).forEach(([fieldId, errorMessage]) => {
+    const element = formElement.querySelector(`[name="${fieldId}"], [id="${fieldId}"]`);
+    if (!element) return;
+    
+    // Add error class to field
+    element.classList.add('error');
+    
+    // Create and insert error message
+    const errorDiv = document.createElement('div');
+    errorDiv.className = 'form-error';
+    errorDiv.textContent = errorMessage;
+    errorDiv.setAttribute('data-field', fieldId);
+    
+    // Insert after the field
+    element.after(errorDiv);
+  });
+}
+
+/**
+ * Clear all form validation errors
+ * @param {HTMLFormElement} formElement - Form element
+ */
+export function clearFormErrors(formElement) {
+  if (!formElement) return;
+  
+  // Remove error classes
+  formElement.querySelectorAll('.error').forEach(el => {
+    el.classList.remove('error');
+  });
+  
+  // Remove error messages
+  formElement.querySelectorAll('.form-error').forEach(el => {
+    el.remove();
+  });
+}
+
 export default {
   FIELD_LENGTHS,
   VALIDATION_PATTERNS,
@@ -297,5 +389,8 @@ export default {
   ERROR_CODES,
   ERROR_MESSAGES,
   HTTP_STATUS,
-  API_OPTIONS
+  API_OPTIONS,
+  validateFormData,
+  displayFormErrors,
+  clearFormErrors
 };

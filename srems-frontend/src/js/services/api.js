@@ -7,6 +7,34 @@
 import { API_CONFIG, UI_MESSAGES } from '../utils/constants.js';
 import { HTTP_STATUS, ERROR_MESSAGES, API_OPTIONS } from '../utils/config.js';
 
+// ═══════════════════════════════════════════════════════════════════════════
+// DEVICE MANAGEMENT FUNCTIONS
+// ═══════════════════════════════════════════════════════════════════════════
+
+/**
+ * Get Device UUID - generated once per browser, stored in localStorage
+ * Required by backend for device authentication
+ */
+function getDeviceUUID() {
+  let uuid = localStorage.getItem('deviceUUID');
+  if (!uuid) {
+    uuid = crypto.randomUUID();
+    localStorage.setItem('deviceUUID', uuid);
+  }
+  return uuid;
+}
+
+/**
+ * Get Device Type - auto-detect from user agent
+ * Returns: MOBILE, TABLET, or LAPTOP
+ */
+function getDeviceType() {
+  const ua = navigator.userAgent.toLowerCase();
+  if (/mobile|android|iphone/.test(ua)) return 'MOBILE';
+  if (/tablet|ipad/.test(ua)) return 'TABLET';
+  return 'LAPTOP';
+}
+
 class ApiClient {
   constructor() {
     this.baseURL = `${API_CONFIG.BASE_URL}${API_CONFIG.BASE_PATH}${API_CONFIG.API_VERSION}`;
