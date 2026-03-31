@@ -35,19 +35,26 @@ export class ProjectsPage {
       const container = document.getElementById('projectsContainer');
       container.innerHTML = '<div class="loading-spinner"><div class="spinner"></div><p>Loading projects...</p></div>';
 
-      this.projects = await ProjectsService.getProjects();
+      const data = await projectsService.getProjects();
+      this.projects = Array.isArray(data) ? data : [];
       this.filteredProjects = this.projects;
       this.renderProjects();
     } catch (error) {
       showToast(error.message || 'Failed to load projects', 'error');
-      document.getElementById('projectsContainer').innerHTML = `<div class="error-message">${error.message}</div>`;
+      // Initialize with empty arrays to prevent .filter() errors
+      this.projects = [];
+      this.filteredProjects = [];
+      document.getElementById('projectsContainer').innerHTML = `<div class="error-message">${error.message || 'Failed to load projects'}</div>`;
     }
   }
 
   applyFilters() {
     const status = document.getElementById('filterStatus').value;
     const search = document.getElementById('searchProjects').value.toLowerCase();
-
+    // Ensure projects is always an array
+    if (!Array.isArray(this.projects)) {
+      this.projects = [];
+    }
     this.filteredProjects = this.projects.filter(p => {
       const statusMatch = !status || p.currentPhase === status;
       const searchMatch = p.name.toLowerCase().includes(search) || p.description?.toLowerCase().includes(search);
