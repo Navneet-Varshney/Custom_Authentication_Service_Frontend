@@ -21,9 +21,17 @@ class FeaturesService {
    * Get features by project
    */
   async getFeaturesByProject(projectId) {
-    return apiClient.get(
+    const response = await apiClient.get(
       `${API_CONFIG.ENDPOINTS.HIGH_LEVEL_FEATURES}/list/${projectId}`
     );
+    
+    // Check if response was successful
+    if (!response.success) {
+      throw new Error(response.message || 'Failed to fetch features');
+    }
+    
+    // Return the data array
+    return response.data || [];
   }
 
   /**

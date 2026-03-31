@@ -29,10 +29,13 @@ export class FeaturesPage {
         return;
       }
 
-      this.features = await FeaturesService.getFeaturesByProject(projectId);
+      const data = await featuresService.getFeaturesByProject(projectId);
+      this.features = Array.isArray(data) ? data : [];
       this.renderFeatures();
     } catch (error) {
       showToast(error.message || 'Failed to load features', 'error');
+      // Initialize with empty array to prevent errors
+      this.features = [];
     }
   }
 
@@ -127,10 +130,10 @@ export class FeaturesPage {
       const projectId = store.getState().currentProject;
       
       if (this.editingId) {
-        await FeaturesService.updateFeature(this.editingId, formData);
+        await featuresService.updateFeature(this.editingId, formData);
         showToast('Feature updated', 'success');
       } else {
-        await FeaturesService.createFeature(projectId, formData);
+        await featuresService.createFeature(projectId, formData);
         showToast('Feature created', 'success');
       }
 
@@ -146,7 +149,7 @@ export class FeaturesPage {
     if (!confirmed) return;
 
     try {
-      await FeaturesService.deleteFeature(id);
+      await featuresService.deleteFeature(id);
       showToast('Feature deleted', 'success');
       await this.loadFeatures();
     } catch (error) {
