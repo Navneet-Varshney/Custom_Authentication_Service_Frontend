@@ -18,9 +18,17 @@ class RequirementsService {
    * Get requirements by elicitation
    */
   async getRequirements(projectId, page = 1, pageSize = 10) {
-    return apiClient.get(
+    const response = await apiClient.get(
       `${API_CONFIG.ENDPOINTS.REQUIREMENTS}/list?projectId=${projectId}&page=${page}&pageSize=${pageSize}`
     );
+    
+    // Check if response was successful
+    if (!response.success) {
+      throw new Error(response.message || 'Failed to fetch requirements');
+    }
+    
+    // Return the data array
+    return response.data || [];
   }
 
   /**

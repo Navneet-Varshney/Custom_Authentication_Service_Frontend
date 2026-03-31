@@ -47,7 +47,8 @@ export class RequirementsPage {
         return;
       }
 
-      this.requirements = await RequirementsService.getRequirements(projectId);
+      const data = await requirementsService.getRequirements(projectId);
+      this.requirements = Array.isArray(data) ? data : [];
       this.renderQFDView();
     } catch (error) {
       showToast(error.message || 'Failed to load requirements', 'error');
