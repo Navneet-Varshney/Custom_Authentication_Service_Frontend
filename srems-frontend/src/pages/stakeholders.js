@@ -30,7 +30,7 @@ export class StakeholdersPage {
         return;
       }
 
-      this.stakeholders = await StakeholdersService.getProjectStakeholders(projectId);
+      this.stakeholders = await stakeholdersService.getProjectStakeholders(projectId);
       this.renderStakeholders();
     } catch (error) {
       showToast(error.message || 'Failed to load stakeholders', 'error');
@@ -157,10 +157,10 @@ export class StakeholdersPage {
       const projectId = store.getState().currentProject;
       
       if (this.editingId) {
-        await StakeholdersService.updateStakeholder(this.editingId, formData);
+        await stakeholdersService.updateStakeholder(this.editingId, formData);
         showToast('Stakeholder updated', 'success');
       } else {
-        await StakeholdersService.addStakeholder(projectId, formData);
+        await stakeholdersService.addStakeholder(projectId, formData);
         showToast('Stakeholder added', 'success');
       }
 
@@ -176,7 +176,7 @@ export class StakeholdersPage {
     if (!confirmed) return;
 
     try {
-      await StakeholdersService.deleteStakeholder(id);
+      await stakeholdersService.deleteStakeholder(id);
       showToast('Stakeholder removed', 'success');
       await this.loadStakeholders();
     } catch (error) {
