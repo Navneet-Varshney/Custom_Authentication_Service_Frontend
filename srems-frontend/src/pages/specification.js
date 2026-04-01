@@ -31,9 +31,9 @@ export class SpecificationPage {
       }
 
       // Load all data
-      this.project = await ProjectsService.getProjectById(projectId);
-      this.requirements = await RequirementsService.getRequirements(projectId);
-      this.scopeItems = await ScopeService.getScopesByProject(projectId);
+      this.project = await projectsService.getProjectById(projectId);
+      this.requirements = await requirementsService.getRequirements(projectId);
+      this.scopeItems = await scopeService.getScopesByProject(projectId);
 
       this.renderSRS();
     } catch (error) {
