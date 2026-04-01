@@ -264,7 +264,7 @@ export function showConfirmDialog(title, message) {
 export function showModal(modalId) {
   const modal = document.getElementById(modalId);
   if (modal) {
-    modal.style.display = 'block';
+    modal.classList.remove('hidden');
     modal.classList.add('show');
   }
 }
@@ -275,8 +275,8 @@ export function showModal(modalId) {
 export function hideModal(modalId) {
   const modal = document.getElementById(modalId);
   if (modal) {
-    modal.style.display = 'none';
     modal.classList.remove('show');
+    modal.classList.add('hidden');
   }
 }
 
