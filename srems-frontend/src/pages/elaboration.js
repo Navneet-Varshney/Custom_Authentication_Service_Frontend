@@ -28,7 +28,7 @@ export class ElaborationPage {
         return;
       }
 
-      this.requirements = await RequirementsService.getRequirements(projectId);
+      this.requirements = await requirementsService.getRequirements(projectId);
       this.renderRequirementsQueue();
     } catch (error) {
       showToast(error.message || 'Failed to load requirements', 'error');
@@ -108,7 +108,7 @@ export class ElaborationPage {
     };
 
     try {
-      await RequirementsService.updateRequirement(req._id, {
+      await requirementsService.updateRequirement(req._id, {
         elaborated: true,
         elaborationDetails: formData,
       });
