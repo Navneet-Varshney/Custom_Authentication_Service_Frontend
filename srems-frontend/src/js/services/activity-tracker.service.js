@@ -9,11 +9,23 @@ import { API_CONFIG } from '../utils/constants.js';
 class ActivityTrackerService {
   /**
    * Get all activities
+   * Backend: /activity-trackers/list (no query params)
    */
   async getActivities(page = 1, pageSize = 20) {
-    return apiClient.get(
-      `${API_CONFIG.ENDPOINTS.ACTIVITY_TRACKER}/list?page=${page}&pageSize=${pageSize}`
-    );
+    try {
+      const response = await apiClient.get(
+        `${API_CONFIG.ENDPOINTS.ACTIVITY_TRACKER}/list`
+      );
+      
+      if (!response.success) {
+        return [];
+      }
+      
+      return Array.isArray(response.data) ? response.data : [];
+    } catch (error) {
+      console.error('Failed to fetch activities:', error);
+      return [];
+    }
   }
 
   /**
