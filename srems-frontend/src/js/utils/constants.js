@@ -5,13 +5,23 @@
  */
 
 // ═════════════════════════════════════════════════════════════════════════════
-// API CONFIGURATION
+// ENVIRONMENT VARIABLES (from window.ENV - loaded by env.js)
+// ═════════════════════════════════════════════════════════════════════════════
+
+const getEnvVar = (key, defaultValue) => {
+  // Get from window.ENV (loaded by env.js in index.html)
+  const value = window.ENV?.[key];
+  return value !== undefined ? value : defaultValue;
+};
+
+// ═════════════════════════════════════════════════════════════════════════════
+// API CONFIGURATION (Environment-aware)
 // ═════════════════════════════════════════════════════════════════════════════
 
 export const API_CONFIG = {
-  BASE_URL: 'http://localhost:8082',
-  BASE_PATH: '/software-management-service',
-  API_VERSION: '/api/v1',
+  BASE_URL: getEnvVar('API_BASE_URL', 'http://localhost:8082'),
+  BASE_PATH: getEnvVar('API_SERVICE_PATH', '/software-management-service'),
+  API_VERSION: getEnvVar('API_VERSION', '/api/v1'),
   
   // Complete URI paths
   ENDPOINTS: {
@@ -35,6 +45,48 @@ export const API_CONFIG = {
     PATCH: 'PATCH',
     DELETE: 'DELETE',
     PUT: 'PUT'
+  }
+};
+
+// ═════════════════════════════════════════════════════════════════════════════
+// APPLICATION CONFIGURATION (Environment-aware)
+// ═════════════════════════════════════════════════════════════════════════════
+
+export const APP_CONFIG = {
+  NAME: getEnvVar('APP_NAME', 'SREMS Frontend'),
+  ENVIRONMENT: getEnvVar('ENVIRONMENT', 'development'),
+  IS_DEVELOPMENT: getEnvVar('ENVIRONMENT', 'development') === 'development',
+  IS_PRODUCTION: getEnvVar('ENVIRONMENT', 'development') === 'production',
+};
+
+// ═════════════════════════════════════════════════════════════════════════════
+// LOGGING CONFIGURATION (Environment-aware)
+// ═════════════════════════════════════════════════════════════════════════════
+
+export const LOGGING_CONFIG = {
+  ENABLED: getEnvVar('ENABLE_LOGGING', 'true') === 'true',
+  LEVEL: getEnvVar('LOG_LEVEL', 'info'),
+  LEVELS: {
+    DEBUG: 'debug',
+    INFO: 'info',
+    WARN: 'warn',
+    ERROR: 'error'
+  }
+};
+
+// ═════════════════════════════════════════════════════════════════════════════
+// SESSION CONFIGURATION (Environment-aware)
+// ═════════════════════════════════════════════════════════════════════════════
+
+export const SESSION_CONFIG = {
+  TIMEOUT_MINUTES: parseInt(getEnvVar('SESSION_TIMEOUT_MINUTES', '30'), 10),
+  TOKEN_REFRESH_INTERVAL_MINUTES: parseInt(getEnvVar('TOKEN_REFRESH_INTERVAL_MINUTES', '5'), 10),
+  STORAGE_KEYS: {
+    ACCESS_TOKEN: 'accessToken',
+    DEVICE_UUID: 'deviceUUID',
+    DEVICE_TYPE: 'deviceType',
+    USER_DATA: 'user',
+    THEME: 'theme'
   }
 };
 
