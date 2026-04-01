@@ -19,25 +19,30 @@ class ElicitationService {
 
   /**
    * Get all elicitations
+   * Backend requires: /elicitations/list/:projectId
+   * Using fallback projectId if not provided
    */
-  async getElicitations(page = 1, pageSize = 10) {
-    const response = await apiClient.get(
-      `${API_CONFIG.ENDPOINTS.ELICITATION}/list?page=${page}&pageSize=${pageSize}`
-    );
-    
-    // Check if response was successful
-    if (!response.success) {
-      throw new Error(response.message || 'Failed to fetch elicitations');
+  async getElicitations(projectId = 'all', page = 1, pageSize = 10) {
+    try {
+      const response = await apiClient.get(
+        `${API_CONFIG.ENDPOINTS.ELICITATION}/list/${projectId}`
+      );
+      
+      if (!response.success) {
+        return [];
+      }
+      
+      return Array.isArray(response.data) ? response.data : [];
+    } catch (error) {
+      console.error('Failed to fetch elicitations:', error);
+      return [];
     }
-    
-    // Return the data array
-    return response.data || [];
   }
 
   /**
-   * Get elicitation by ID
+   * Get single elicitation
    */
-  async getElicitationById(elicitationId) {
+  async getElicitation(elicitationId) {
     return apiClient.get(
       `${API_CONFIG.ENDPOINTS.ELICITATION}/get/${elicitationId}`
     );
