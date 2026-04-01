@@ -23,29 +23,29 @@ export const API_CONFIG = {
   BASE_PATH: getEnvVar('API_SERVICE_PATH', '/software-management-service'),
   API_VERSION: getEnvVar('API_VERSION', '/api/v1'),
   
-  // Complete URI paths - MUST MATCH BACKEND uri.config.js
+  // Complete URI paths - MUST MATCH BACKEND uri.config.js EXACTLY
   ENDPOINTS: {
     // Core Management
     PROJECTS: '/projects',
     STAKEHOLDERS: '/stakeholders',
     PRODUCT_REQUESTS: '/product-requests',
     
-    // SREMS RE Workflow (Singular forms to match backend)
+    // SREMS RE Workflow - PLURAL FORMS TO MATCH BACKEND
     SCOPE: '/scope',
     HIGH_LEVEL_FEATURES: '/high-level-features',
-    PRODUCT_VISION: '/product-visions',
-    ELICITATION: '/elicitation',      // Backend /api/v1/elicitation
-    INCEPTION: '/inception',           // Backend /api/v1/inception
-    ELABORATION: '/elaboration',       // Backend /api/v1/elaboration
-    NEGOTIATION: '/negotiation',       // Backend /api/v1/negotiation
-    SPECIFICATION: '/specification',   // Backend /api/v1/specification
-    VALIDATION: '/validation',         // Backend /api/v1/validation
+    PRODUCT_VISION: '/product-vision',              // Backend: /product-vision (NO list endpoint)
+    ELICITATION: '/elicitations',                   // Backend: /elicitations (PLURAL!)
+    INCEPTION: '/inceptions',                       // Backend: /inceptions (PLURAL!)
+    ELABORATION: '/elaborations',                   // Backend: /elaborations (PLURAL!)
+    NEGOTIATION: '/negotiations',                   // Backend: /negotiations (PLURAL!)
+    SPECIFICATION: '/specifications',               // Backend: /specifications (PLURAL!)
+    VALIDATION: '/validations',                     // Backend: /validations (PLURAL!)
     
-    // Shared Features
+    // Shared Features & Collaboration
     COMMENTS: '/comments',
     ACTIVITY_TRACKER: '/activity-trackers',
-    MEETINGS: '/meetings',              // ✅ New: backend /api/v1/meetings
-    PARTICIPANTS: '/participants',      // ✅ New: backend /api/v1/participants
+    MEETINGS: '/meetings',                          // Backend: /meetings (requires :entityType/:projectId)
+    PARTICIPANTS: '/participants',                  // Backend: /participants (requires :entityType/:meetingId)
   },
 
   // HTTP Methods
