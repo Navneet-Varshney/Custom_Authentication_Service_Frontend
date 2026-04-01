@@ -78,6 +78,3 @@ async function loadEnvVariables() {
 
 // Auto-load environment variables on script load
 loadEnvVariables();
-
-// Export for ES modules if needed
-export default window.ENV;
