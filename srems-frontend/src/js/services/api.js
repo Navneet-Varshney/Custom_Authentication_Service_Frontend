@@ -90,7 +90,7 @@ class ApiClient {
     };
 
     // Add body for non-GET requests
-    if (data && (method === 'POST' || method === 'PATCH' || method === 'PUT')) {
+    if (data && (method === 'POST' || method === 'PATCH' || method === 'PUT' || method === 'DELETE')) {
       config.body = JSON.stringify(data);
     }
 
@@ -138,13 +138,21 @@ class ApiClient {
         errorCode = 'TIMEOUT';
       }
 
+      // Log full error details including validation errors
       console.error(`[API Error] ${method} ${endpoint}:`, error);
+      if (error.data?.errors) {
+        console.error('[Validation Errors]:', error.data.errors);
+      }
+      if (error.data?.data?.errors) {
+        console.error('[Validation Errors (nested)]:', error.data.data.errors);
+      }
 
       return {
         success: false,
         status: errorCode,
         message: errorMessage,
-        error: error
+        error: error,
+        validationErrors: error.data?.errors || error.data?.data?.errors
       };
     }
   }
@@ -177,8 +185,8 @@ class ApiClient {
   // DELETE requests
   // ═══════════════════════════════════════════════════════════════════════════
 
-  async delete(endpoint, options = {}) {
-    return this.request('DELETE', endpoint, null, options);
+  async delete(endpoint, data = null, options = {}) {
+    return this.request('DELETE', endpoint, data, options);
   }
 
   // ═══════════════════════════════════════════════════════════════════════════
