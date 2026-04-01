@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Comments - SREMS</title>
+  <link rel="stylesheet" href="../../styles/components.css">
+</head>
+<body>
+<div class="page-container">
+  <!-- Hero Section -->
+  <div class="page-hero">
+    <div class="hero-content">
+      <h1 class="page-title">💬 Comments & Discussion</h1>
+      <p class="page-description">View and manage all comments and discussions across requirement documents</p>
+    </div>
+  </div>
+
+  <!-- Filters & Search -->
+  <div class="filters-bar">
+    <div class="search-group">
+      <input 
+        type="text" 
+        id="searchComments" 
+        class="search-input" 
+        placeholder="Search comments..."
+      >
+    </div>
+    <div class="filter-group">
+      <select id="filterType" class="filter-select">
+        <option value="">All Types</option>
+        <option value="REQUIREMENT">Requirement</option>
+        <option value="SCOPE">Scope</option>
+        <option value="FEATURE">Feature</option>
+        <option value="SPECIFICATION">Specification</option>
+        <option value="VALIDATION">Validation</option>
+      </select>
+      <select id="filterStatus" class="filter-select">
+        <option value="">All Status</option>
+        <option value="OPEN">Open</option>
+        <option value="RESOLVED">Resolved</option>
+        <option value="PENDING">Pending</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- Comments List -->
+  <div id="commentsList" class="comments-section">
+    <div class="loading-state">
+      <div class="spinner"></div>
+      <p>Loading comments...</p>
+    </div>
+  </div>
+</div>
+
+<script type="module" src="./comments.js"></script>
+</body>
+</html>
