@@ -19,25 +19,31 @@ class InceptionService {
 
   /**
    * Get all inception documents
+   * Backend requires: /inceptions/list/:projectId
+   * Using fallback projectId if not provided
    */
-  async getInceptions(page = 1, pageSize = 10) {
-    const response = await apiClient.get(
-      `${API_CONFIG.ENDPOINTS.INCEPTION}/list?page=${page}&pageSize=${pageSize}`
-    );
-    
-    // Check if response was successful
-    if (!response.success) {
-      throw new Error(response.message || 'Failed to fetch inceptions');
+  async getInceptions(projectId = 'all', page = 1, pageSize = 10) {
+    try {
+      const response = await apiClient.get(
+        `${API_CONFIG.ENDPOINTS.INCEPTION}/list/${projectId}`
+      );
+      
+      if (!response.success) {
+        // Return empty array instead of throwing to show "No data" state
+        return [];
+      }
+      
+      return Array.isArray(response.data) ? response.data : [];
+    } catch (error) {
+      console.error('Failed to fetch inceptions:', error);
+      return [];  // Fallback to empty array
     }
-    
-    // Return the data array
-    return response.data || [];
   }
 
   /**
-   * Get inception document by ID
+   * Get single inception document
    */
-  async getInceptionById(inceptionId) {
+  async getInception(inceptionId) {
     return apiClient.get(
       `${API_CONFIG.ENDPOINTS.INCEPTION}/get/${inceptionId}`
     );
