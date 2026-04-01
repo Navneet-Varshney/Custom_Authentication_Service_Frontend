@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Meetings - SREMS</title>
+  <link rel="stylesheet" href="../../styles/components.css">
+</head>
+<body>
+<div class="page-container">
+  <!-- Hero Section -->
+  <div class="page-hero">
+    <div class="hero-content">
+      <h1 class="page-title">📅 Meetings</h1>
+      <p class="page-description">Schedule, manage, and track all requirement engineering meetings</p>
+    </div>
+    <div class="hero-actions">
+      <button class="btn btn-primary btn-lg" id="newMeetingBtn">
+        <span class="btn-icon">➕</span> Schedule Meeting
+      </button>
+    </div>
+  </div>
+
+  <!-- Filters & Search -->
+  <div class="filters-bar">
+    <div class="search-group">
+      <input 
+        type="text" 
+        id="searchMeetings" 
+        class="search-input" 
+        placeholder="Search meetings..."
+      >
+    </div>
+    <div class="filter-group">
+      <select id="filterStatus" class="filter-select">
+        <option value="">All Status</option>
+        <option value="SCHEDULED">Scheduled</option>
+        <option value="COMPLETED">Completed</option>
+        <option value="CANCELLED">Cancelled</option>
+        <option value="RESCHEDULED">Rescheduled</option>
+      </select>
+      <select id="filterType" class="filter-select">
+        <option value="">All Types</option>
+        <option value="KICKOFF">Kickoff</option>
+        <option value="ELICITATION">Elicitation</option>
+        <option value="REVIEW">Review</option>
+        <option value="VALIDATION">Validation</option>
+        <option value="OTHER">Other</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- Meetings List -->
+  <div id="meetingsList" class="meetings-grid">
+    <div class="loading-state">
+      <div class="spinner"></div>
+      <p>Loading meetings...</p>
+    </div>
+  </div>
+
+  <!-- Meeting Form Modal -->
+  <div id="meetingModal" class="modal" style="display: none;">
+    <div class="modal-backdrop"></div>
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2 id="modalTitle">Schedule Meeting</h2>
+        <button class="modal-close" type="button">&times;</button>
+      </div>
+      <form id="meetingForm" class="modal-form">
+        <div class="form-group">
+          <label for="meetingTitle">Meeting Title *</label>
+          <input type="text" id="meetingTitle" name="title" required>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="meetingDate">Date *</label>
+            <input type="date" id="meetingDate" name="date" required>
+          </div>
+          <div class="form-group">
+            <label for="meetingTime">Time *</label>
+            <input type="time" id="meetingTime" name="time" required>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="meetingType">Meeting Type</label>
+          <select id="meetingType" name="type">
+            <option value="KICKOFF">Kickoff</option>
+            <option value="ELICITATION">Elicitation</option>
+            <option value="REVIEW">Review</option>
+            <option value="VALIDATION">Validation</option>
+            <option value="OTHER">Other</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="meetingLocation">Location / Meeting Link</label>
+          <input type="text" id="meetingLocation" name="location" placeholder="Room or Zoom URL">
+        </div>
+
+        <div class="form-group">
+          <label for="meetingDescription">Description</label>
+          <textarea id="meetingDescription" name="description" rows="3" placeholder="Meeting purpose and agenda"></textarea>
+        </div>
+
+        <div class="form-group">
+          <label for="meetingDuration">Duration (minutes)</label>
+          <input type="number" id="meetingDuration" name="duration" min="15" max="480" value="60">
+        </div>
+
+        <div class="form-group">
+          <label for="meetingParticipants">Participants (comma separated)</label>
+          <textarea id="meetingParticipants" name="participants" rows="3" placeholder="Email addresses or names"></textarea>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" id="cancelMeetingBtn">Cancel</button>
+          <button type="submit" class="btn btn-primary">Schedule Meeting</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script type="module" src="./meetings.js"></script>
+</body>
+</html>
