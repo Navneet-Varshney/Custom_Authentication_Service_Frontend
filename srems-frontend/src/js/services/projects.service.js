@@ -12,7 +12,16 @@ class ProjectsService {
    * Create a new project
    */
   async createProject(projectData) {
-    return apiClient.post(`${API_CONFIG.ENDPOINTS.PROJECTS}/create`, projectData);
+    const response = await apiClient.post(`${API_CONFIG.ENDPOINTS.PROJECTS}/create`, projectData);
+    
+    // Check if response was successful
+    if (!response.success) {
+      throw new Error(response.message || 'Failed to create project');
+    }
+    
+    // Return the project object from nested data structure
+    // Backend response: { success, message, data: { project: {...} } }
+    return response.data?.data?.project || {};
   }
 
   /**
@@ -28,32 +37,73 @@ class ProjectsService {
       throw new Error(response.message || 'Failed to fetch projects');
     }
     
-    // Return the data array
-    return response.data || [];
+    // Return the projects array from nested data structure
+    // Backend response: { success, message, data: { projects: [...], pagination: {...} } }
+    return response.data?.data?.projects || [];
   }
 
   /**
    * Get single project by ID
    */
   async getProjectById(projectId) {
-    return apiClient.get(`${API_CONFIG.ENDPOINTS.PROJECTS}/get/${projectId}`);
+    const response = await apiClient.get(`${API_CONFIG.ENDPOINTS.PROJECTS}/get/${projectId}`);
+    
+    // Check if response was successful
+    if (!response.success) {
+      throw new Error(response.message || 'Failed to fetch project');
+    }
+    
+    // Return the project object from nested data structure
+    return response.data?.data?.project || {};
   }
 
   /**
    * Update project
    */
   async updateProject(projectId, updateData) {
-    return apiClient.patch(
+    const response = await apiClient.patch(
       `${API_CONFIG.ENDPOINTS.PROJECTS}/update/${projectId}`,
       updateData
     );
+    
+    // Check if response was successful
+    if (!response.success) {
+      throw new Error(response.message || 'Failed to update project');
+    }
+    
+    // Return the project object from nested data structure
+    return response.data?.data?.project || {};
   }
 
   /**
    * Delete project
    */
-  async deleteProject(projectId) {
-    return apiClient.delete(`${API_CONFIG.ENDPOINTS.PROJECTS}/delete/${projectId}`);
+  async deleteProject(projectId, deletionReason = 'other', description = '') {
+    const deleteData = {
+      deletionReasonType: deletionReason,
+    };
+    
+    if (description) {
+      deleteData.deletionReasonDescription = description;
+    }
+    
+    console.log('[DELETE] Sending data:', deleteData);
+    
+    const response = await apiClient.delete(
+      `${API_CONFIG.ENDPOINTS.PROJECTS}/delete/${projectId}`, 
+      deleteData
+    );
+    
+    console.log('[DELETE] Response:', response);
+    
+    // Check if response was successful
+    if (!response.success) {
+      // Log full error details for debugging
+      console.error('[DELETE ERROR] Full response:', response);
+      throw new Error(response.message || 'Failed to delete project');
+    }
+    
+    return response.data || {};
   }
 
   /**
