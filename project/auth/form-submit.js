@@ -104,6 +104,7 @@ export function initFormSubmit({
       const contactMode = data.data?.contactMode || (emailInput.value ? "EMAIL" : "PHONE");
       localStorage.setItem("otpDeliveryMode", contactMode);
       localStorage.setItem("otpPurpose", "EMAIL_VERIFICATION");
+      localStorage.setItem("userName", usernameInput.value.trim());
       localStorage.setItem("signupEmail", emailInput.value || "");
       localStorage.setItem("signupPhone", localNumber ? `+${countryCode}${localNumber}` : "");
 
