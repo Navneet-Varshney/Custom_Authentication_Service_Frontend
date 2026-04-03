@@ -227,6 +227,58 @@
   z-index: 1 !important;
 }
 
+/* Navigation Admin Button */
+.nav-admin-btn {
+  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+  color: white !important;
+  padding: 8px 16px !important;
+  border-radius: 6px !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  font-size: 13px !important;
+  font-weight: 600 !important;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  box-shadow: 0 2px 8px rgba(245, 87, 108, 0.3) !important;
+  position: relative !important;
+  overflow: hidden !important;
+}
+
+.nav-admin-btn::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.2);
+  transform: translate(-50%, -50%);
+  transition: width 0.4s, height 0.4s;
+  z-index: 0;
+}
+
+.nav-admin-btn:hover::before {
+  width: 150px;
+  height: 150px;
+}
+
+.nav-admin-btn:hover {
+  transform: translateY(-2px) !important;
+  box-shadow: 0 4px 12px rgba(245, 87, 108, 0.4) !important;
+}
+
+.nav-admin-btn:active {
+  transform: translateY(0) !important;
+  box-shadow: 0 2px 6px rgba(245, 87, 108, 0.3) !important;
+}
+
+.nav-admin-btn .material-icons {
+  font-size: 18px !important;
+  position: relative !important;
+  z-index: 1 !important;
+}
+
 .btn-label {
   position: relative;
   z-index: 1;
