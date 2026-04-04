@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Admin Panel - Initializing</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
+    <link rel="stylesheet" href="index.css" />
+  </head>
+  <body>
+    <div class="container">
+      <!-- Logo Section -->
+      <div class="logo-container">
+        <div class="logo-icon">
+          <span class="material-icons" style="font-size: 32px;">admin_panel_settings</span>
+        </div>
+        <div class="logo-text">Admin Panel</div>
+      </div>
+
+      <!-- Loader Section -->
+      <div class="loader-box">
+        <div class="spinner"></div>
+        <div class="loader-text">Initializing Admin Panel</div>
+        <div class="progress-container">
+          <div class="progress-bar"></div>
+        </div>
+        <div class="subtitle">Loading management system</div>
+      </div>
+
+      <p class="text-below">
+        Redirecting to <a href="dashboard/index.html">admin dashboard</a>...
+      </p>
+    </div>
+
+    <script>
+      console.log("✅ Admin Panel initialization started");
+      
+      // Update loading text
+      const loaderText = document.querySelector('.loader-text');
+      if (loaderText) {
+        loaderText.textContent = 'Initializing Admin Dashboard';
+      }
+      
+      const subtitle = document.querySelector('.subtitle');
+      if (subtitle) {
+        subtitle.textContent = 'Loading dashboard...';
+      }
+      
+      setTimeout(() => {
+        console.log("🚀 Redirecting to admin dashboard...");
+        window.location.href = "dashboard/index.html";
+      }, 2500);
+
+      // Fallback redirect if JavaScript is disabled
+      document.head.innerHTML += '<meta http-equiv="refresh" content="3; url=dashboard/index.html" />';
+    </script>
+  </body>
+</html>

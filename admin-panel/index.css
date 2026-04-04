@@ -1,0 +1,160 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: "Inter", sans-serif;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.container {
+  text-align: center;
+  color: white;
+}
+
+.logo-container {
+  margin-bottom: 40px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 15px;
+}
+
+.logo-icon {
+  font-size: 48px;
+  animation: slideDown 0.6s ease-out;
+}
+
+.logo-text {
+  font-size: 32px;
+  font-weight: 700;
+  animation: fadeIn 0.8s ease-out;
+}
+
+.loader-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+  margin: 40px 0;
+}
+
+.spinner {
+  width: 50px;
+  height: 50px;
+  border: 4px solid rgba(255, 255, 255, 0.3);
+  border-top: 4px solid white;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.loader-text {
+  font-size: 18px;
+  font-weight: 600;
+  animation: fadeIn 0.8s ease-out 0.2s backwards;
+}
+
+.progress-container {
+  width: 300px;
+  height: 4px;
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 2px;
+  overflow: hidden;
+  margin: 20px 0;
+}
+
+.progress-bar {
+  height: 100%;
+  background: white;
+  border-radius: 2px;
+  animation: progress 2.5s ease-in-out;
+}
+
+@keyframes progress {
+  0% {
+    width: 0%;
+  }
+  50% {
+    width: 70%;
+  }
+  100% {
+    width: 100%;
+  }
+}
+
+.subtitle {
+  font-size: 14px;
+  opacity: 0.9;
+  animation: fadeIn 0.8s ease-out 0.4s backwards;
+}
+
+.text-below {
+  margin-top: 40px;
+  font-size: 14px;
+  opacity: 0.9;
+}
+
+.text-below a {
+  color: white;
+  text-decoration: none;
+  font-weight: 600;
+  transition: opacity 0.3s ease;
+}
+
+.text-below a:hover {
+  opacity: 0.8;
+}
+
+@media (max-width: 600px) {
+  .spinner {
+    width: 40px;
+    height: 40px;
+  }
+
+  .loader-text {
+    font-size: 16px;
+  }
+
+  .progress-container {
+    width: 250px;
+  }
+
+  .logo-text {
+    font-size: 24px;
+  }
+}
