@@ -1,0 +1,317 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Dashboard - Admin Panel</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
+    <link rel="stylesheet" href="dashboard.css" />
+  </head>
+  <body>
+    <div class="dashboard-container">
+      <!-- Sidebar -->
+      <aside class="sidebar">
+        <div class="sidebar-header">
+          <div class="logo">
+            <span class="material-icons">admin_panel_settings</span>
+            <span>Admin</span>
+          </div>
+          <button class="sidebar-toggle" id="sidebarToggle">
+            <span class="material-icons">menu</span>
+          </button>
+        </div>
+
+        <nav class="sidebar-nav">
+          <a href="#dashboard" class="nav-link active" data-page="dashboard">
+            <span class="material-icons">dashboard</span>
+            <span class="label">Dashboard</span>
+          </a>
+          <a href="#admins" class="nav-link" data-page="admins">
+            <span class="material-icons">person_add</span>
+            <span class="label">Admins</span>
+          </a>
+          <a href="#users" class="nav-link" data-page="users">
+            <span class="material-icons">group</span>
+            <span class="label">Users</span>
+          </a>
+          <a href="#organizations" class="nav-link" data-page="organizations">
+            <span class="material-icons">business</span>
+            <span class="label">Organizations</span>
+          </a>
+          <a href="#devices" class="nav-link" data-page="devices">
+            <span class="material-icons">devices</span>
+            <span class="label">Devices</span>
+          </a>
+          <a href="#activities" class="nav-link" data-page="activities">
+            <span class="material-icons">history</span>
+            <span class="label">Activities</span>
+          </a>
+        </nav>
+
+        <div class="sidebar-footer">
+          <button class="logout-btn" id="logoutBtn">
+            <span class="material-icons">logout</span>
+            <span class="label">Logout</span>
+          </button>
+        </div>
+      </aside>
+
+      <!-- Main Content -->
+      <main class="main-content">
+        <!-- Top Header -->
+        <header class="top-header">
+          <div class="header-left">
+            <h1 id="pageTitle">Dashboard</h1>
+          </div>
+          <div class="header-right">
+            <div class="search-box">
+              <input type="text" id="searchInput" placeholder="Search..." />
+              <span class="material-icons">search</span>
+            </div>
+            <button class="theme-toggle" id="themeToggle" title="Toggle Dark/Light Mode">
+              <span class="material-icons">dark_mode</span>
+            </button>
+            <div class="user-profile">
+              <span id="adminName" class="admin-name">Admin</span>
+              <span class="material-icons">account_circle</span>
+            </div>
+          </div>
+        </header>
+
+        <!-- Page Content -->
+        <div class="content-wrapper">
+          <!-- Dashboard Page -->
+          <div id="dashboard" class="page active">
+            <div class="stats-grid">
+              <div class="stat-card">
+                <div class="stat-icon">👤</div>
+                <div class="stat-content">
+                  <h3>Total Admins</h3>
+                  <p class="stat-value" id="totalAdmins">0</p>
+                </div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-icon">👥</div>
+                <div class="stat-content">
+                  <h3>Total Users</h3>
+                  <p class="stat-value" id="totalUsers">0</p>
+                </div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-icon">🏢</div>
+                <div class="stat-content">
+                  <h3>Organizations</h3>
+                  <p class="stat-value" id="totalOrgs">0</p>
+                </div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-icon">📱</div>
+                <div class="stat-content">
+                  <h3>Devices</h3>
+                  <p class="stat-value" id="totalDevices">0</p>
+                </div>
+              </div>
+            </div>
+
+            <div class="recent-activities">
+              <h2>Recent Activities</h2>
+              <div id="recentActivityList" class="activity-list">
+                <div class="loading">Loading recent activities...</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Admins Page -->
+          <div id="admins" class="page">
+            <div class="page-header">
+              <h2>Admin Management</h2>
+              <button class="btn btn-primary" id="addAdminBtn">
+                <span class="material-icons">add</span>
+                Add Admin
+              </button>
+            </div>
+
+            <div class="filters">
+              <input type="text" id="adminSearch" placeholder="Search admins..." />
+              <select id="adminRoleFilter">
+                <option value="">All Roles</option>
+                <option value="SUPER_ADMIN">Super Admin</option>
+                <option value="ORG_ADMIN">Organization Admin</option>
+                <option value="OPERATIONS_ADMIN">Operations Admin</option>
+                <option value="SUPPORT_ADMIN">Support Admin</option>
+                <option value="AUDIT_ADMIN">Audit Admin</option>
+              </select>
+            </div>
+
+            <div class="table-container">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Email</th>
+                    <th>Name</th>
+                    <th>Role</th>
+                    <th>Status</th>
+                    <th>Created</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="adminsList">
+                  <tr class="loading-row"><td colspan="6">Loading...</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Users Page -->
+          <div id="users" class="page">
+            <div class="page-header">
+              <h2>User Management</h2>
+            </div>
+
+            <div class="filters">
+              <input type="text" id="userSearch" placeholder="Search users..." />
+              <select id="userStatusFilter">
+                <option value="">All Status</option>
+                <option value="active">Active</option>
+                <option value="blocked">Blocked</option>
+              </select>
+            </div>
+
+            <div class="table-container">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Email</th>
+                    <th>Name</th>
+                    <th>Phone</th>
+                    <th>Status</th>
+                    <th>Verified</th>
+                    <th>Created</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="usersList">
+                  <tr class="loading-row"><td colspan="7">Loading...</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Organizations Page -->
+          <div id="organizations" class="page">
+            <div class="page-header">
+              <h2>Organization Management</h2>
+              <button class="btn btn-primary" id="addOrgBtn">
+                <span class="material-icons">add</span>
+                Create Organization
+              </button>
+            </div>
+
+            <div class="filters">
+              <input type="text" id="orgSearch" placeholder="Search organizations..." />
+            </div>
+
+            <div class="table-container">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Organization Name</th>
+                    <th>Email</th>
+                    <th>Contact</th>
+                    <th>Status</th>
+                    <th>Users</th>
+                    <th>Created</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="organizationsList">
+                  <tr class="loading-row"><td colspan="7">Loading...</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Devices Page -->
+          <div id="devices" class="page">
+            <div class="page-header">
+              <h2>Device Management</h2>
+            </div>
+
+            <div class="filters">
+              <input type="text" id="deviceSearch" placeholder="Search devices..." />
+              <select id="deviceStatusFilter">
+                <option value="">All Status</option>
+                <option value="active">Active</option>
+                <option value="blocked">Blocked</option>
+              </select>
+            </div>
+
+            <div class="table-container">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Device ID</th>
+                    <th>User</th>
+                    <th>Device Type</th>
+                    <th>OS</th>
+                    <th>Status</th>
+                    <th>Last Active</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="devicesList">
+                  <tr class="loading-row"><td colspan="7">Loading...</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Activities Page -->
+          <div id="activities" class="page">
+            <div class="page-header">
+              <h2>Activity Logs</h2>
+            </div>
+
+            <div class="filters">
+              <input type="text" id="activitySearch" placeholder="Search activities..." />
+              <select id="activityTypeFilter">
+                <option value="">All Types</option>
+                <option value="CREATE">Create</option>
+                <option value="UPDATE">Update</option>
+                <option value="DELETE">Delete</option>
+                <option value="BLOCK">Block</option>
+                <option value="UNBLOCK">Unblock</option>
+              </select>
+            </div>
+
+            <div class="table-container">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Admin</th>
+                    <th>Action</th>
+                    <th>Entity Type</th>
+                    <th>Entity ID</th>
+                    <th>Timestamp</th>
+                    <th>Details</th>
+                  </tr>
+                </thead>
+                <tbody id="activitiesList">
+                  <tr class="loading-row"><td colspan="6">Loading...</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+
+    <script src="../assets/theme.js"></script>
+    <script src="../assets/api.js"></script>
+    <script src="../assets/utils.js"></script>
+    <script src="dashboard.js"></script>
+  </body>
+</html>
