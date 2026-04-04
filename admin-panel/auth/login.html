@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Admin Login - Admin Panel</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
+    <link rel="stylesheet" href="login.css" />
+  </head>
+  <body>
+    <div class="login-container">
+      <div class="login-card">
+        <!-- Header -->
+        <div class="login-header">
+          <div class="header-icon">
+            <span class="material-icons">admin_panel_settings</span>
+          </div>
+          <h1>Admin Panel</h1>
+          <p>Secure Management System</p>
+        </div>
+
+        <!-- Login Form -->
+        <form id="loginForm" class="login-form">
+          <!-- Email field -->
+          <div class="form-group">
+            <label for="email">
+              <span class="material-icons">email</span>
+              Email Address
+            </label>
+            <input 
+              type="email" 
+              id="email" 
+              name="email" 
+              placeholder="admin@example.com"
+              required 
+            />
+            <span class="error-message" id="emailError"></span>
+          </div>
+
+          <!-- Password field -->
+          <div class="form-group">
+            <label for="password">
+              <span class="material-icons">lock</span>
+              Password
+            </label>
+            <div class="password-wrapper">
+              <input 
+                type="password" 
+                id="password" 
+                name="password" 
+                placeholder="Enter your password"
+                required 
+              />
+              <button type="button" class="toggle-password" id="togglePassword">
+                <span class="material-icons">visibility</span>
+              </button>
+            </div>
+            <span class="error-message" id="passwordError"></span>
+          </div>
+
+          <!-- Remember me -->
+          <div class="remember-section">
+            <label class="checkbox-label">
+              <input type="checkbox" id="rememberMe" name="rememberMe" />
+              <span>Remember me</span>
+            </label>
+          </div>
+
+          <!-- Submit button -->
+          <button type="submit" class="login-btn" id="submitBtn">
+            <span class="btn-text">Sign In</span>
+            <span class="material-icons">arrow_forward</span>
+          </button>
+
+          <!-- Error message -->
+          <div class="error-message general-error" id="loginError"></div>
+        </form>
+
+        <!-- Footer -->
+        <div class="login-footer">
+          <p>© 2026 Admin Panel. All rights reserved.</p>
+        </div>
+      </div>
+
+      <!-- Theme Toggle -->
+      <button class="theme-toggle" id="themeToggle" title="Toggle Dark/Light Mode">
+        <span class="material-icons">dark_mode</span>
+      </button>
+    </div>
+
+    <script src="../assets/theme.js"></script>
+    <script src="../assets/api.js"></script>
+    <script src="../assets/utils.js"></script>
+    <script src="login.js"></script>
+  </body>
+</html>
