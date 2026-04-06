@@ -57,14 +57,18 @@ if (loginForm) {
     submitBtn.innerHTML = '<span class="material-icons" style="animation: spin 1s linear infinite;">refresh</span><span class="btn-text">Logging in...</span>';
 
     try {
-      // Call admin login API
+      // Call admin login API (now connects to auth service)
       const response = await API.adminLogin({ email, password });
 
-      // Store tokens and admin data
-      if (response.authToken) {
+      console.log('Login Response:', response);
+
+      // Handle response from auth service
+      // Auth service returns: { authToken, refreshToken, admin { _id, email, fullName, role, ... } }
+      if (response && response.authToken) {
+        localStorage.setItem('accessToken', response.authToken);
         localStorage.setItem('adminAuthToken', response.authToken);
         localStorage.setItem('adminRefreshToken', response.refreshToken || '');
-        localStorage.setItem('adminData', JSON.stringify(response.admin));
+        localStorage.setItem('adminData', JSON.stringify(response.admin || response));
 
         // Remember email if checked
         if (rememberMe) {
@@ -74,13 +78,33 @@ if (loginForm) {
         }
 
         console.log('✅ Admin login successful');
+        showNotification('Login successful! Redirecting...', 'success');
         
         // Redirect to dashboard
         setTimeout(() => {
           window.location.href = '../dashboard/index.html';
-        }, 500);
+        }, 800);
+      } else if (response && response.token) {
+        // Alternative response format
+        localStorage.setItem('accessToken', response.token);
+        localStorage.setItem('adminAuthToken', response.token);
+        localStorage.setItem('adminRefreshToken', response.refreshToken || '');
+        localStorage.setItem('adminData', JSON.stringify(response));
+
+        if (rememberMe) {
+          localStorage.setItem('rememberedAdminEmail', email);
+        } else {
+          localStorage.removeItem('rememberedAdminEmail');
+        }
+
+        console.log('✅ Admin login successful');
+        showNotification('Login successful! Redirecting...', 'success');
+        
+        setTimeout(() => {
+          window.location.href = '../dashboard/index.html';
+        }, 800);
       } else {
-        throw new Error('No authentication token received');
+        throw new Error('No authentication token received from server');
       }
     } catch (error) {
       console.error('❌ Login error:', error);
@@ -108,12 +132,44 @@ function isValidEmail(email) {
   return emailRegex.test(email);
 }
 
+// Notification helper
+function showNotification(message, type = 'success', duration = 3000) {
+  const notification = document.getElementById('notification') || (() => {
+    const div = document.createElement('div');
+    div.id = 'notification';
+    document.body.appendChild(div);
+    return div;
+  })();
+
+  notification.textContent = message;
+  notification.className = `notification show ${type}`;
+  notification.style.position = 'fixed';
+  notification.style.bottom = '20px';
+  notification.style.right = '20px';
+  notification.style.padding = '15px 20px';
+  notification.style.borderRadius = '8px';
+  notification.style.color = 'white';
+  notification.style.fontWeight = '500';
+  notification.style.zIndex = '9999';
+  notification.style.background = type === 'success' ? '#48bb78' : '#f56565';
+
+  setTimeout(() => {
+    notification.classList.remove('show');
+  }, duration);
+}
+
 // Add spin animation for loading state
 const style = document.createElement('style');
 style.textContent = `
   @keyframes spin {
     0% { transform: rotate(0deg); }
     100% { transform: rotate(360deg); }
+  }
+  .notification {
+    display: none;
+  }
+  .notification.show {
+    display: block;
   }
 `;
 document.head.appendChild(style);
