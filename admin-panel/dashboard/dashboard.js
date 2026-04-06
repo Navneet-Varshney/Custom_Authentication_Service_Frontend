@@ -7,41 +7,87 @@ let dashboardData = {
   activities: [],
 };
 
-// MOCK DATA FOR DEMO
-const MOCK_DATA = {
-  admins: [
-    { _id: '1', email: 'super@admin.com', fullName: 'Super Admin', role: 'SUPER_ADMIN', isBlocked: false, createdAt: '2024-01-15' },
-    { _id: '2', email: 'org@admin.com', fullName: 'Org Admin', role: 'ORG_ADMIN', isBlocked: false, createdAt: '2024-01-20' },
-    { _id: '3', email: 'ops@admin.com', fullName: 'Operations Admin', role: 'OPERATIONS_ADMIN', isBlocked: false, createdAt: '2024-02-01' },
-  ],
-  users: [
-    { _id: '1', email: 'john@example.com', fullName: 'John Doe', phone: '+1234567890', isBlocked: false, emailVerified: true, createdAt: '2024-01-10' },
-    { _id: '2', email: 'jane@example.com', fullName: 'Jane Smith', phone: '+9876543210', isBlocked: false, emailVerified: true, createdAt: '2024-01-15' },
-    { _id: '3', email: 'bob@example.com', fullName: 'Bob Johnson', phone: '+5555555555', isBlocked: true, emailVerified: false, createdAt: '2024-02-01' },
-  ],
-  organizations: [
-    { _id: '1', organizationName: 'Tech Corp', email: 'contact@techcorp.com', contactPerson: 'Alice Brown', phone: '+1111111111', isDisabled: false, users: ['u1', 'u2'], createdAt: '2024-01-05' },
-    { _id: '2', organizationName: 'Software Solutions', email: 'info@softsol.com', contactPerson: 'Charlie Davis', phone: '+2222222222', isDisabled: false, users: ['u3'], createdAt: '2024-01-20' },
-    { _id: '3', organizationName: 'Digital Agency', email: 'hello@digagency.com', contactPerson: 'Diana Evans', phone: '+3333333333', isDisabled: true, users: [], createdAt: '2024-02-10' },
-  ],
-  devices: [
-    { _id: '1', deviceId: 'DEV-001', userId: 'user1', deviceType: 'Mobile', osVersion: 'Android 13', isBlocked: false, lastActiveAt: '2024-02-28' },
-    { _id: '2', deviceId: 'DEV-002', userId: 'user2', deviceType: 'Laptop', osVersion: 'Windows 11', isBlocked: false, lastActiveAt: '2024-02-27' },
-    { _id: '3', deviceId: 'DEV-003', userId: 'user3', deviceType: 'Tablet', osVersion: 'iOS 17', isBlocked: true, lastActiveAt: '2024-02-20' },
-  ],
-  activities: [
-    { _id: '1', adminId: 'admin1', action: 'CREATE', entityType: 'Admin', entityId: 'a1', timestamp: '2024-02-28T10:30:00', changes: {} },
-    { _id: '2', adminId: 'admin2', action: 'BLOCK', entityType: 'User', entityId: 'u3', timestamp: '2024-02-27T14:45:00', changes: { isBlocked: 'true' } },
-    { _id: '3', adminId: 'admin1', action: 'UPDATE', entityType: 'Organization', entityId: 'o1', timestamp: '2024-02-26T09:15:00', changes: { contactPerson: 'Name Changed' } },
-  ]
-};
+// Check authentication - supports both token formats
+function checkAdminAuth() {
+  const token = localStorage.getItem('adminAuthToken') || localStorage.getItem('accessToken');
+  
+  // Only token is required - adminData is optional (may not exist when coming from Project)
+  if (!token) {
+    return null;
+  }
+  
+  // Try to get admin data, fallback to basic admin object if not available
+  let adminData = localStorage.getItem('adminData');
+  if (!adminData) {
+    // When coming from Project, adminData won't exist initially
+    // Create a minimal admin object from token
+    console.log('ℹ️ Admin data not in localStorage - will be loaded from API');
+    return { 
+      email: 'Admin',
+      fullName: 'Admin User'
+    };
+  }
+  
+  try {
+    return JSON.parse(adminData);
+  } catch (e) {
+    console.error('Invalid admin data');
+    // Return fallback even if JSON parse fails
+    return { 
+      email: 'Admin',
+      fullName: 'Admin User'
+    };
+  }
+}
+
+// Logout admin - clear all token formats
+function logoutAdmin() {
+  localStorage.removeItem('adminAuthToken');
+  localStorage.removeItem('accessToken');
+  localStorage.removeItem('adminRefreshToken');
+  localStorage.removeItem('adminData');
+  window.location.href = '../auth/login.html';
+}
+
+// Show notification
+function showNotification(message, type = 'success', duration = 3000) {
+  const notification = document.getElementById('notification') || (() => {
+    const div = document.createElement('div');
+    div.id = 'notification';
+    document.body.appendChild(div);
+    return div;
+  })();
+
+  notification.textContent = message;
+  notification.className = `notification show ${type}`;
+  notification.style.position = 'fixed';
+  notification.style.bottom = '20px';
+  notification.style.right = '20px';
+  notification.style.padding = '15px 20px';
+  notification.style.borderRadius = '8px';
+  notification.style.color = 'white';
+  notification.style.fontWeight = '500';
+  notification.style.zIndex = '9999';
+  notification.style.background = type === 'success' ? '#48bb78' : (type === 'error' ? '#f56565' : '#ed8936');
+
+  setTimeout(() => {
+    notification.classList.remove('show');
+  }, duration);
+}
 
 // Initialize Dashboard
 window.addEventListener('load', async () => {
-  console.log('✅ Dashboard loaded in DEMO mode');
+  console.log('✅ Dashboard loaded - Connecting to backend services...');
+
+  // Check authentication
+  const admin = checkAdminAuth();
+  if (!admin) {
+    window.location.href = '../auth/login.html';
+    return;
+  }
 
   // Set admin name
-  document.getElementById('adminName').textContent = 'Demo Admin';
+  document.getElementById('adminName').textContent = admin.fullName || admin.email || 'Admin';
 
   // Setup event listeners
   setupNavigation();
@@ -50,8 +96,8 @@ window.addEventListener('load', async () => {
   setupFilters();
   setupButtonListeners();
 
-  // Load initial dashboard data (DEMO DATA)
-  loadDashboardDataDemo();
+  // Load initial dashboard data
+  loadDashboardData();
 });
 
 // Navigation
@@ -102,19 +148,19 @@ async function navigateToPage(page) {
   // Load page-specific data (DEMO VERSION)
   switch (page) {
     case 'admins':
-      loadAdminsDataDemo();
+      loadAdminsData();
       break;
     case 'users':
-      loadUsersDataDemo();
+      loadUsersData();
       break;
     case 'organizations':
-      loadOrganizationsDataDemo();
+      loadOrganizationsData();
       break;
     case 'devices':
-      loadDevicesDataDemo();
+      loadDevicesData();
       break;
     case 'activities':
-      loadActivitiesDataDemo();
+      loadActivitiesData();
       break;
   }
 
@@ -139,68 +185,82 @@ function setupSidebarToggle() {
 function setupLogout() {
   const logoutBtn = document.getElementById('logoutBtn');
   if (logoutBtn) {
-    logoutBtn.addEventListener('click', () => {
+    logoutBtn.addEventListener('click', async () => {
       if (confirm('Are you sure you want to logout?')) {
-        showNotification('[DEMO] Logout successful', 'success');
-        // In demo mode, just show message. In production, clear auth and redirect.
+        try {
+          await API.adminLogout();
+        } catch (error) {
+          console.error('Logout error:', error);
+        }
+        logoutAdmin();
       }
     });
   }
 }
 
-// Dashboard Data - DEMO VERSION
-function loadDashboardDataDemo() {
+// Dashboard Data - Real API
+async function loadDashboardData() {
   try {
-    // Update stats
-    document.getElementById('totalAdmins').textContent = MOCK_DATA.admins.length;
-    document.getElementById('totalUsers').textContent = MOCK_DATA.users.length;
-    document.getElementById('totalOrgs').textContent = MOCK_DATA.organizations.length;
-    document.getElementById('totalDevices').textContent = MOCK_DATA.devices.length;
+    console.log('📋 Dashboard initializing - Listing endpoints not available on backend');
+    
+    // Set placeholder stats - backend doesn't provide listing endpoints
+    document.getElementById('totalAdmins').textContent = '-';
+    document.getElementById('totalUsers').textContent = '-';
+    document.getElementById('totalOrgs').textContent = '-';
+    document.getElementById('totalDevices').textContent = '-';
 
     // Load recent activities
-    loadRecentActivitiesDemo();
+    await loadRecentActivities();
   } catch (error) {
     console.error('Failed to load dashboard:', error);
+    // Set defaults on error
+    document.getElementById('totalAdmins').textContent = '-';
+    document.getElementById('totalUsers').textContent = '-';
+    document.getElementById('totalOrgs').textContent = '-';
+    document.getElementById('totalDevices').textContent = '-';
   }
 }
 
-function loadRecentActivitiesDemo() {
+async function loadRecentActivities() {
   try {
-    const activities = MOCK_DATA.activities || [];
     const activityList = document.getElementById('recentActivityList');
-
-    if (activities.length > 0) {
-      activityList.innerHTML = activities.map((activity) => `
-        <div class="activity-item">
-          <div class="activity-icon">📝</div>
-          <div>
-            <div class="activity-action">${activity.action} - ${activity.entityType}</div>
-            <div class="activity-timestamp">${formatDate(activity.timestamp)}</div>
-          </div>
+    
+    console.log('ℹ️ Activity listing endpoint not available in backend');
+    activityList.innerHTML = `
+      <div class="loading" style="padding: 20px;">
+        <div style="text-align: center;">
+          <p style="margin: 0 0 10px 0; color: #666;">Activity Listing Coming Soon</p>
+          <p style="margin: 0; font-size: 12px; color: #999;">Backend endpoint for listing activities is not yet available</p>
+          <p style="margin: 10px 0 0 0; font-size: 12px; color: #0066cc;">Activity tracking will be available once the endpoint is deployed</p>
         </div>
-      `).join('');
-    } else {
-      activityList.innerHTML = '<div class="loading">No activities yet</div>';
-    }
+      </div>`;
+    return;
   } catch (error) {
     console.error('Failed to load activities:', error);
+    document.getElementById('recentActivityList').innerHTML = '<div class="loading">Unable to load activities</div>';
   }
 }
 
-// Load Admins - DEMO
-function loadAdminsDataDemo() {
+// Load Admins
+async function loadAdminsData() {
   try {
-    dashboardData.admins = MOCK_DATA.admins;
-
-    if (dashboardData.admins.length === 0) {
-      const adminsList = document.getElementById('adminsList');
-      adminsList.innerHTML = '<tr><td colspan="6" class="loading">No admins found</td></tr>';
-      return;
-    }
-
-    displayAdmins(dashboardData.admins);
+    const adminsList = document.getElementById('adminsList');
+    
+    console.log('ℹ️ Admin listing endpoint not available in backend');
+    adminsList.innerHTML = `
+      <tr>
+        <td colspan="6" class="loading" style="padding: 20px;">
+          <div style="text-align: center;">
+            <p style="margin: 0 0 10px 0; color: #666;">Admin Listing Coming Soon</p>
+            <p style="margin: 0; font-size: 12px; color: #999;">Backend endpoint for listing admins is not yet available</p>
+            <p style="margin: 10px 0 0 0; font-size: 12px; color: #0066cc;">You can create, block, and unblock admins using the action buttons</p>
+          </div>
+        </td>
+      </tr>`;
+    return;
   } catch (error) {
     console.error('Failed to load admins:', error);
+    showNotification('Admin listing not available yet', 'info');
   }
 }
 
@@ -230,32 +290,48 @@ function displayAdmins(admins) {
 
 async function blockAdmin(adminId) {
   if (!confirmAction('Are you sure you want to block this admin?')) return;
-  showNotification('[DEMO] Admin would be blocked', 'success');
+  try {
+    await API.blockAdmin(adminId);
+    showNotification('Admin blocked successfully', 'success');
+    loadAdminsData();
+  } catch (error) {
+    console.error('Error blocking admin:', error);
+    showNotification('Failed to block admin: ' + error.message, 'error');
+  }
 }
 
 async function unblockAdmin(adminId) {
   if (!confirmAction('Are you sure you want to unblock this admin?')) return;
-  showNotification('[DEMO] Admin would be unblocked', 'success');
+  try {
+    await API.unblockAdmin(adminId);
+    showNotification('Admin unblocked successfully', 'success');
+    loadAdminsData();
+  } catch (error) {
+    console.error('Error unblocking admin:', error);
+    showNotification('Failed to unblock admin: ' + error.message, 'error');
+  }
 }
 
 // Load Users
 async function loadUsersData() {
   try {
     const usersList = document.getElementById('usersList');
-    usersList.innerHTML = '<tr class="loading-row"><td colspan="7">Loading...</td></tr>';
-
-    const result = await API.getUsers();
-    dashboardData.users = result.data || result.users || [];
-
-    if (dashboardData.users.length === 0) {
-      usersList.innerHTML = '<tr><td colspan="7" class="loading">No users found</td></tr>';
-      return;
-    }
-
-    displayUsers(dashboardData.users);
+    
+    console.log('ℹ️ User listing endpoint not available in backend');
+    usersList.innerHTML = `
+      <tr>
+        <td colspan="7" class="loading" style="padding: 20px;">
+          <div style="text-align: center;">
+            <p style="margin: 0 0 10px 0; color: #666;">User Listing Coming Soon</p>
+            <p style="margin: 0; font-size: 12px; color: #999;">Backend endpoint for listing users is not yet available</p>
+            <p style="margin: 10px 0 0 0; font-size: 12px; color: #0066cc;">You can block and unblock users using the action endpoints</p>
+          </div>
+        </td>
+      </tr>`;
+    return;
   } catch (error) {
     console.error('Failed to load users:', error);
-    showNotification('Failed to load users', 'error');
+    showNotification('User listing not available yet', 'info');
   }
 }
 
@@ -286,144 +362,93 @@ function displayUsers(users) {
 
 async function blockUser(userId) {
   if (!confirmAction('Are you sure you want to block this user?')) return;
-  showNotification('[DEMO] User would be blocked', 'success');
+  try {
+    await API.blockUser(userId);
+    showNotification('User blocked successfully', 'success');
+    loadUsersData();
+  } catch (error) {
+    console.error('Error blocking user:', error);
+    showNotification('Failed to block user: ' + error.message, 'error');
+  }
 }
 
 async function unblockUser(userId) {
   if (!confirmAction('Are you sure you want to unblock this user?')) return;
-  showNotification('[DEMO] User would be unblocked', 'success');
+  try {
+    await API.unblockUser(userId);
+    showNotification('User unblocked successfully', 'success');
+    loadUsersData();
+  } catch (error) {
+    console.error('Error unblocking user:', error);
+    showNotification('Failed to unblock user: ' + error.message, 'error');
+  }
 }
 
 // Load Organizations
 async function loadOrganizationsData() {
   try {
     const orgsList = document.getElementById('organizationsList');
-    orgsList.innerHTML = '<tr class="loading-row"><td colspan="7">Loading...</td></tr>';
-
-    const result = await API.getOrganizations();
-    dashboardData.organizations = result.data || result.organizations || [];
-
-    if (dashboardData.organizations.length === 0) {
-      orgsList.innerHTML = '<tr><td colspan="7" class="loading">No organizations found</td></tr>';
-      return;
-    }
-
-    displayOrganizations(dashboardData.organizations);
+    
+    console.log('ℹ️ Organization listing endpoint not available in backend');
+    orgsList.innerHTML = `
+      <tr>
+        <td colspan="7" class="loading" style="padding: 20px;">
+          <div style="text-align: center;">
+            <p style="margin: 0 0 10px 0; color: #666;">Organization Listing Coming Soon</p>
+            <p style="margin: 0; font-size: 12px; color: #999;">Backend endpoint for listing organizations is not yet available</p>
+            <p style="margin: 10px 0 0 0; font-size: 12px; color: #0066cc;">You can create and manage organizations using the action endpoints</p>
+          </div>
+        </td>
+      </tr>`;
+    return;
   } catch (error) {
     console.error('Failed to load organizations:', error);
-    showNotification('Failed to load organizations', 'error');
+    showNotification('Organization listing not available yet', 'info');
   }
-}
-
-function displayOrganizations(orgs) {
-  const orgsList = document.getElementById('organizationsList');
-  orgsList.innerHTML = orgs
-    .map(
-      (org) => `
-    <tr>
-      <td>${org.organizationName}</td>
-      <td>${org.email}</td>
-      <td>${org.contactPerson}</td>
-      <td>${getStatusBadge(org.isDisabled ? 'blocked' : 'active')}</td>
-      <td>${org.users?.length || 0}</td>
-      <td>${formatDate(org.createdAt)}</td>
-      <td>
-        ${
-          org.isDisabled
-            ? `<button class="btn btn-sm btn-secondary" onclick="enableOrganization('${org._id}')">Enable</button>`
-            : `<button class="btn btn-sm btn-danger" onclick="disableOrganization('${org._id}')">Disable</button>`
-        }
-      </td>
-    </tr>
-  `
-    )
-    .join('');
-}
-
-async function disableOrganization(orgId) {
-  if (!confirmAction('Are you sure you want to disable this organization?')) return;
-  showNotification('[DEMO] Organization would be disabled', 'success');
-}
-
-async function enableOrganization(orgId) {
-  if (!confirmAction('Are you sure you want to enable this organization?')) return;
-  showNotification('[DEMO] Organization would be enabled', 'success');
 }
 
 // Load Devices
 async function loadDevicesData() {
   try {
     const devicesList = document.getElementById('devicesList');
-    devicesList.innerHTML = '<tr class="loading-row"><td colspan="7">Loading...</td></tr>';
-
-    const result = await API.getDevices();
-    dashboardData.devices = result.data || result.devices || [];
-
-    if (dashboardData.devices.length === 0) {
-      devicesList.innerHTML = '<tr><td colspan="7" class="loading">No devices found</td></tr>';
-      return;
-    }
-
-    displayDevices(dashboardData.devices);
+    
+    console.log('ℹ️ Device listing endpoint not available in backend');
+    devicesList.innerHTML = `
+      <tr>
+        <td colspan="7" class="loading" style="padding: 20px;">
+          <div style="text-align: center;">
+            <p style="margin: 0 0 10px 0; color: #666;">Device Listing Coming Soon</p>
+            <p style="margin: 0; font-size: 12px; color: #999;">Backend endpoint for listing devices is not yet available</p>
+            <p style="margin: 10px 0 0 0; font-size: 12px; color: #0066cc;">You can block and unblock devices using the action endpoints</p>
+          </div>
+        </td>
+      </tr>`;
+    return;
   } catch (error) {
     console.error('Failed to load devices:', error);
-    showNotification('Failed to load devices', 'error');
+    showNotification('Device listing not available yet', 'info');
   }
-}
-
-function displayDevices(devices) {
-  const devicesList = document.getElementById('devicesList');
-  devicesList.innerHTML = devices
-    .map(
-      (device) => `
-    <tr>
-      <td>${device.deviceId}</td>
-      <td>${device.userId}</td>
-      <td>${device.deviceType}</td>
-      <td>${device.osVersion}</td>
-      <td>${getStatusBadge(device.isBlocked ? 'blocked' : 'active')}</td>
-      <td>${formatDate(device.lastActiveAt)}</td>
-      <td>
-        ${
-          device.isBlocked
-            ? `<button class="btn btn-sm btn-secondary" onclick="unblockDevice('${device._id}')">Unblock</button>`
-            : `<button class="btn btn-sm btn-danger" onclick="blockDevice('${device._id}')">Block</button>`
-        }
-      </td>
-    </tr>
-  `
-    )
-    .join('');
-}
-
-async function blockDevice(deviceId) {
-  if (!confirmAction('Are you sure you want to block this device?')) return;
-  showNotification('[DEMO] Device would be blocked', 'success');
-}
-
-async function unblockDevice(deviceId) {
-  if (!confirmAction('Are you sure you want to unblock this device?')) return;
-  showNotification('[DEMO] Device would be unblocked', 'success');
 }
 
 // Load Activities
 async function loadActivitiesData() {
   try {
     const activitiesList = document.getElementById('activitiesList');
-    activitiesList.innerHTML = '<tr class="loading-row"><td colspan="6">Loading...</td></tr>';
-
-    const result = await API.getActivityTracker();
-    dashboardData.activities = result.data || result.activities || [];
-
-    if (dashboardData.activities.length === 0) {
-      activitiesList.innerHTML = '<tr><td colspan="6" class="loading">No activities found</td></tr>';
-      return;
-    }
-
-    displayActivities(dashboardData.activities);
+    
+    console.log('ℹ️ Activity listing endpoint not available in backend');
+    activitiesList.innerHTML = `
+      <tr>
+        <td colspan="6" class="loading" style="padding: 20px;">
+          <div style="text-align: center;">
+            <p style="margin: 0 0 10px 0; color: #666;">Activity Listing Coming Soon</p>
+            <p style="margin: 0; font-size: 12px; color: #999;">Backend endpoint for listing activities is not yet available</p>
+          </div>
+        </td>
+      </tr>`;
+    return;
   } catch (error) {
     console.error('Failed to load activities:', error);
-    showNotification('Failed to load activities', 'error');
+    showNotification('Activity listing not available yet', 'info');
   }
 }
 
@@ -563,6 +588,171 @@ function filterActivities() {
   displayActivities(filtered);
 }
 
+// Helper functions
+function confirmAction(message = 'Are you sure?') {
+  return confirm(message);
+}
+
+function getStatusBadge(status) {
+  const statusMap = {
+    'active': { class: 'status-active', label: 'Active' },
+    'blocked': { class: 'status-blocked', label: 'Blocked' },
+    'pending': { class: 'status-pending', label: 'Pending' },
+    'disabled': { class: 'status-blocked', label: 'Disabled' },
+  };
+
+  const normalized = status ? status.toLowerCase() : 'active';
+  const config = statusMap[normalized] || { class: 'status-active', label: normalized };
+
+  return `<span class="status-badge ${config.class}">${config.label}</span>`;
+}
+
+function formatDate(dateString) {
+  try {
+    const date = new Date(dateString);
+    const options = { 
+      year: 'numeric', 
+      month: 'short', 
+      day: 'numeric', 
+      hour: '2-digit', 
+      minute: '2-digit' 
+    };
+    return date.toLocaleDateString('en-US', options);
+  } catch (e) {
+    return dateString;
+  }
+}
+
+// Display Activities
+function displayActivities(activities) {
+  const activitiesList = document.getElementById('activitiesList');
+  activitiesList.innerHTML = activities
+    .map(
+      (activity) => `
+    <tr>
+      <td>${activity.adminId}</td>
+      <td>${activity.action}</td>
+      <td>${activity.entityType}</td>
+      <td>${activity.entityId}</td>
+      <td>${formatDate(activity.timestamp)}</td>
+      <td><button class="btn btn-sm btn-primary" onclick="showActivityDetails('${activity._id}')">View</button></td>
+    </tr>
+  `
+    )
+    .join('');
+}
+
+function showActivityDetails(activityId) {
+  const activity = dashboardData.activities.find((a) => a._id === activityId);
+  if (activity) {
+    alert(`
+Activity Details:
+Admin: ${activity.adminId}
+Action: ${activity.action}
+Entity: ${activity.entityType}
+Timestamp: ${formatDate(activity.timestamp)}
+Changes: ${JSON.stringify(activity.changes, null, 2)}
+    `);
+  }
+}
+
+// Display Organizations
+function displayOrganizations(orgs) {
+  const orgsList = document.getElementById('organizationsList');
+  orgsList.innerHTML = orgs
+    .map(
+      (org) => `
+    <tr>
+      <td>${org.organizationName}</td>
+      <td>${org.email}</td>
+      <td>${org.contactPerson || org.contact || '-'}</td>
+      <td>${getStatusBadge(org.isDisabled ? 'disabled' : 'active')}</td>
+      <td>${org.users?.length || 0}</td>
+      <td>${formatDate(org.createdAt)}</td>
+      <td>
+        ${
+          org.isDisabled
+            ? `<button class="btn btn-sm btn-secondary" onclick="enableOrganization('${org._id}')">Enable</button>`
+            : `<button class="btn btn-sm btn-danger" onclick="disableOrganization('${org._id}')">Disable</button>`
+        }
+      </td>
+    </tr>
+  `
+    )
+    .join('');
+}
+
+async function disableOrganization(orgId) {
+  if (!confirmAction('Are you sure you want to disable this organization?')) return;
+  try {
+    await API.disableOrganization(orgId);
+    showNotification('Organization disabled successfully', 'success');
+    loadOrganizationsData();
+  } catch (error) {
+    console.error('Error disabling organization:', error);
+    showNotification('Failed to disable organization: ' + error.message, 'error');
+  }
+}
+
+async function enableOrganization(orgId) {
+  if (!confirmAction('Are you sure you want to enable this organization?')) return;
+  try {
+    await API.enableOrganization(orgId);
+    showNotification('Organization enabled successfully', 'success');
+    loadOrganizationsData();
+  } catch (error) {
+    console.error('Error enabling organization:', error);
+    showNotification('Failed to enable organization: ' + error.message, 'error');
+  }
+}
+
+// Display Devices
+function displayDevices(devices) {
+  const devicesList = document.getElementById('devicesList');
+  if (!devicesList) return;
+  
+  devicesList.innerHTML = devices
+    .map(
+      (device) => `
+    <tr>
+      <td>${device.deviceId}</td>
+      <td>${device.deviceType || '-'}</td>
+      <td>${device.owner || '-'}</td>
+      <td>${formatDate(device.lastLogin || device.createdAt)}</td>
+      <td>${device.isBlocked ? "<span class='badge badge-danger'>Blocked</span>" : "<span class='badge badge-success'>Active</span>"}</td>
+      <td>
+        ${device.isBlocked ? `<button class="btn btn-sm btn-secondary" onclick="unblockDevice('${device._id}')">Unblock</button>` : `<button class="btn btn-sm btn-danger" onclick="blockDevice('${device._id}')">Block</button>`}
+      </td>
+    </tr>
+  `
+    )
+    .join('');
+}
+
+async function blockDevice(deviceId) {
+  if (!confirmAction('Are you sure you want to block this device?')) return;
+  try {
+    await API.blockDevice(deviceId);
+    showNotification('Device blocked successfully', 'success');
+    loadDevicesData();
+  } catch (error) {
+    console.error('Error blocking device:', error);
+    showNotification('Failed to block device: ' + error.message, 'error');
+  }
+}
+
+async function unblockDevice(deviceId) {
+  if (!confirmAction('Are you sure you want to unblock this device?')) return;
+  try {
+    await API.unblockDevice(deviceId);
+    showNotification('Device unblocked successfully', 'success');
+    loadDevicesData();
+  } catch (error) {
+    console.error('Error unblocking device:', error);
+    showNotification('Failed to unblock device: ' + error.message, 'error');
+  }
+}
+
 // Button Listeners
 function setupButtonListeners() {
   const addAdminBtn = document.getElementById('addAdminBtn');
@@ -598,48 +788,27 @@ function setupButtonListeners() {
 }
 
 async function createNewAdmin(adminData) {
-  showNotification('[DEMO] Admin would be created: ' + JSON.stringify(adminData), 'success');
+  try {
+    await API.createAdmin(adminData);
+    showNotification('Admin created successfully', 'success');
+    loadAdminsData();
+  } catch (error) {
+    console.error('Error creating admin:', error);
+    showNotification('Failed to create admin: ' + error.message, 'error');
+  }
 }
 
 async function createNewOrganization(orgData) {
-  showNotification('[DEMO] Organization would be created: ' + JSON.stringify(orgData), 'success');
-}
-
-// DEMO DATA LOADING FUNCTIONS
-function loadUsersDataDemo() {
-  dashboardData.users = MOCK_DATA.users;
-  if (dashboardData.users.length === 0) {
-    document.getElementById('usersList').innerHTML = '<tr><td colspan="7" class="loading">No users found</td></tr>';
-    return;
+  try {
+    await API.createOrganization(orgData);
+    showNotification('Organization created successfully', 'success');
+    loadOrganizationsData();
+  } catch (error) {
+    console.error('Error creating organization:', error);
+    showNotification('Failed to create organization: ' + error.message, 'error');
   }
-  displayUsers(dashboardData.users);
 }
 
-function loadOrganizationsDataDemo() {
-  dashboardData.organizations = MOCK_DATA.organizations;
-  if (dashboardData.organizations.length === 0) {
-    document.getElementById('organizationsList').innerHTML = '<tr><td colspan="7" class="loading">No organizations found</td></tr>';
-    return;
-  }
-  displayOrganizations(dashboardData.organizations);
-}
+// DEMO DATA LOADING FUNCTIONS REMOVED - Using real API calls instead
 
-function loadDevicesDataDemo() {
-  dashboardData.devices = MOCK_DATA.devices;
-  if (dashboardData.devices.length === 0) {
-    document.getElementById('devicesList').innerHTML = '<tr><td colspan="7" class="loading">No devices found</td></tr>';
-    return;
-  }
-  displayDevices(dashboardData.devices);
-}
-
-function loadActivitiesDataDemo() {
-  dashboardData.activities = MOCK_DATA.activities;
-  if (dashboardData.activities.length === 0) {
-    document.getElementById('activitiesList').innerHTML = '<tr><td colspan="6" class="loading">No activities found</td></tr>';
-    return;
-  }
-  displayActivities(dashboardData.activities);
-}
-
-console.log('✅ Dashboard script loaded (DEMO MODE)');
+console.log('✅ Dashboard script loaded - Ready for real backend integration');
