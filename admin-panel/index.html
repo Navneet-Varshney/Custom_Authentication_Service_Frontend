@@ -38,6 +38,13 @@
     <script>
       console.log("✅ Admin Panel initialization started");
       
+      // 🔄 Token Sync - Connect Project's accessToken to Admin Panel
+      const accessToken = localStorage.getItem('accessToken');
+      if (accessToken && !localStorage.getItem('adminAuthToken')) {
+        localStorage.setItem('adminAuthToken', accessToken);
+        console.log('🔄 Token synced: accessToken → adminAuthToken');
+      }
+      
       // Update loading text
       const loaderText = document.querySelector('.loader-text');
       if (loaderText) {
