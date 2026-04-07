@@ -1,4 +1,13 @@
-// Password visibility toggle
+/**
+ * Admin Panel Login Module
+ * Handles authentication for admin users
+ * Supports both direct login and redirect from Project dashboard
+ */
+
+/**
+ * Password visibility toggle
+ * Toggles between password and text input types
+ */
 const togglePasswordBtn = document.getElementById('togglePassword');
 const passwordInput = document.getElementById('password');
 
@@ -9,10 +18,15 @@ if (togglePasswordBtn) {
     togglePasswordBtn.innerHTML = type === 'password' 
       ? '<span class="material-icons">visibility</span>' 
       : '<span class="material-icons">visibility_off</span>';
+    console.log(`👁️ Password visibility: ${type === 'password' ? 'hidden' : 'visible'}`);
   });
 }
 
-// Login form submission
+/**
+ * Login form submission handler
+ * Validates credentials and authenticates against auth service
+ * Stores tokens in both formats (accessToken and adminAuthToken) for integration
+ */
 const loginForm = document.getElementById('loginForm');
 const submitBtn = document.getElementById('submitBtn');
 
@@ -20,72 +34,81 @@ if (loginForm) {
   loginForm.addEventListener('submit', async (e) => {
     e.preventDefault();
 
-    // Clear previous errors
+    // Clear previous error messages
     document.getElementById('emailError').textContent = '';
     document.getElementById('passwordError').textContent = '';
     document.getElementById('loginError').textContent = '';
 
-    // Get values
+    // Get and sanitize input values
     const email = document.getElementById('email').value.trim();
     const password = document.getElementById('password').value;
     const rememberMe = document.getElementById('rememberMe').checked;
 
-    // Validation
+    // Form validation with detailed error messages
     let hasError = false;
 
     if (!email) {
-      document.getElementById('emailError').textContent = 'Email is required';
+      document.getElementById('emailError').textContent = '✗ Email is required';
       hasError = true;
     } else if (!isValidEmail(email)) {
-      document.getElementById('emailError').textContent = 'Please enter a valid email';
+      document.getElementById('emailError').textContent = '✗ Please enter a valid email address';
       hasError = true;
     }
 
     if (!password) {
-      document.getElementById('passwordError').textContent = 'Password is required';
+      document.getElementById('passwordError').textContent = '✗ Password is required';
       hasError = true;
     } else if (password.length < 6) {
-      document.getElementById('passwordError').textContent = 'Password must be at least 6 characters';
+      document.getElementById('passwordError').textContent = '✗ Password must be at least 6 characters';
       hasError = true;
     }
 
-    if (hasError) return;
+    if (hasError) {
+      console.warn('⚠️ Form validation failed');
+      return;
+    }
 
-    // Disable button and show loading
+    // Disable button and show loading state
     submitBtn.disabled = true;
     const originalText = submitBtn.innerHTML;
     submitBtn.innerHTML = '<span class="material-icons" style="animation: spin 1s linear infinite;">refresh</span><span class="btn-text">Logging in...</span>';
 
     try {
-      // Call admin login API (now connects to auth service)
+      console.log('🔐 Authenticating admin user...');
+      
+      // Call admin login API (connects to auth service on port 8080)
       const response = await API.adminLogin({ email, password });
 
-      console.log('Login Response:', response);
+      console.log('📋 Auth response received');
 
       // Handle response from auth service
-      // Auth service returns: { authToken, refreshToken, admin { _id, email, fullName, role, ... } }
+      // Expected format: { authToken, refreshToken, admin { _id, email, fullName, role, ... } }
       if (response && response.authToken) {
+        // Store tokens in both formats for seamless integration with Project dashboard
         localStorage.setItem('accessToken', response.authToken);
         localStorage.setItem('adminAuthToken', response.authToken);
         localStorage.setItem('adminRefreshToken', response.refreshToken || '');
+        
+        // Store admin data for profile display
         localStorage.setItem('adminData', JSON.stringify(response.admin || response));
 
-        // Remember email if checked
+        // Remember email if user checked the checkbox
         if (rememberMe) {
           localStorage.setItem('rememberedAdminEmail', email);
+          console.log('💾 Email saved for next login');
         } else {
           localStorage.removeItem('rememberedAdminEmail');
         }
 
-        console.log('✅ Admin login successful');
-        showNotification('Login successful! Redirecting...', 'success');
+        console.log('✅ Admin authentication successful');
+        showNotification('✓ Login successful! Redirecting to dashboard...', 'success');
         
-        // Redirect to dashboard
+        // Redirect to dashboard with slight delay for notification display
         setTimeout(() => {
           window.location.href = '../dashboard/index.html';
         }, 800);
       } else if (response && response.token) {
-        // Alternative response format
+        // Handle alternative response format
         localStorage.setItem('accessToken', response.token);
         localStorage.setItem('adminAuthToken', response.token);
         localStorage.setItem('adminRefreshToken', response.refreshToken || '');
