@@ -1,10 +1,23 @@
-// API Configuration
-// Direct connection to services (no proxy needed, CORS enabled on backend)
+/**
+ * Admin Panel API Client
+ * Handles all communication with Auth Service (8080) and Admin Panel Service (8081)
+ * Supports dual token formats (accessToken from Project, adminAuthToken from Admin Panel)
+ * Includes device UUID header for backend middleware validation
+ */
+
+// Service URLs
 const AUTH_SERVICE_BASE_URL = 'http://localhost:8080/custom-auth-service/api/v1';
 const ADMIN_PANEL_API_BASE_URL = 'http://localhost:8081/admin-panel-service/api/v1';
 
+/**
+ * API Client Object
+ * Provides methods for all admin panel endpoints
+ */
 const API = {
-  // Get auth headers - supports both accessToken and adminAuthToken + device UUID
+  /**
+   * Get HTTP headers with authentication and device identification
+   * @returns {Object} Headers object with authorization and device UUID
+   */
   getHeaders() {
     const token = localStorage.getItem('adminAuthToken') || localStorage.getItem('accessToken');
     const deviceUUID = localStorage.getItem('deviceUUID');
@@ -17,7 +30,7 @@ const API = {
       headers['Authorization'] = `Bearer ${token}`;
     }
     
-    // Add device UUID if available (required by backend)
+    // Add device UUID if available (required by backend middleware)
     if (deviceUUID) {
       headers['x-device-uuid'] = deviceUUID;
     }
@@ -25,7 +38,15 @@ const API = {
     return headers;
   },
 
-  // Generic request method - for admin panel service
+  /**
+   * Generic HTTP request handler
+   * @param {string} method - HTTP method (GET, POST, PUT, PATCH, DELETE)
+   * @param {string} endpoint - API endpoint path
+   * @param {Object} data - Request body data (optional)
+   * @param {string} baseUrl - Base URL for the request
+   * @returns {Promise} Response data from API
+   * @throws {Error} On API errors or invalid responses
+   */
   async request(method, endpoint, data = null, baseUrl = ADMIN_PANEL_API_BASE_URL) {
     const url = `${baseUrl}${endpoint}`;
     const config = {
@@ -39,24 +60,31 @@ const API = {
     }
 
     try {
+      console.debug(`📡 API Request: ${method} ${endpoint}`);
       const response = await fetch(url, config);
       const result = await response.json();
 
       if (!response.ok) {
+        // Handle unauthorized - token expired
         if (response.status === 401) {
-          // Token expired - clear all token formats
+          console.warn('🔓 Unauthorized: Token expired - Clearing credentials and redirecting to login');
           localStorage.removeItem('adminAuthToken');
           localStorage.removeItem('accessToken');
           localStorage.removeItem('adminRefreshToken');
           localStorage.removeItem('adminData');
           window.location.href = '../auth/login.html';
+          return;
         }
+        
+        // Log detailed error information
+        console.error(`❌ API Error ${response.status}:`, result);
         throw new Error(result.message || `API Error: ${response.status}`);
       }
 
+      console.debug(`✅ API Success: ${method} ${endpoint}`);
       return result.data || result;
     } catch (error) {
-      console.error('API Error:', error);
+      console.error(`🚨 API Request Failed: ${method} ${endpoint}`, error);
       throw error;
     }
   },
