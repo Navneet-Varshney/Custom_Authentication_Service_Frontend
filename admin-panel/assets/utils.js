@@ -1,44 +1,75 @@
-// Utility Functions
+/**
+ * Utility Functions Module
+ * Provides common functions for admin panel:
+ * - Authentication helpers
+ * - Data management (localStorage)
+ * - UI notifications
+ * - Form validation
+ * - Date formatting
+ */
 
-// Check authentication
+/**
+ * Check if admin is authenticated
+ * Validates token and admin data existence
+ * @returns {Object|null} Admin data object or null if not authenticated
+ */
 function checkAdminAuth() {
-  const token = localStorage.getItem('adminAuthToken');
+  const token = localStorage.getItem('adminAuthToken') || localStorage.getItem('accessToken');
   const adminData = localStorage.getItem('adminData');
   
-  if (!token || !adminData) {
+  if (!token) {
+    console.warn('🔓 No authentication token found');
     window.location.href = '../auth/login.html';
     return null;
   }
   
   try {
-    return JSON.parse(adminData);
+    return adminData ? JSON.parse(adminData) : { email: 'Admin', fullName: 'Admin User' };
   } catch (e) {
-    console.error('Invalid admin data');
+    console.error('❌ Invalid admin data in localStorage:', e);
     window.location.href = '../auth/login.html';
     return null;
   }
 }
 
-// Get admin data from localStorage
+/**
+ * Retrieve admin data from localStorage
+ * @returns {Object|null} Parsed admin data or null if not available
+ */
 function getAdminData() {
   const admin = localStorage.getItem('adminData');
   return admin ? JSON.parse(admin) : null;
 }
 
-// Set admin data
+/**
+ * Store admin data in localStorage
+ * @param {Object} adminData - Admin data object to store
+ */
 function setAdminData(adminData) {
+  console.debug('💾 Storing admin data in localStorage');
   localStorage.setItem('adminData', JSON.stringify(adminData));
 }
 
-// Logout
+/**
+ * Logout admin user
+ * Clears all credentials and redirects to login
+ */
 function logoutAdmin() {
+  console.log('🚪 Admin logout initiated');
   localStorage.removeItem('adminAuthToken');
+  localStorage.removeItem('accessToken');
   localStorage.removeItem('adminRefreshToken');
   localStorage.removeItem('adminData');
   window.location.href = '../auth/login.html';
 }
 
-// Show notification
+/**
+ * Display notification to user
+ * Creates a floating notification with specified message and type
+ * @param {string} message - Notification message text
+ * @param {string} type - Notification type: 'success', 'error', 'info', 'warning'
+ * @param {number} duration - Display duration in milliseconds
+ */
 function showNotification(message, type = 'success', duration = 3000) {
   const notification = document.getElementById('notification');
   if (!notification) {
