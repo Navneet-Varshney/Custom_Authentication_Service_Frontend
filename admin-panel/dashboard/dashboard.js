@@ -1,4 +1,14 @@
-// Dashboard State
+/**
+ * Dashboard Module
+ * Manages admin panel dashboard functionality, data loading, and state management
+ * Integrated with Project dashboard via token synchronization
+ */
+
+/**
+ * Dashboard state object
+ * Stores cached data from admin panel API
+ * @type {Object}
+ */
 let dashboardData = {
   admins: [],
   users: [],
@@ -7,12 +17,18 @@ let dashboardData = {
   activities: [],
 };
 
-// Check authentication - supports both token formats
+/**
+ * Authenticates admin user
+ * Supports both token formats (accessToken from Project, adminAuthToken from Admin Panel)
+ * Creates fallback admin object when coming from Project dashboard
+ * @returns {Object|null} Admin object with email and fullName, or null if not authenticated
+ */
 function checkAdminAuth() {
   const token = localStorage.getItem('adminAuthToken') || localStorage.getItem('accessToken');
   
-  // Only token is required - adminData is optional (may not exist when coming from Project)
+  // Only token is required - adminData is optional (may not exist when redirecting from Project)
   if (!token) {
+    console.warn('🔓 No authentication token found');
     return null;
   }
   
@@ -20,8 +36,8 @@ function checkAdminAuth() {
   let adminData = localStorage.getItem('adminData');
   if (!adminData) {
     // When coming from Project, adminData won't exist initially
-    // Create a minimal admin object from token
-    console.log('ℹ️ Admin data not in localStorage - will be loaded from API');
+    // Create a minimal admin object from token for seamless integration
+    console.log('ℹ️ Admin data not in localStorage - Will be loaded from API on demand');
     return { 
       email: 'Admin',
       fullName: 'Admin User'
@@ -31,8 +47,8 @@ function checkAdminAuth() {
   try {
     return JSON.parse(adminData);
   } catch (e) {
-    console.error('Invalid admin data');
-    // Return fallback even if JSON parse fails
+    console.error('❌ Invalid admin data in localStorage:', e);
+    // Return fallback even if JSON parse fails - ensures dashboard doesn't break
     return { 
       email: 'Admin',
       fullName: 'Admin User'
@@ -40,8 +56,13 @@ function checkAdminAuth() {
   }
 }
 
-// Logout admin - clear all token formats
+/**
+ * Logout admin user
+ * Clears all token formats and credentials
+ * Redirects to login page
+ */
 function logoutAdmin() {
+  console.log('🚪 Logging out admin user...');
   localStorage.removeItem('adminAuthToken');
   localStorage.removeItem('accessToken');
   localStorage.removeItem('adminRefreshToken');
