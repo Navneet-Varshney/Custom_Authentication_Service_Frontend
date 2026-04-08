@@ -67,6 +67,10 @@
             <h1 id="pageTitle">Dashboard</h1>
           </div>
           <div class="header-right">
+            <button class="btn btn-secondary" id="backToDashboardBtn" title="Return to Project Dashboard">
+              <span class="material-icons">arrow_back</span>
+              <span style="margin-left: 5px;">Back to Dashboard</span>
+            </button>
             <div class="search-box">
               <input type="text" id="searchInput" placeholder="Search..." />
               <span class="material-icons">search</span>
@@ -120,20 +124,6 @@
               <h2>Recent Activities</h2>
               <div id="recentActivityList" class="activity-list">
                 <div class="loading">Loading recent activities...</div>
-              </div>
-            </div>
-
-            <!-- Authentication Dashboard Section -->
-            <div class="auth-dashboard" style="margin-top: 40px; padding: 20px; background: #f8f9fa; border-radius: 8px; border: 1px solid #e0e0e0;">
-              <h3 style="margin: 0 0 15px 0; color: #333;">Session Management</h3>
-              <p style="margin: 0 0 15px 0; color: #666; font-size: 14px;">Manage your current session and authentication</p>
-              
-              <div style="display: flex; gap: 10px;">
-                <button class="btn btn-danger" id="endSessionBtn" style="display: flex; align-items: center; gap: 8px;">
-                  <span class="material-icons" style="font-size: 20px;">exit_to_app</span>
-                  <span>End Session</span>
-                </button>
-                <p style="margin: 0; padding: 10px 15px; background: #fff; border-radius: 4px; color: #666; font-size: 13px;">Completely logout from admin panel and clear all session data</p>
               </div>
             </div>
           </div>
