@@ -57,17 +57,28 @@ function checkAdminAuth() {
 }
 
 /**
- * Logout admin user
- * Clears all token formats and credentials
- * Redirects to login page
+ * Logout admin user and redirect to Project dashboard
+ * Clears all admin credentials and returns to main project
  */
 function logoutAdmin() {
-  console.log('🚪 Logging out admin user...');
+  console.log('🚪 Logging out admin and redirecting to Project dashboard...');
+  
+  // Clear ALL admin-related data
   localStorage.removeItem('adminAuthToken');
-  localStorage.removeItem('accessToken');
   localStorage.removeItem('adminRefreshToken');
   localStorage.removeItem('adminData');
-  window.location.href = '../auth/login.html';
+  
+  // NOTE: Keep accessToken and deviceUUID for potential future Project dashboard login
+  // This allows seamless return to Project dashboard
+  
+  // Show success message
+  showNotification('✓ Logged out successfully. Redirecting...', 'success', 1500);
+  
+  // Redirect to Project dashboard after short delay
+  setTimeout(() => {
+    // Redirect to Project index page
+    window.location.href = 'http://127.0.0.1:5500/project/index.html';
+  }, 1000);
 }
 
 // Show notification
@@ -113,6 +124,7 @@ window.addEventListener('load', async () => {
   // Setup event listeners
   setupNavigation();
   setupLogout();
+  setupEndSessionButton();
   setupSidebarToggle();
   setupFilters();
   setupButtonListeners();
@@ -203,17 +215,63 @@ function setupSidebarToggle() {
 }
 
 // Logout
+/**
+ * Setup logout button and event handlers
+ * Confirms logout and handles backend session termination
+ * Clears credentials and redirects to Project dashboard
+ */
 function setupLogout() {
   const logoutBtn = document.getElementById('logoutBtn');
   if (logoutBtn) {
     logoutBtn.addEventListener('click', async () => {
-      if (confirm('Are you sure you want to logout?')) {
+      const confirmed = confirm('Are you sure you want to logout?\n\nYou will be redirected to the Project dashboard.');
+      
+      if (confirmed) {
         try {
+          console.log('📡 Calling backend logout API...');
           await API.adminLogout();
+          console.log('✅ Backend logout successful');
         } catch (error) {
-          console.error('Logout error:', error);
+          console.warn('⚠️ Backend logout failed (continuing with local logout):', error.message);
+          // Continue with logout even if backend call fails
         }
+        
+        // Perform local logout and redirect
         logoutAdmin();
+      }
+    });
+  }
+}
+
+/**
+ * Setup end session button in authentication dashboard
+ * Provides explicit session termination
+ */
+function setupEndSessionButton() {
+  const endSessionBtn = document.getElementById('endSessionBtn');
+  if (endSessionBtn) {
+    endSessionBtn.addEventListener('click', async () => {
+      const confirmed = confirm('This will end your current session completely.\n\nContinue?');
+      
+      if (confirmed) {
+        try {
+          console.log('🔐 Calling backend session termination...');
+          await API.adminLogout();
+          console.log('✅ Session terminated successfully');
+        } catch (error) {
+          console.warn('⚠️ Session termination warning:', error.message);
+        }
+        
+        // Clear EVERYTHING - complete logout
+        console.log('🧹 Clearing all local data...');
+        localStorage.clear();
+        sessionStorage.clear();
+        
+        showNotification('✓ Session ended. Redirecting...', 'info', 1500);
+        
+        setTimeout(() => {
+          window.location.href = 'http://127.0.0.1:5500/project/index.html';
+        }, 1000);
       }
     });
   }
