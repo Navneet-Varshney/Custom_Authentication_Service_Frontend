@@ -218,13 +218,12 @@ function setupSidebarToggle() {
 /**
  * Setup logout button and event handlers
  * Confirms logout and handles backend session termination
- * Clears credentials and redirects to Project dashboard
  */
 function setupLogout() {
   const logoutBtn = document.getElementById('logoutBtn');
   if (logoutBtn) {
     logoutBtn.addEventListener('click', async () => {
-      const confirmed = confirm('Are you sure you want to logout?\n\nYou will be redirected to the Project dashboard.');
+      const confirmed = confirm('Are you sure you want to logout?');
       
       if (confirmed) {
         try {
