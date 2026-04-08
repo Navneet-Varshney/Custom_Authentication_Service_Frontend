@@ -51,25 +51,26 @@ function setAdminData(adminData) {
 }
 
 /**
- * Logout admin user and return to Project dashboard
- * Clears all admin credentials and redirects to Project
- * Keeps accessToken and deviceUUID for seamless return
+ * Logout admin user completely
+ * Clears all admin credentials and redirects to Project login
+ * Keeps accessToken and deviceUUID for potential future use
  */
 function logoutAdmin() {
-  console.log('🚪 Admin logout initiated - Redirecting to Project dashboard');
+  console.log('🚪 Admin logout initiated - Redirecting to Project login');
   
   // Clear admin-specific data
   localStorage.removeItem('adminAuthToken');
   localStorage.removeItem('adminRefreshToken');
   localStorage.removeItem('adminData');
   
-  // Keep accessToken and deviceUUID - allows return to Project dashboard
+  // Keep accessToken and deviceUUID - for future sessions
   
-  console.log('✓ Admin credentials cleared');
+  console.log('✓ Admin credentials cleared - Complete logout');
   
   // Add small delay for UI feedback
   setTimeout(() => {
-    window.location.href = 'http://127.0.0.1:5500/project/app/dashboard.html';
+    // Redirect to Project login page
+    window.location.href = 'http://127.0.0.1:5500/project/index.html';
   }, 300);
 }
 

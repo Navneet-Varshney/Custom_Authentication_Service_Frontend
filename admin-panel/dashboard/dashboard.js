@@ -57,11 +57,11 @@ function checkAdminAuth() {
 }
 
 /**
- * Logout admin user and redirect to Project dashboard
- * Clears all admin credentials and returns to main project
+ * Logout admin user completely
+ * Clears all admin credentials and returns to Project login
  */
 function logoutAdmin() {
-  console.log('🚪 Logging out admin and redirecting to Project dashboard...');
+  console.log('🚪 Logging out admin completely...');
   
   // Clear ALL admin-related data
   localStorage.removeItem('adminAuthToken');
@@ -74,10 +74,10 @@ function logoutAdmin() {
   // Show success message
   showNotification('✓ Logged out successfully. Redirecting...', 'success', 1500);
   
-  // Redirect to Project dashboard after short delay
+  // Redirect to Project login page after short delay
   setTimeout(() => {
-    // Redirect to Project app dashboard page
-    window.location.href = 'http://127.0.0.1:5500/project/app/dashboard.html';
+    // Redirect to Project index/login page - complete logout
+    window.location.href = 'http://127.0.0.1:5500/project/index.html';
   }, 1000);
 }
 
