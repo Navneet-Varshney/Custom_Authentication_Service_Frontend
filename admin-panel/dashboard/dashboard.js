@@ -76,8 +76,8 @@ function logoutAdmin() {
   
   // Redirect to Project dashboard after short delay
   setTimeout(() => {
-    // Redirect to Project index page
-    window.location.href = 'http://127.0.0.1:5500/project/index.html';
+    // Redirect to Project app dashboard page
+    window.location.href = 'http://127.0.0.1:5500/project/app/dashboard.html';
   }, 1000);
 }
 
@@ -124,7 +124,7 @@ window.addEventListener('load', async () => {
   // Setup event listeners
   setupNavigation();
   setupLogout();
-  setupEndSessionButton();
+  setupBackButton();
   setupSidebarToggle();
   setupFilters();
   setupButtonListeners();
@@ -244,35 +244,15 @@ function setupLogout() {
 }
 
 /**
- * Setup end session button in authentication dashboard
- * Provides explicit session termination
+ * Setup back to dashboard button
+ * Allows quick return to Project dashboard
  */
-function setupEndSessionButton() {
-  const endSessionBtn = document.getElementById('endSessionBtn');
-  if (endSessionBtn) {
-    endSessionBtn.addEventListener('click', async () => {
-      const confirmed = confirm('This will end your current session completely.\n\nContinue?');
-      
-      if (confirmed) {
-        try {
-          console.log('🔐 Calling backend session termination...');
-          await API.adminLogout();
-          console.log('✅ Session terminated successfully');
-        } catch (error) {
-          console.warn('⚠️ Session termination warning:', error.message);
-        }
-        
-        // Clear EVERYTHING - complete logout
-        console.log('🧹 Clearing all local data...');
-        localStorage.clear();
-        sessionStorage.clear();
-        
-        showNotification('✓ Session ended. Redirecting...', 'info', 1500);
-        
-        setTimeout(() => {
-          window.location.href = 'http://127.0.0.1:5500/project/index.html';
-        }, 1000);
-      }
+function setupBackButton() {
+  const backBtn = document.getElementById('backToDashboardBtn');
+  if (backBtn) {
+    backBtn.addEventListener('click', () => {
+      console.log('🔙 Returning to Project dashboard...');
+      window.location.href = 'http://127.0.0.1:5500/project/app/dashboard.html';
     });
   }
 }
