@@ -67,12 +67,16 @@ const API = {
       if (!response.ok) {
         // Handle unauthorized - token expired
         if (response.status === 401) {
-          console.warn('🔓 Unauthorized: Token expired - Clearing credentials and redirecting to login');
+          console.warn('🔓 Unauthorized: Token expired - Clearing credentials and redirecting');
           localStorage.removeItem('adminAuthToken');
-          localStorage.removeItem('accessToken');
           localStorage.removeItem('adminRefreshToken');
           localStorage.removeItem('adminData');
-          window.location.href = '../auth/login.html';
+          // Keep accessToken and deviceUUID for return to Project
+          
+          // Redirect to Project dashboard if token expired from Admin Panel
+          setTimeout(() => {
+            window.location.href = 'http://127.0.0.1:5500/project/index.html';
+          }, 500);
           return;
         }
         
