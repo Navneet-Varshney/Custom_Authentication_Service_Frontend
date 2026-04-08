@@ -75,7 +75,7 @@ const API = {
           
           // Redirect to Project dashboard if token expired from Admin Panel
           setTimeout(() => {
-            window.location.href = 'http://127.0.0.1:5500/project/index.html';
+            window.location.href = 'http://127.0.0.1:5500/project/app/dashboard.html';
           }, 500);
           return;
         }
