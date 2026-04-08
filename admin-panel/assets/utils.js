@@ -69,7 +69,7 @@ function logoutAdmin() {
   
   // Add small delay for UI feedback
   setTimeout(() => {
-    window.location.href = 'http://127.0.0.1:5500/project/index.html';
+    window.location.href = 'http://127.0.0.1:5500/project/app/dashboard.html';
   }, 300);
 }
 
