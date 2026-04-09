@@ -41,6 +41,9 @@ export const API_CONFIG = {
     SPECIFICATION: '/specifications',               // Backend: /specifications (PLURAL!)
     VALIDATION: '/validations',                     // Backend: /validations (PLURAL!)
     
+    // Requirements Management
+    REQUIREMENTS: '/requirements',                  // Backend: /requirements (CRUD endpoints)
+    
     // Shared Features & Collaboration
     COMMENTS: '/comments',
     ACTIVITY_TRACKER: '/activity-trackers',
