@@ -228,7 +228,7 @@ function setupLogout() {
       if (confirmed) {
         try {
           console.log('📡 Calling backend logout API...');
-          await API.adminLogout();
+          await API.adminSignOut();
           console.log('✅ Backend logout successful');
         } catch (error) {
           console.warn('⚠️ Backend logout failed (continuing with local logout):', error.message);
@@ -282,17 +282,18 @@ async function loadDashboardData() {
 async function loadRecentActivities() {
   try {
     const activityList = document.getElementById('recentActivityList');
+    const activities = await API.listActivities(1, 5);
     
-    console.log('ℹ️ Activity listing endpoint not available in backend');
-    activityList.innerHTML = `
-      <div class="loading" style="padding: 20px;">
-        <div style="text-align: center;">
-          <p style="margin: 0 0 10px 0; color: #666;">Activity Listing Coming Soon</p>
-          <p style="margin: 0; font-size: 12px; color: #999;">Backend endpoint for listing activities is not yet available</p>
-          <p style="margin: 10px 0 0 0; font-size: 12px; color: #0066cc;">Activity tracking will be available once the endpoint is deployed</p>
+    if (activities && activities.length > 0) {
+      activityList.innerHTML = activities.map(a => `
+        <div class="activity-item" style="padding: 10px; border-bottom: 1px solid #eee;">
+          <div style="font-weight: 600; color: #333;">${a.action || 'Action'}</div>
+          <div style="font-size: 12px; color: #666;">${formatDate(a.timestamp || a.createdAt)}</div>
         </div>
-      </div>`;
-    return;
+      `).join('');
+    } else {
+      activityList.innerHTML = '<div class="loading" style="padding: 20px;">No activities yet</div>';
+    }
   } catch (error) {
     console.error('Failed to load activities:', error);
     document.getElementById('recentActivityList').innerHTML = '<div class="loading">Unable to load activities</div>';
@@ -304,21 +305,24 @@ async function loadAdminsData() {
   try {
     const adminsList = document.getElementById('adminsList');
     
-    console.log('ℹ️ Admin listing endpoint not available in backend');
+    console.log('✅ Admin Page Ready - Use "Add Admin" button to create');
     adminsList.innerHTML = `
       <tr>
-        <td colspan="6" class="loading" style="padding: 20px;">
-          <div style="text-align: center;">
-            <p style="margin: 0 0 10px 0; color: #666;">Admin Listing Coming Soon</p>
-            <p style="margin: 0; font-size: 12px; color: #999;">Backend endpoint for listing admins is not yet available</p>
-            <p style="margin: 10px 0 0 0; font-size: 12px; color: #0066cc;">You can create, block, and unblock admins using the action buttons</p>
+        <td colspan="6" style="padding: 30px; text-align: center;">
+          <div style="background: #f0f7ff; padding: 25px; border-radius: 8px; border-left: 4px solid #0066cc;">
+            <p style="margin: 0 0 15px 0; font-weight: 600; font-size: 16px; color: #333;">Admin Management Interface</p>
+            <p style="margin: 0 0 10px 0; color: #666; font-size: 14px;">📋 Available Operations:</p>
+            <div style="text-align: left; display: inline-block; background: white; padding: 15px; border-radius: 6px;">
+              <p style="margin: 5px 0;">✅ <strong>Create Admin</strong> - Click "Add Admin" button above</p>
+              <p style="margin: 5px 0;">✅ <strong>Block Admin</strong> - Use action buttons when admins are listed</p>
+              <p style="margin: 5px 0;">✅ <strong>Unblock Admin</strong> - Use action buttons when admins are listed</p>
+            </div>
           </div>
         </td>
       </tr>`;
-    return;
   } catch (error) {
     console.error('Failed to load admins:', error);
-    showNotification('Admin listing not available yet', 'info');
+    showNotification('Error loading admin page', 'error');
   }
 }
 
@@ -347,9 +351,11 @@ function displayAdmins(admins) {
 }
 
 async function blockAdmin(adminId) {
-  if (!confirmAction('Are you sure you want to block this admin?')) return;
+  const blockReason = prompt('Enter reason for blocking admin:');
+  if (!blockReason) return;
+  
   try {
-    await API.blockAdmin(adminId);
+    await API.blockAdmin(adminId, blockReason);
     showNotification('Admin blocked successfully', 'success');
     loadAdminsData();
   } catch (error) {
@@ -359,9 +365,11 @@ async function blockAdmin(adminId) {
 }
 
 async function unblockAdmin(adminId) {
-  if (!confirmAction('Are you sure you want to unblock this admin?')) return;
+  const unblockReason = prompt('Enter reason for unblocking admin:');
+  if (!unblockReason) return;
+  
   try {
-    await API.unblockAdmin(adminId);
+    await API.unblockAdmin(adminId, unblockReason);
     showNotification('Admin unblocked successfully', 'success');
     loadAdminsData();
   } catch (error) {
@@ -370,26 +378,92 @@ async function unblockAdmin(adminId) {
   }
 }
 
+async function deleteAdmin(adminId) {
+  if (!confirmAction('Are you sure you want to DELETE this admin? This action cannot be undone!')) return;
+  try {
+    await API.deleteAdmin(adminId);
+    showNotification('Admin deleted successfully', 'success');
+    loadAdminsData();
+  } catch (error) {
+    console.error('Error deleting admin:', error);
+    showNotification('Failed to delete admin: ' + error.message, 'error');
+  }
+}
+
 // Load Users
 async function loadUsersData() {
   try {
     const usersList = document.getElementById('usersList');
     
-    console.log('ℹ️ User listing endpoint not available in backend');
+    console.log('✅ User Management - Block/Unblock Interface');
     usersList.innerHTML = `
       <tr>
-        <td colspan="7" class="loading" style="padding: 20px;">
-          <div style="text-align: center;">
-            <p style="margin: 0 0 10px 0; color: #666;">User Listing Coming Soon</p>
-            <p style="margin: 0; font-size: 12px; color: #999;">Backend endpoint for listing users is not yet available</p>
-            <p style="margin: 10px 0 0 0; font-size: 12px; color: #0066cc;">You can block and unblock users using the action endpoints</p>
+        <td colspan="7" style="padding: 30px; text-align: center;">
+          <div style="background: #f0f7ff; padding: 25px; border-radius: 8px; border-left: 4px solid #0066cc;">
+            <p style="margin: 0 0 15px 0; font-weight: 600; font-size: 16px; color: #333;">User Management</p>
+            <p style="margin: 0 0 15px 0; color: #666;">Enter User ID to manage user access</p>
+            <div style="background: white; padding: 20px; border-radius: 6px; display: inline-block;">
+              <div style="margin-bottom: 10px;">
+                <input type="text" id="userIdInput" placeholder="Enter User ID (e.g., USR0000001)" 
+                  style="width: 300px; padding: 10px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px;">
+              </div>
+              <div>
+                <button onclick="blockUserAction()" class="btn btn-danger" style="padding: 10px 20px; margin-right: 10px;">🚫 Block User</button>
+                <button onclick="unblockUserAction()" class="btn btn-success" style="padding: 10px 20px; background: #48bb78; color: white; border: none; border-radius: 4px; cursor: pointer;">✅ Unblock User</button>
+              </div>
+            </div>
           </div>
         </td>
       </tr>`;
-    return;
   } catch (error) {
     console.error('Failed to load users:', error);
-    showNotification('User listing not available yet', 'info');
+    showNotification('Error loading user page', 'error');
+  }
+}
+
+async function blockUserAction() {
+  const userId = document.getElementById('userIdInput')?.value.trim();
+  if (!userId) {
+    showNotification('Please enter User ID', 'error');
+    return;
+  }
+  
+  const blockReason = prompt('Select block reason:\nOptions: policy_violation, spam_activity, harassment, fraudulent_behavior, suspicious_login, other\n\nEnter reason:');
+  if (!blockReason) return;
+  
+  const reasonDescription = prompt('Enter additional description (optional):');
+  
+  if (!confirm('Are you sure you want to block this user?')) return;
+  
+  try {
+    await API.blockUser(userId, blockReason, reasonDescription || '');
+    showNotification('✓ User blocked successfully', 'success');
+    document.getElementById('userIdInput').value = '';
+  } catch (error) {
+    showNotification('❌ Error: ' + error.message, 'error');
+  }
+}
+
+async function unblockUserAction() {
+  const userId = document.getElementById('userIdInput')?.value.trim();
+  if (!userId) {
+    showNotification('Please enter User ID', 'error');
+    return;
+  }
+  
+  const unblockReason = prompt('Select unblock reason:\nOptions: manual_review_passed, user_appeal_granted, system_error, mistake, other\n\nEnter reason:');
+  if (!unblockReason) return;
+  
+  const reasonDescription = prompt('Enter additional description (optional):');
+  
+  if (!confirm('Are you sure you want to unblock this user?')) return;
+  
+  try {
+    await API.unblockUser(userId, unblockReason, reasonDescription || '');
+    showNotification('✓ User unblocked successfully', 'success');
+    document.getElementById('userIdInput').value = '';
+  } catch (error) {
+    showNotification('❌ Error: ' + error.message, 'error');
   }
 }
 
@@ -446,22 +520,19 @@ async function unblockUser(userId) {
 async function loadOrganizationsData() {
   try {
     const orgsList = document.getElementById('organizationsList');
-    
-    console.log('ℹ️ Organization listing endpoint not available in backend');
-    orgsList.innerHTML = `
-      <tr>
-        <td colspan="7" class="loading" style="padding: 20px;">
-          <div style="text-align: center;">
-            <p style="margin: 0 0 10px 0; color: #666;">Organization Listing Coming Soon</p>
-            <p style="margin: 0; font-size: 12px; color: #999;">Backend endpoint for listing organizations is not yet available</p>
-            <p style="margin: 10px 0 0 0; font-size: 12px; color: #0066cc;">You can create and manage organizations using the action endpoints</p>
-          </div>
-        </td>
-      </tr>`;
-    return;
+    console.log('📡 Fetching organizations from backend...');
+    const organizations = await API.getOrganizations(1, 10);
+
+    if (!organizations || organizations.length === 0) {
+      orgsList.innerHTML = `<tr><td colspan="7" style="padding: 20px; text-align: center; color: #666;">No organizations found</td></tr>`;
+      return;
+    }
+
+    displayOrganizations(organizations);
   } catch (error) {
     console.error('Failed to load organizations:', error);
-    showNotification('Organization listing not available yet', 'info');
+    const orgsList = document.getElementById('organizationsList');
+    orgsList.innerHTML = `<tr><td colspan="7" style="padding: 20px; text-align: center; color: #e74c3c;">Failed to load organizations: ${error.message}</td></tr>`;
   }
 }
 
@@ -470,21 +541,65 @@ async function loadDevicesData() {
   try {
     const devicesList = document.getElementById('devicesList');
     
-    console.log('ℹ️ Device listing endpoint not available in backend');
+    console.log('✅ Device Management - Block/Unblock Interface');
     devicesList.innerHTML = `
       <tr>
-        <td colspan="7" class="loading" style="padding: 20px;">
-          <div style="text-align: center;">
-            <p style="margin: 0 0 10px 0; color: #666;">Device Listing Coming Soon</p>
-            <p style="margin: 0; font-size: 12px; color: #999;">Backend endpoint for listing devices is not yet available</p>
-            <p style="margin: 10px 0 0 0; font-size: 12px; color: #0066cc;">You can block and unblock devices using the action endpoints</p>
+        <td colspan="7" style="padding: 30px; text-align: center;">
+          <div style="background: #f0f7ff; padding: 25px; border-radius: 8px; border-left: 4px solid #0066cc;">
+            <p style="margin: 0 0 15px 0; font-weight: 600; font-size: 16px; color: #333;">Device Management</p>
+            <p style="margin: 0 0 15px 0; color: #666;">Enter Device UUID to manage device access</p>
+            <div style="background: white; padding: 20px; border-radius: 6px; display: inline-block;">
+              <div style="margin-bottom: 10px;">
+                <input type="text" id="deviceUuidInput" placeholder="Enter Device UUID (e.g., 550e8400-e29b-41d4-a716-446655440000)" 
+                  style="width: 400px; padding: 10px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px;">
+              </div>
+              <div>
+                <button onclick="blockDeviceAction()" class="btn btn-danger" style="padding: 10px 20px; margin-right: 10px;">🚫 Block Device</button>
+                <button onclick="unblockDeviceAction()" class="btn btn-success" style="padding: 10px 20px; background: #48bb78; color: white; border: none; border-radius: 4px; cursor: pointer;">✅ Unblock Device</button>
+              </div>
+            </div>
           </div>
         </td>
       </tr>`;
-    return;
   } catch (error) {
     console.error('Failed to load devices:', error);
-    showNotification('Device listing not available yet', 'info');
+    showNotification('Error loading device page', 'error');
+  }
+}
+
+async function blockDeviceAction() {
+  const deviceUUID = document.getElementById('deviceUuidInput')?.value.trim();
+  if (!deviceUUID) {
+    showNotification('Please enter Device UUID', 'error');
+    return;
+  }
+  
+  if (!confirm('Are you sure you want to block this device?')) return;
+  
+  try {
+    await API.blockDevice(deviceUUID, 'Admin blocked', 'Blocked via admin panel');
+    showNotification('✓ Device blocked successfully', 'success');
+    document.getElementById('deviceUuidInput').value = '';
+  } catch (error) {
+    showNotification('❌ Error: ' + error.message, 'error');
+  }
+}
+
+async function unblockDeviceAction() {
+  const deviceUUID = document.getElementById('deviceUuidInput')?.value.trim();
+  if (!deviceUUID) {
+    showNotification('Please enter Device UUID', 'error');
+    return;
+  }
+  
+  if (!confirm('Are you sure you want to unblock this device?')) return;
+  
+  try {
+    await API.unblockDevice(deviceUUID, 'Admin unblocked', 'Unblocked via admin panel');
+    showNotification('✓ Device unblocked successfully', 'success');
+    document.getElementById('deviceUuidInput').value = '';
+  } catch (error) {
+    showNotification('❌ Error: ' + error.message, 'error');
   }
 }
 
@@ -492,21 +607,19 @@ async function loadDevicesData() {
 async function loadActivitiesData() {
   try {
     const activitiesList = document.getElementById('activitiesList');
-    
-    console.log('ℹ️ Activity listing endpoint not available in backend');
-    activitiesList.innerHTML = `
-      <tr>
-        <td colspan="6" class="loading" style="padding: 20px;">
-          <div style="text-align: center;">
-            <p style="margin: 0 0 10px 0; color: #666;">Activity Listing Coming Soon</p>
-            <p style="margin: 0; font-size: 12px; color: #999;">Backend endpoint for listing activities is not yet available</p>
-          </div>
-        </td>
-      </tr>`;
-    return;
+    console.log('📡 Fetching activities from backend...');
+    const activities = await API.listActivities(1, 20);
+
+    if (!activities || activities.length === 0) {
+      activitiesList.innerHTML = `<tr><td colspan="6" style="padding: 20px; text-align: center; color: #666;">No activities found</td></tr>`;
+      return;
+    }
+
+    displayActivities(activities);
   } catch (error) {
     console.error('Failed to load activities:', error);
-    showNotification('Activity listing not available yet', 'info');
+    const activitiesList = document.getElementById('activitiesList');
+    activitiesList.innerHTML = `<tr><td colspan="6" style="padding: 20px; text-align: center; color: #e74c3c;">Failed to load activities: ${error.message}</td></tr>`;
   }
 }
 
@@ -764,6 +877,18 @@ async function enableOrganization(orgId) {
   }
 }
 
+async function deleteOrganization(orgId) {
+  if (!confirmAction('Are you sure you want to DELETE this organization? This action cannot be undone!')) return;
+  try {
+    await API.deleteOrganization(orgId);
+    showNotification('Organization deleted successfully', 'success');
+    loadOrganizationsData();
+  } catch (error) {
+    console.error('Error deleting organization:', error);
+    showNotification('Failed to delete organization: ' + error.message, 'error');
+  }
+}
+
 // Display Devices
 function displayDevices(devices) {
   const devicesList = document.getElementById('devicesList');
@@ -787,10 +912,14 @@ function displayDevices(devices) {
     .join('');
 }
 
-async function blockDevice(deviceId) {
-  if (!confirmAction('Are you sure you want to block this device?')) return;
+async function blockDevice(deviceUUID) {
+  const blockReason = prompt('Select block reason:\nOptions: suspicious_activity, compromised_device, unauthorized_access, security_threat, user_requested, malware_detected, other\n\nEnter reason:');
+  if (!blockReason) return;
+  
+  const reasonDescription = prompt('Enter additional description (optional):');
+  
   try {
-    await API.blockDevice(deviceId);
+    await API.blockDevice(deviceUUID, blockReason, reasonDescription || '');
     showNotification('Device blocked successfully', 'success');
     loadDevicesData();
   } catch (error) {
@@ -799,10 +928,14 @@ async function blockDevice(deviceId) {
   }
 }
 
-async function unblockDevice(deviceId) {
-  if (!confirmAction('Are you sure you want to unblock this device?')) return;
+async function unblockDevice(deviceUUID) {
+  const unblockReason = prompt('Select unblock reason:\nOptions: verified_safe, user_verified, false_positive, device_secured, user_requested, security_check_passed, other\n\nEnter reason:');
+  if (!unblockReason) return;
+  
+  const reasonDescription = prompt('Enter additional description (optional):');
+  
   try {
-    await API.unblockDevice(deviceId);
+    await API.unblockDevice(deviceUUID, unblockReason, reasonDescription || '');
     showNotification('Device unblocked successfully', 'success');
     loadDevicesData();
   } catch (error) {
@@ -817,41 +950,163 @@ function setupButtonListeners() {
   const addOrgBtn = document.getElementById('addOrgBtn');
 
   if (addAdminBtn) {
-    addAdminBtn.addEventListener('click', () => {
-      const newRole = prompt('Enter role (SUPER_ADMIN, ORG_ADMIN, OPERATIONS_ADMIN, SUPPORT_ADMIN, AUDIT_ADMIN):');
-      if (!newRole) return;
-      const email = prompt('Enter email:');
-      if (!email) return;
-      const fullName = prompt('Enter full name:');
-      if (!fullName) return;
-
-      createNewAdmin({ email, fullName, role: newRole });
-    });
+    addAdminBtn.addEventListener('click', openAdminModal);
   }
 
   if (addOrgBtn) {
-    addOrgBtn.addEventListener('click', () => {
-      const orgName = prompt('Enter organization name:');
-      if (!orgName) return;
-      const email = prompt('Enter email:');
-      if (!email) return;
-      const contact = prompt('Enter contact person:');
-      if (!contact) return;
-      const phone = prompt('Enter phone:');
-      if (!phone) return;
+    addOrgBtn.addEventListener('click', openOrgModal);
+  }
 
-      createNewOrganization({ organizationName: orgName, email, contactPerson: contact, phone });
+  // Admin Form Submission
+  const adminForm = document.getElementById('adminForm');
+  if (adminForm) {
+    adminForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      const firstName = document.getElementById('adminFirstName').value.trim();
+      const email = document.getElementById('adminEmail').value.trim();
+      const password = document.getElementById('adminPassword').value;
+
+      // Validate firstName (2-50 chars)
+      if (firstName.length < 2 || firstName.length > 50) {
+        showNotification('First name must be 2-50 characters long', 'error');
+        return;
+      }
+
+      // Validate email
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(email)) {
+        showNotification('Please enter a valid email address', 'error');
+        return;
+      }
+
+      // Validate password length
+      if (password.length < 8 || password.length > 64) {
+        showNotification('Password must be 8-64 characters long', 'error');
+        return;
+      }
+
+      // Check password strength (uppercase, lowercase, number, special char)
+      const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,64}$/;
+      if (!passwordRegex.test(password)) {
+        showNotification('Password must contain uppercase, lowercase, numbers, and special characters', 'error');
+        return;
+      }
+
+      
+      const adminData = {
+        firstName: firstName,
+        email: email,
+        password: password,
+        adminType: document.getElementById('adminType').value,
+        role: document.getElementById('adminRole').value,
+        creationReason: document.getElementById('creationReason').value,
+      };
+
+      if (!adminData.firstName || !adminData.email || !adminData.password || !adminData.adminType || !adminData.role || !adminData.creationReason) {
+        showNotification('Please fill in all required fields', 'error');
+        return;
+      }
+
+      await createNewAdmin(adminData);
+      closeAdminModal();
+    });
+  }
+
+  // Organization Form Submission
+  const orgForm = document.getElementById('orgForm');
+  if (orgForm) {
+    orgForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      const orgName = document.getElementById('orgName').value.trim();
+      const orgType = document.getElementById('orgType').value;
+      const description = document.getElementById('orgDescription').value.trim();
+      const websiteUrl = document.getElementById('orgWebsiteUrl').value.trim();
+      const contactEmail = document.getElementById('orgContactEmail').value.trim();
+      const contactCountryCode = document.getElementById('orgContactCountryCode').value.trim();
+      const contactLocalNumber = document.getElementById('orgContactLocalNumber').value.trim();
+      const logUrl = document.getElementById('orgLogUrl').value.trim();
+      const creationReason = document.getElementById('orgCreationReason').value;
+      const reasonDescription = document.getElementById('orgReasonDescription').value.trim();
+
+      // Validation - only required fields
+      if (!orgName || !orgType || !creationReason) {
+        showNotification('Please fill in all required fields', 'error');
+        return;
+      }
+
+      const orgData = {
+        organizationName: orgName,
+        orgType: orgType,
+        creationReason: creationReason,
+      };
+
+      // Add optional fields if provided
+      if (description) orgData.description = description;
+      if (websiteUrl) orgData.websiteUrl = websiteUrl;
+      if (contactEmail) orgData.contactEmail = contactEmail;
+      if (contactCountryCode) orgData.contactCountryCode = contactCountryCode;
+      if (contactLocalNumber) orgData.contactLocalNumber = contactLocalNumber;
+      if (logUrl) orgData.logUrl = logUrl;
+      if (reasonDescription) orgData.reasonDescription = reasonDescription;
+
+      await createNewOrganization(orgData);
+      closeOrgModal();
     });
   }
 }
 
+// Modal Functions
+function openAdminModal() {
+  const modal = document.getElementById('adminModal');
+  if (modal) {
+    modal.classList.add('show');
+    document.getElementById('adminForm').reset();
+  }
+}
+
+function closeAdminModal() {
+  const modal = document.getElementById('adminModal');
+  if (modal) {
+    modal.classList.remove('show');
+    document.getElementById('adminForm').reset();
+  }
+}
+
+function openOrgModal() {
+  const modal = document.getElementById('orgModal');
+  if (modal) {
+    modal.classList.add('show');
+    document.getElementById('orgForm').reset();
+  }
+}
+
+function closeOrgModal() {
+  const modal = document.getElementById('orgModal');
+  if (modal) {
+    modal.classList.remove('show');
+    document.getElementById('orgForm').reset();
+  }
+}
+
+// Close modals when clicking outside
+window.addEventListener('click', (e) => {
+  const adminModal = document.getElementById('adminModal');
+  const orgModal = document.getElementById('orgModal');
+  
+  if (e.target === adminModal) closeAdminModal();
+  if (e.target === orgModal) closeOrgModal();
+});
+
 async function createNewAdmin(adminData) {
   try {
+    console.log('📤 Sending admin creation request:', adminData);
     await API.createAdmin(adminData);
-    showNotification('Admin created successfully', 'success');
+    showNotification('✅ Admin created successfully!', 'success');
     loadAdminsData();
   } catch (error) {
-    console.error('Error creating admin:', error);
+    console.error('❌ Error creating admin:', error);
     showNotification('Failed to create admin: ' + error.message, 'error');
   }
 }
@@ -864,6 +1119,92 @@ async function createNewOrganization(orgData) {
   } catch (error) {
     console.error('Error creating organization:', error);
     showNotification('Failed to create organization: ' + error.message, 'error');
+  }
+}
+
+// Organization User Management Functions
+async function addUserToOrganization(orgId) {
+  const userId = prompt('Enter user ID:');
+  if (!userId) return;
+  
+  if (!confirmAction('Are you sure you want to add this user to the organization?')) return;
+  
+  try {
+    await API.addUserToOrganization(orgId, userId);
+    showNotification('User added to organization successfully', 'success');
+    loadOrganizationsData();
+  } catch (error) {
+    console.error('Error adding user:', error);
+    showNotification('Failed to add user: ' + error.message, 'error');
+  }
+}
+
+async function removeUserFromOrganization(orgId, userId) {
+  if (!confirmAction('Are you sure you want to remove this user from the organization?')) return;
+  
+  try {
+    await API.removeUserFromOrganization(orgId, userId);
+    showNotification('User removed from organization successfully', 'success');
+    loadOrganizationsData();
+  } catch (error) {
+    console.error('Error removing user:', error);
+    showNotification('Failed to remove user: ' + error.message, 'error');
+  }
+}
+
+async function listOrgUsers(orgId) {
+  try {
+    const users = await API.listOrgUsers(orgId);
+    const usersList = users.data || users || [];
+    
+    let display = `<h4>Users in Organization</h4><table class="table"><thead><tr><th>Email</th><th>Name</th><th>Role</th><th>Status</th><th>Actions</th></tr></thead><tbody>`;
+    
+    usersList.forEach(user => {
+      display += `<tr>
+        <td>${user.email}</td>
+        <td>${user.fullName || '-'}</td>
+        <td>${user.role || '-'}</td>
+        <td>${getStatusBadge(user.isDisabled ? 'disabled' : 'active')}</td>
+        <td>
+          ${user.isDisabled ? 
+            `<button class="btn btn-sm btn-secondary" onclick="enableOrgUser('${user._id}')">Enable</button>` :
+            `<button class="btn btn-sm btn-warning" onclick="disableOrgUser('${user._id}')">Disable</button>`
+          }
+          <button class="btn btn-sm btn-danger" onclick="removeUserFromOrganization('${orgId}', '${user._id}')">Remove</button>
+        </td>
+      </tr>`;
+    });
+    
+    display += `</tbody></table>`;
+    
+    alert(display);
+  } catch (error) {
+    console.error('Error listing org users:', error);
+    showNotification('Failed to list users: ' + error.message, 'error');
+  }
+}
+
+async function disableOrgUser(orgUserId) {
+  if (!confirmAction('Are you sure you want to disable this organization user?')) return;
+  
+  try {
+    await API.disableOrgUser(orgUserId);
+    showNotification('Organization user disabled successfully', 'success');
+  } catch (error) {
+    console.error('Error disabling org user:', error);
+    showNotification('Failed to disable user: ' + error.message, 'error');
+  }
+}
+
+async function enableOrgUser(orgUserId) {
+  if (!confirmAction('Are you sure you want to enable this organization user?')) return;
+  
+  try {
+    await API.enableOrgUser(orgUserId);
+    showNotification('Organization user enabled successfully', 'success');
+  } catch (error) {
+    console.error('Error enabling org user:', error);
+    showNotification('Failed to enable user: ' + error.message, 'error');
   }
 }
 
