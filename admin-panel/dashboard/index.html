@@ -313,7 +313,241 @@
       </main>
     </div>
 
-    <script src="../assets/theme.js"></script>
+    <!-- Admin Creation Modal -->
+    <div id="adminModal" class="modal" style="display: none;">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2>Create New Admin</h2>
+          <button class="modal-close" onclick="closeAdminModal()" style="background: none; border: none; font-size: 24px; cursor: pointer;">&times;</button>
+        </div>
+        <form id="adminForm" class="modal-form">
+          <div class="form-group">
+            <label>First Name * <span style="font-size: 12px; color: #666;">(2-50 chars)</span></label>
+            <input type="text" id="adminFirstName" required placeholder="Enter first name" />
+          </div>
+
+          <div class="form-group">
+            <label>Email * <span style="font-size: 12px; color: #666;">(Valid email address)</span></label>
+            <input type="email" id="adminEmail" required placeholder="Enter email address" />
+          </div>
+
+          <div class="form-group">
+            <label>Admin Type *</label>
+            <select id="adminType" required>
+              <option value="">Select admin type</option>
+              <option value="super_admin">Super Admin</option>
+              <option value="org_admin">Organization Admin</option>
+              <option value="operations_admin">Operations Admin</option>
+              <option value="support_admin">Support Admin</option>
+              <option value="audit_admin">Audit Admin</option>
+              <option value="internal_admin">Internal Admin</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label>Role *</label>
+            <select id="adminRole" required>
+              <option value="">Select role</option>
+              <option value="business_analyst">Business Analyst</option>
+              <option value="developer">Developer</option>
+              <option value="manager">Manager</option>
+              <option value="analyst">Analyst</option>
+              <option value="ceo">CEO</option>
+              <option value="other">Other</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label>Password * <span style="font-size: 12px; color: #666;">(8-64 chars, uppercase, lowercase, numbers, special chars)</span></label>
+            <input type="password" id="adminPassword" required placeholder="Enter password (e.g., Ravan@123)" />
+          </div>
+
+          <div class="form-group">
+            <label>Creation Reason *</label>
+            <select id="creationReason" required>
+              <option value="">Select reason</option>
+              <option value="NewHire">New Hire</option>
+              <option value="Replacement">Replacement</option>
+              <option value="RoleExpansion">Role Expansion</option>
+              <option value="TemporaryAssignment">Temporary Assignment</option>
+              <option value="ProjectRequirement">Project Requirement</option>
+              <option value="Other">Other</option>
+            </select>
+          </div>
+
+
+
+          <div class="form-actions">
+            <button type="submit" class="btn btn-primary">Create Admin</button>
+            <button type="button" class="btn btn-secondary" onclick="closeAdminModal()">Cancel</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Organization Creation Modal -->
+    <div id="orgModal" class="modal" style="display: none;">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2>Create New Organization</h2>
+          <button class="modal-close" onclick="closeOrgModal()" style="background: none; border: none; font-size: 24px; cursor: pointer;">&times;</button>
+        </div>
+        <form id="orgForm" class="modal-form">
+          <div class="form-group">
+            <label>Organization Name *</label>
+            <input type="text" id="orgName" required placeholder="Enter organization name" />
+          </div>
+
+          <div class="form-group">
+            <label>Organization Type *</label>
+            <select id="orgType" required>
+              <option value="">Select type</option>
+              <option value="CORPORATE">Corporate</option>
+              <option value="EDUCATIONAL">Educational</option>
+              <option value="GOVERNMENT">Government</option>
+              <option value="NONPROFIT">Non-Profit</option>
+              <option value="OTHER">Other</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label>Description <span style="font-size: 12px; color: #999;">(Optional)</span></label>
+            <textarea id="orgDescription" placeholder="Enter description" style="min-height: 60px; padding: 10px; border: 1px solid #ddd; border-radius: 4px; font-family: inherit;"></textarea>
+          </div>
+
+          <div class="form-group">
+            <label>Website URL <span style="font-size: 12px; color: #999;">(Optional)</span></label>
+            <input type="url" id="orgWebsiteUrl" placeholder="https://example.com" />
+          </div>
+
+          <div class="form-group">
+            <label>Contact Email <span style="font-size: 12px; color: #999;">(Optional)</span></label>
+            <input type="email" id="orgContactEmail" placeholder="Enter contact email" />
+          </div>
+
+          <div class="form-group">
+            <label>Contact Country Code <span style="font-size: 12px; color: #999;">(Optional, e.g., +1)</span></label>
+            <input type="text" id="orgContactCountryCode" placeholder="e.g., +1" />
+          </div>
+
+          <div class="form-group">
+            <label>Contact Local Phone Number <span style="font-size: 12px; color: #999;">(Optional, e.g., 2025551234)</span></label>
+            <input type="tel" id="orgContactLocalNumber" placeholder="e.g., 2025551234" />
+          </div>
+
+          <div class="form-group">
+            <label>Creation Reason *</label>
+            <select id="orgCreationReason" required>
+              <option value="">Select reason</option>
+              <option value="NewClient">New Client</option>
+              <option value="Expansion">Expansion</option>
+              <option value="Partnership">Partnership</option>
+              <option value="Acquisition">Acquisition</option>
+              <option value="Other">Other</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label>Creation Reason Description <span style="font-size: 12px; color: #999;">(Optional)</span></label>
+            <textarea id="orgReasonDescription" placeholder="Provide additional details..." style="min-height: 60px; padding: 10px; border: 1px solid #ddd; border-radius: 4px; font-family: inherit;"></textarea>
+          </div>
+
+          <div class="form-group">
+            <label>Log URL <span style="font-size: 12px; color: #999;">(Optional)</span></label>
+            <input type="url" id="orgLogUrl" placeholder="https://logs.example.com" />
+          </div>
+
+          <div class="form-actions">
+            <button type="submit" class="btn btn-primary">Create Organization</button>
+            <button type="button" class="btn btn-secondary" onclick="closeOrgModal()">Cancel</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Modal Styles -->
+    <style>
+      .modal {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        display: none;
+        justify-content: center;
+        align-items: center;
+        z-index: 1000;
+      }
+
+      .modal.show {
+        display: flex !important;
+      }
+
+      .modal-content {
+        background: white;
+        border-radius: 8px;
+        padding: 30px;
+        min-width: 400px;
+        max-width: 500px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      }
+
+      .modal-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+      }
+
+      .modal-header h2 {
+        margin: 0;
+        font-size: 20px;
+      }
+
+      .modal-form {
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+      }
+
+      .form-group {
+        display: flex;
+        flex-direction: column;
+      }
+
+      .form-group label {
+        margin-bottom: 5px;
+        font-weight: 500;
+        color: #333;
+      }
+
+      .form-group input,
+      .form-group select {
+        padding: 10px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        font-size: 14px;
+      }
+
+      .form-group input:focus,
+      .form-group select:focus {
+        outline: none;
+        border-color: #667eea;
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+      }
+
+      .form-actions {
+        display: flex;
+        gap: 10px;
+        margin-top: 20px;
+      }
+
+      .form-actions .btn {
+        flex: 1;
+      }
+    </style>
+
     <script src="../assets/api.js"></script>
     <script src="../assets/utils.js"></script>
     <script src="dashboard.js"></script>
