@@ -1,5 +1,6 @@
 import { showToast, debounce } from '../js/utils/helpers.js';
 import inceptionService from '../js/services/inception.service.js';
+import { store } from '../js/store/store.js';
 
 export class InceptionPage {
   constructor() {
@@ -9,16 +10,139 @@ export class InceptionPage {
   }
 
   init() {
-    this.attachEventListeners();
-    this.loadInceptions();
+    // Create modal in document body (outside page-content)
+    this.createModal();
+    
+    // Use setTimeout to ensure DOM elements are loaded
+    setTimeout(() => {
+      this.attachEventListeners();
+      this.loadInceptions();
+    }, 100);
+  }
+
+  createModal() {
+    // Check if modal already exists
+    if (document.getElementById('createInceptionModal')) {
+      console.log('✅ Modal already exists');
+      return;
+    }
+
+    const modalHTML = `
+      <div id="createInceptionModal" class="modal hidden">
+        <div class="modal-overlay" id="modalOverlay"></div>
+        <div class="modal-content">
+          <div class="modal-header">
+            <h2>Create Inception Document</h2>
+            <button class="modal-close" id="btnCloseInceptionModal">&times;</button>
+          </div>
+          <div class="modal-body">
+            <form id="inceptionForm">
+              <div class="form-group">
+                <label for="inceptionVision" class="form-label">Project Vision</label>
+                <textarea id="inceptionVision" class="form-input" placeholder="Describe the project vision and goals..." rows="5"></textarea>
+                <small class="form-hint">Define what this project aims to achieve</small>
+              </div>
+              
+              <div class="form-group checkbox-group">
+                <label class="checkbox-label">
+                  <input type="checkbox" id="inceptionParallelMeetings" class="form-input">
+                  <span>Allow Parallel Meetings</span>
+                </label>
+                <small class="form-hint">Enable multiple meetings to occur simultaneously</small>
+              </div>
+            </form>
+          </div>
+          <div class="modal-footer">
+            <button class="btn btn-secondary" id="btnCancelInception">Cancel</button>
+            <button class="btn btn-primary" id="btnSaveInception">Create Inception</button>
+          </div>
+        </div>
+      </div>
+    `;
+
+    // Add modal to document body
+    document.body.insertAdjacentHTML('beforeend', modalHTML);
+    console.log('✅ Modal created in document.body');
   }
 
   attachEventListeners() {
-    document.getElementById('btnCreateInception')?.addEventListener('click', () => this.openCreateModal());
-    document.getElementById('btnCreateInceptionEmpty')?.addEventListener('click', () => this.openCreateModal());
-    
-    document.getElementById('filterStatus')?.addEventListener('change', () => this.applyFilters());
-    document.getElementById('searchInception')?.addEventListener('input', debounce(() => this.applyFilters(), 300));
+    const btnCreate = document.getElementById('btnCreateInception');
+    const btnCreateEmpty = document.getElementById('btnCreateInceptionEmpty');
+    const btnClose = document.getElementById('btnCloseInceptionModal');
+    const btnCancel = document.getElementById('btnCancelInception');
+    const btnSave = document.getElementById('btnSaveInception');
+    const overlay = document.getElementById('modalOverlay');
+    const filterStatus = document.getElementById('filterStatus');
+    const searchInception = document.getElementById('searchInception');
+
+    console.log('🔍 Attaching event listeners...');
+    console.log('btnCreate:', btnCreate);
+    console.log('btnCreateEmpty:', btnCreateEmpty);
+    console.log('btnClose:', btnClose);
+    console.log('btnSave:', btnSave);
+
+    if (btnCreate) {
+      btnCreate.addEventListener('click', () => {
+        console.log('✅ btnCreate clicked');
+        this.openCreateModal();
+      });
+    } else {
+      console.warn('⚠️ btnCreate not found');
+    }
+
+    if (btnCreateEmpty) {
+      btnCreateEmpty.addEventListener('click', () => {
+        console.log('✅ btnCreateEmpty clicked');
+        this.openCreateModal();
+      });
+    } else {
+      console.warn('⚠️ btnCreateEmpty not found');
+    }
+
+    if (filterStatus) {
+      filterStatus.addEventListener('change', () => this.applyFilters());
+    }
+
+    if (searchInception) {
+      searchInception.addEventListener('input', debounce(() => this.applyFilters(), 300));
+    }
+
+    // Modal event listeners
+    if (btnClose) {
+      btnClose.addEventListener('click', () => {
+        console.log('✅ btnClose clicked');
+        this.closeCreateModal();
+      });
+    } else {
+      console.warn('⚠️ btnClose not found');
+    }
+
+    if (btnCancel) {
+      btnCancel.addEventListener('click', () => {
+        console.log('✅ btnCancel clicked');
+        this.closeCreateModal();
+      });
+    } else {
+      console.warn('⚠️ btnCancel not found');
+    }
+
+    if (overlay) {
+      overlay.addEventListener('click', () => {
+        console.log('✅ overlay clicked');
+        this.closeCreateModal();
+      });
+    } else {
+      console.warn('⚠️ overlay not found');
+    }
+
+    if (btnSave) {
+      btnSave.addEventListener('click', () => {
+        console.log('✅ btnSave clicked');
+        this.saveInception();
+      });
+    } else {
+      console.warn('⚠️ btnSave not found');
+    }
   }
 
   async loadInceptions() {
@@ -26,7 +150,17 @@ export class InceptionPage {
       const container = document.getElementById('inceptionContainer');
       container.innerHTML = '<div class="loading-spinner"><div class="spinner"></div><p>Loading inception documents...</p></div>';
 
-      const data = await inceptionService.getInceptions();
+      // Get current project from store
+      const currentProjectId = store.state.projects.current?._id;
+      if (!currentProjectId) {
+        showToast('Please select a project first', 'warning');
+        this.inceptions = [];
+        this.filteredInceptions = [];
+        this.showEmptyState();
+        return;
+      }
+
+      const data = await inceptionService.getInceptions(currentProjectId);
       this.inceptions = Array.isArray(data) ? data : [];
       this.filteredInceptions = this.inceptions;
       this.renderInceptions();
@@ -96,6 +230,92 @@ export class InceptionPage {
   }
 
   openCreateModal() {
-    showToast('Create inception document feature coming soon', 'info');
+    console.log('📱 openCreateModal called');
+    const modal = document.getElementById('createInceptionModal');
+    const form = document.getElementById('inceptionForm');
+    
+    console.log('Modal element:', modal);
+    console.log('Form element:', form);
+    
+    if (!modal) {
+      console.error('❌ Modal not found!');
+      return;
+    }
+
+    if (form) {
+      form.reset();
+    }
+    
+    // Remove hidden class and force display
+    modal.classList.remove('hidden');
+    modal.style.display = 'flex';
+    modal.style.visibility = 'visible';
+    modal.style.opacity = '1';
+    console.log('✅ Modal should now be visible');
+    console.log('Modal display:', modal.style.display);
+    console.log('Modal visibility:', modal.style.visibility);
+  }
+
+  closeCreateModal() {
+    console.log('📱 closeCreateModal called');
+    const modal = document.getElementById('createInceptionModal');
+    if (modal) {
+      modal.classList.add('hidden');
+      modal.style.display = 'none';
+      modal.style.visibility = 'hidden';
+      console.log('✅ Modal hidden');
+    }
+  }
+
+  async saveInception() {
+    try {
+      const currentProjectId = store.state.projects.current?._id;
+      if (!currentProjectId) {
+        showToast('Please select a project first', 'warning');
+        return;
+      }
+
+      const inceptionVision = document.getElementById('inceptionVision').value.trim();
+      const allowParallelMeetings = document.getElementById('inceptionParallelMeetings').checked;
+
+      // Validate vision field
+      if (!inceptionVision) {
+        showToast('Project vision is required', 'warning');
+        return;
+      }
+
+      // Show loading state
+      const btn = document.getElementById('btnSaveInception');
+      const originalText = btn.textContent;
+      btn.disabled = true;
+      btn.textContent = 'Creating...';
+
+      // Call service
+      const response = await inceptionService.createInception({
+        projectId: currentProjectId,
+        productVision: inceptionVision,
+        allowParallelMeetings
+      });
+
+      // Reset button
+      btn.disabled = false;
+      btn.textContent = originalText;
+
+      // Close modal and reload
+      this.closeCreateModal();
+      showToast('Inception document created successfully', 'success');
+      
+      // Reload inceptions list
+      await this.loadInceptions();
+
+    } catch (error) {
+      console.error('Failed to create inception:', error);
+      showToast(error.message || 'Failed to create inception document', 'error');
+      
+      // Reset button
+      const btn = document.getElementById('btnSaveInception');
+      btn.disabled = false;
+      btn.textContent = 'Create Inception';
+    }
   }
 }
