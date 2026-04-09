@@ -91,7 +91,14 @@ class ApiClient {
 
     // Add body for non-GET requests
     if (data && (method === 'POST' || method === 'PATCH' || method === 'PUT' || method === 'DELETE')) {
-      config.body = JSON.stringify(data);
+      // Handle FormData separately (file uploads) - don't JSON stringify
+      if (data instanceof FormData) {
+        config.body = data;
+        // Remove Content-Type to let browser set boundary automatically
+        delete config.headers['Content-Type'];
+      } else {
+        config.body = JSON.stringify(data);
+      }
     }
 
     try {
