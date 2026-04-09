@@ -64,11 +64,27 @@ class FeaturesService {
 
   /**
    * Get requirements linked to feature
+   * NOTE: Backend does not currently expose this nested endpoint
+   * TODO: Either implement backend endpoint GET /high-level-features/:hlfId/requirements
+   *       OR remove this method if feature requirements should be fetched separately
    */
   async getFeatureRequirements(featureId) {
-    return apiClient.get(
-      `${API_CONFIG.ENDPOINTS.HIGH_LEVEL_FEATURES}/${featureId}/requirements`
-    );
+    console.warn('getFeatureRequirements() calls non-existent backend endpoint. Requires backend implementation.');
+    // Temporary fallback - fetch all requirements and filter by featureId
+    try {
+      const response = await apiClient.get(
+        `${API_CONFIG.ENDPOINTS.REQUIREMENTS}/list`
+      );
+      if (!response.success) {
+        throw new Error('Failed to fetch requirements');
+      }
+      // Filter requirements by parentFeatureId
+      const allRequirements = response.data || [];
+      return allRequirements.filter(req => req.parentFeatureId === featureId);
+    } catch (error) {
+      console.error('Error fetching feature requirements:', error);
+      throw new Error('Unable to fetch requirements linked to feature');
+    }
   }
 }
 
