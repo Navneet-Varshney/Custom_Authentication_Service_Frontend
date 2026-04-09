@@ -38,31 +38,47 @@
     <script>
       console.log("✅ Admin Panel initialization started");
       
-      // 🔄 Token Sync - Connect Project's accessToken to Admin Panel
+      // � Check authentication token from Project
       const accessToken = localStorage.getItem('accessToken');
-      if (accessToken && !localStorage.getItem('adminAuthToken')) {
+      const deviceUUID = localStorage.getItem('deviceUUID');
+      
+      if (!accessToken) {
+        console.warn('🔓 No authentication token found - Redirecting to Project login');
+        // Redirect to Project login if no token
+        localStorage.clear(); // Clear any stale admin data
+        window.location.href = 'http://127.0.0.1:5500/project/auth/login.html';
+      } else {
+        console.log('✅ Token found - Syncing to admin panel');
+        
+        // 🔄 Token Sync - Connect Project's accessToken to Admin Panel
         localStorage.setItem('adminAuthToken', accessToken);
+        localStorage.setItem('adminData', JSON.stringify({ 
+          email: 'Admin',
+          fullName: 'Admin User',
+          isAdmin: true,
+          fromProject: true
+        }));
         console.log('🔄 Token synced: accessToken → adminAuthToken');
+        
+        // Update loading text
+        const loaderText = document.querySelector('.loader-text');
+        if (loaderText) {
+          loaderText.textContent = 'Initializing Admin Dashboard';
+        }
+        
+        const subtitle = document.querySelector('.subtitle');
+        if (subtitle) {
+          subtitle.textContent = 'Loading dashboard...';
+        }
+        
+        setTimeout(() => {
+          console.log("🚀 Redirecting to admin dashboard...");
+          window.location.href = "dashboard/index.html";
+        }, 2500);
       }
-      
-      // Update loading text
-      const loaderText = document.querySelector('.loader-text');
-      if (loaderText) {
-        loaderText.textContent = 'Initializing Admin Dashboard';
-      }
-      
-      const subtitle = document.querySelector('.subtitle');
-      if (subtitle) {
-        subtitle.textContent = 'Loading dashboard...';
-      }
-      
-      setTimeout(() => {
-        console.log("🚀 Redirecting to admin dashboard...");
-        window.location.href = "dashboard/index.html";
-      }, 2500);
 
       // Fallback redirect if JavaScript is disabled
-      document.head.innerHTML += '<meta http-equiv="refresh" content="3; url=dashboard/index.html" />';
+      document.head.innerHTML += '<meta http-equiv="refresh" content="3; url=http://127.0.0.1:5500/project/auth/login.html" />';
     </script>
   </body>
 </html>
