@@ -18,12 +18,24 @@ class InceptionService {
   }
 
   /**
-   * Get all inception documents
-   * Backend requires: /inceptions/list/:projectId
-   * Using fallback projectId if not provided
+   * Get all inception documents for a project
+   * Backend requires: /inceptions/list/:projectId where projectId is MongoDB ObjectId
+   * @param {string} projectId - MongoDB ObjectId of the project (REQUIRED)
+   * @returns {Array} List of inception documents or empty array on error
    */
-  async getInceptions(projectId = 'all', page = 1, pageSize = 10) {
+  async getInceptions(projectId, page = 1, pageSize = 10) {
     try {
+      // Validate projectId is provided and is a valid MongoDB ObjectId format
+      if (!projectId) {
+        throw new Error('Project ID is required to fetch inceptions');
+      }
+
+      // MongoDB ObjectId regex: 24 hex characters
+      const mongoIdRegex = /^[a-f\d]{24}$/i;
+      if (!mongoIdRegex.test(projectId)) {
+        throw new Error('Invalid project ID format');
+      }
+
       const response = await apiClient.get(
         `${API_CONFIG.ENDPOINTS.INCEPTION}/list/${projectId}`
       );
@@ -36,7 +48,7 @@ class InceptionService {
       return Array.isArray(response.data) ? response.data : [];
     } catch (error) {
       console.error('Failed to fetch inceptions:', error);
-      return [];  // Fallback to empty array
+      throw error; // Propagate error to page handler
     }
   }
 
