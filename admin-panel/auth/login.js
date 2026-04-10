@@ -2,7 +2,66 @@
  * Admin Panel Login Module
  * Handles authentication for admin users
  * Supports both direct login and redirect from Project dashboard
+ * Features: Rate limiting, XSS prevention, session security
  */
+
+/**
+ * Rate limiting configuration
+ * Prevents brute force attacks
+ */
+const RATE_LIMIT_CONFIG = {
+  maxAttempts: 5,
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  storageKey: 'loginAttempts',
+};
+
+/**
+ * Track login attempts and enforce rate limiting
+ * @returns {boolean} True if attempt is allowed, false if rate limited
+ */
+function checkRateLimit() {
+  const now = Date.now();
+  let attempts = JSON.parse(localStorage.getItem(RATE_LIMIT_CONFIG.storageKey) || '[]');
+  
+  // Remove attempts outside the time window
+  attempts = attempts.filter(timestamp => (now - timestamp) < RATE_LIMIT_CONFIG.windowMs);
+  
+  if (attempts.length >= RATE_LIMIT_CONFIG.maxAttempts) {
+    console.warn('⚠️ Rate limit exceeded - Too many login attempts');
+    return false;
+  }
+  
+  // Record this attempt
+  attempts.push(now);
+  localStorage.setItem(RATE_LIMIT_CONFIG.storageKey, JSON.stringify(attempts));
+  
+  return true;
+}
+
+/**
+ * Reset rate limit tracking
+ * Call after successful login
+ */
+function resetRateLimit() {
+  localStorage.removeItem(RATE_LIMIT_CONFIG.storageKey);
+  console.log('✓ Rate limit tracker reset');
+}
+
+/**
+ * Get remaining time for rate limit
+ * @returns {number} Minutes remaining until rate limit expires
+ */
+function getRateLimitRemaining() {
+  const attempts = JSON.parse(localStorage.getItem(RATE_LIMIT_CONFIG.storageKey) || '[]');
+  if (attempts.length === 0) return 0;
+  
+  const oldestAttempt = attempts[0];
+  const now = Date.now();
+  const elapsedMs = now - oldestAttempt;
+  const remainingMs = RATE_LIMIT_CONFIG.windowMs - elapsedMs;
+  
+  return Math.ceil(remainingMs / 60000); // Convert to minutes
+}
 
 /**
  * Password visibility toggle
@@ -24,7 +83,7 @@ if (togglePasswordBtn) {
 
 /**
  * Login form submission handler
- * Validates credentials and authenticates against auth service
+ * Validates credentials, checks rate limiting, and authenticates against auth service
  * Stores tokens in both formats (accessToken and adminAuthToken) for integration
  */
 const loginForm = document.getElementById('loginForm');
@@ -34,15 +93,31 @@ if (loginForm) {
   loginForm.addEventListener('submit', async (e) => {
     e.preventDefault();
 
+    // Check rate limiting first
+    if (!checkRateLimit()) {
+      const remaining = getRateLimitRemaining();
+      document.getElementById('loginError').textContent = 
+        `⏱️ Too many attempts. Please try again in ${remaining} minute(s).`;
+      showNotification('Too many login attempts. Please wait.', 'error', 3000);
+      return;
+    }
+
     // Clear previous error messages
     document.getElementById('emailError').textContent = '';
     document.getElementById('passwordError').textContent = '';
     document.getElementById('loginError').textContent = '';
 
     // Get and sanitize input values
-    const email = document.getElementById('email').value.trim();
-    const password = document.getElementById('password').value;
+    const email = sanitizeInput(document.getElementById('email').value.trim());
+    const password = document.getElementById('password').value; // Don't sanitize password
     const rememberMe = document.getElementById('rememberMe').checked;
+
+    // XSS prevention check
+    if (hasInjectionPattern(email)) {
+      console.warn('⚠️ Potential XSS injection detected in email field');
+      document.getElementById('loginError').textContent = '✗ Invalid input detected. Please try again.';
+      return;
+    }
 
     // Form validation with detailed error messages
     let hasError = false;
@@ -58,9 +133,12 @@ if (loginForm) {
     if (!password) {
       document.getElementById('passwordError').textContent = '✗ Password is required';
       hasError = true;
-    } else if (password.length < 6) {
-      document.getElementById('passwordError').textContent = '✗ Password must be at least 6 characters';
-      hasError = true;
+    } else {
+      const passwordValidation = validatePassword(password);
+      if (!passwordValidation.valid) {
+        document.getElementById('passwordError').textContent = `✗ ${passwordValidation.message}`;
+        hasError = true;
+      }
     }
 
     if (hasError) {
@@ -100,6 +178,9 @@ if (loginForm) {
           localStorage.removeItem('rememberedAdminEmail');
         }
 
+        // Reset rate limit on successful login
+        resetRateLimit();
+
         console.log('✅ Admin authentication successful');
         showNotification('✓ Login successful! Redirecting to dashboard...', 'success');
         
@@ -120,6 +201,9 @@ if (loginForm) {
           localStorage.removeItem('rememberedAdminEmail');
         }
 
+        // Reset rate limit on successful login
+        resetRateLimit();
+
         console.log('✅ Admin login successful');
         showNotification('Login successful! Redirecting...', 'success');
         
@@ -131,8 +215,8 @@ if (loginForm) {
       }
     } catch (error) {
       console.error('❌ Login error:', error);
-      document.getElementById('loginError').textContent = 
-        error.message || 'Login failed. Please check your credentials.';
+      const errorMessage = error.message || 'Login failed. Please check your credentials.';
+      document.getElementById('loginError').textContent = `✗ ${errorMessage}`;
       
       submitBtn.disabled = false;
       submitBtn.innerHTML = originalText;
