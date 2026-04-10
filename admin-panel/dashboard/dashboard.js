@@ -2,6 +2,7 @@
  * Dashboard Module
  * Manages admin panel dashboard functionality, data loading, and state management
  * Integrated with Project dashboard via token synchronization
+ * Features: Operation queuing, loading states, error recovery
  */
 
 /**
@@ -15,6 +16,96 @@ let dashboardData = {
   organizations: [],
   devices: [],
   activities: [],
+};
+
+/**
+ * Operation state management
+ * Prevents concurrent operations and tracks loading states
+ */
+const operationState = {
+  isLoading: false,
+  currentOperation: null,
+  operationQueue: [],
+  activeOperations: new Map(), // Track operations by section
+  lastLoadTime: {},
+  loadingTimeouts: new Map(),
+  
+  /**
+   * Add operation to queue
+   * @param {string} operationType - Type of operation (load, create, update, delete)
+   * @param {string} section - Section affected (admins, users, etc.)
+   * @param {Function} operation - Async operation function
+   */
+  async executeOperation(operationType, section, operation) {
+    const operationId = `${section}-${operationType}-${Date.now()}`;
+    
+    // Check if section is already processing
+    if (this.activeOperations.has(section)) {
+      console.warn(`⏳ Operation already in progress for ${section}, queuing...`);
+      this.operationQueue.push({ operationId, section, operation });
+      return;
+    }
+    
+    try {
+      this.activeOperations.set(section, operationId);
+      console.log(`🔄 Starting ${operationType} operation for ${section}`);
+      
+      const result = await operation();
+      
+      console.log(`✅ Completed ${operationType} operation for ${section}`);
+      return result;
+    } catch (error) {
+      console.error(`❌ Failed ${operationType} operation for ${section}:`, error);
+      throw error;
+    } finally {
+      this.activeOperations.delete(section);
+      
+      // Process next queued operation
+      const nextOp = this.operationQueue.shift();
+      if (nextOp) {
+        this.executeOperation('queued', nextOp.section, nextOp.operation);
+      }
+    }
+  },
+  
+  /**
+   * Mark section as loading with visual feedback
+   */
+  startLoading(section) {
+    const loadingEl = document.querySelector(`[data-section="${section}"]`);
+    if (loadingEl) {
+      loadingEl.classList.add('loading');
+      loadingEl.style.opacity = '0.6';
+      loadingEl.style.pointerEvents = 'none';
+    }
+  },
+  
+  /**
+   * Remove loading state
+   */
+  stopLoading(section) {
+    const loadingEl = document.querySelector(`[data-section="${section}"]`);
+    if (loadingEl) {
+      loadingEl.classList.remove('loading');
+      loadingEl.style.opacity = '1';
+      loadingEl.style.pointerEvents = 'auto';
+    }
+  },
+  
+  /**
+   * Check if data needs refresh (cache invalidation)
+   */
+  shouldRefresh(section, maxAgeMs = 60000) {
+    const lastLoad = this.lastLoadTime[section] || 0;
+    return (Date.now() - lastLoad) > maxAgeMs;
+  },
+  
+  /**
+   * Update last load time for section
+   */
+  updateLoadTime(section) {
+    this.lastLoadTime[section] = Date.now();
+  }
 };
 
 /**
