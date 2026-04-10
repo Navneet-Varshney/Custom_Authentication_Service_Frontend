@@ -217,6 +217,166 @@ function getPaginationButtons(currentPage, totalPages) {
   return buttons;
 }
 
+/**
+ * INPUT VALIDATION FUNCTIONS
+ * Provide data validation and sanitization for form inputs
+ */
+
+/**
+ * Email validation
+ * @param {string} email - Email address to validate
+ * @returns {boolean} True if valid email format
+ */
+function isValidEmail(email) {
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  return emailRegex.test(email) && email.length <= 255;
+}
+
+/**
+ * Password validation
+ * @param {string} password - Password to validate
+ * @returns {Object} { valid: boolean, message: string }
+ */
+function validatePassword(password) {
+  if (!password || password.length < 6) {
+    return { valid: false, message: 'Password must be at least 6 characters' };
+  }
+  if (password.length > 128) {
+    return { valid: false, message: 'Password must not exceed 128 characters' };
+  }
+  return { valid: true, message: 'Password is valid' };
+}
+
+/**
+ * Username/name validation
+ * @param {string} name - Name to validate
+ * @returns {boolean} True if valid name format
+ */
+function isValidName(name) {
+  if (!name || name.trim().length === 0) return false;
+  if (name.length > 100) return false;
+  // Allow letters, numbers, spaces, hyphens, apostrophes
+  return /^[a-zA-Z0-9\s\-']+$/.test(name);
+}
+
+/**
+ * UUID validation
+ * @param {string} uuid - UUID to validate
+ * @returns {boolean} True if valid UUID format
+ */
+function isValidUUID(uuid) {
+  const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+  return uuidRegex.test(uuid);
+}
+
+/**
+ * ID validation (MongoDB ObjectId format)
+ * @param {string} id - ID to validate
+ * @returns {boolean} True if valid MongoDB ObjectId
+ */
+function isValidObjectId(id) {
+  return /^[0-9a-f]{24}$/i.test(id);
+}
+
+/**
+ * Sanitize input string for safe display
+ * Removes potential XSS vulnerabilities
+ * @param {string} input - Input string to sanitize
+ * @returns {string} Sanitized string
+ */
+function sanitizeInput(input) {
+  if (!input) return '';
+  
+  const div = document.createElement('div');
+  div.textContent = input;
+  return div.innerHTML;
+}
+
+/**
+ * Sanitize HTML to prevent XSS
+ * @param {string} html - HTML string to sanitize
+ * @returns {string} Sanitized HTML
+ */
+function sanitizeHtml(html) {
+  const div = document.createElement('div');
+  div.textContent = html;
+  return div.innerHTML;
+}
+
+/**
+ * Validate form data before submission
+ * @param {Object} data - Form data object
+ * @param {Array} rules - Validation rules array
+ * @returns {Object} { valid: boolean, errors: Object }
+ */
+function validateFormData(data, rules) {
+  const errors = {};
+  
+  rules.forEach(rule => {
+    const { field, type, required = true, min, max } = rule;
+    const value = data[field];
+    
+    // Check required
+    if (required && (!value || value.toString().trim() === '')) {
+      errors[field] = `${field} is required`;
+      return;
+    }
+    
+    // Check type-specific validations
+    if (value) {
+      switch (type) {
+        case 'email':
+          if (!isValidEmail(value)) {
+            errors[field] = 'Invalid email format';
+          }
+          break;
+        case 'name':
+          if (!isValidName(value)) {
+            errors[field] = 'Invalid name format';
+          }
+          break;
+        case 'uuid':
+          if (!isValidUUID(value)) {
+            errors[field] = 'Invalid UUID format';
+          }
+          break;
+        case 'string':
+          if (min && value.length < min) {
+            errors[field] = `Minimum ${min} characters required`;
+          }
+          if (max && value.length > max) {
+            errors[field] = `Maximum ${max} characters allowed`;
+          }
+          break;
+      }
+    }
+  });
+  
+  return {
+    valid: Object.keys(errors).length === 0,
+    errors
+  };
+}
+
+/**
+ * XSS/Injection prevention helper
+ * @param {string} input - User input
+ * @returns {boolean} True if input contains potential injection
+ */
+function hasInjectionPattern(input) {
+  const injectionPatterns = [
+    /<script/i,
+    /javascript:/i,
+    /onerror=/i,
+    /onclick=/i,
+    /onload=/i,
+    /<iframe/i,
+    /svg.*onload/i,
+  ];
+  
+  return injectionPatterns.some(pattern => pattern.test(input));
+}
+
 // Add notification styles if not exist
 if (!document.getElementById('notification-styles')) {
   const style = document.createElement('style');
