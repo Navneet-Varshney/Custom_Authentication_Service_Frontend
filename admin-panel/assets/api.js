@@ -3,11 +3,24 @@
  * Handles all communication with Auth Service (8080) and Admin Panel Service (8081)
  * Supports dual token formats (accessToken from Project, adminAuthToken from Admin Panel)
  * Includes device UUID header for backend middleware validation
+ * Features: Request timeout, retry logic, error recovery
  */
 
 // Service URLs
 const AUTH_SERVICE_BASE_URL = 'http://localhost:8080/custom-auth-service/api/v1';
 const ADMIN_PANEL_API_BASE_URL = 'http://localhost:8081/admin-panel-service/api/v1';
+
+// API Configuration
+const API_CONFIG = {
+  REQUEST_TIMEOUT: 15000, // 15 seconds
+  MAX_RETRIES: 2,
+  RETRY_DELAY: 1000, // milliseconds
+  RETRY_STATUS_CODES: [408, 429, 500, 502, 503, 504], // Retry on these statuses
+};
+
+// Request queue to prevent concurrent operations
+let requestQueue = [];
+let isProcessingQueue = false;
 
 /**
  * API Client Object
@@ -39,15 +52,16 @@ const API = {
   },
 
   /**
-   * Generic HTTP request handler
+   * Generic HTTP request handler with timeout and retry logic
    * @param {string} method - HTTP method (GET, POST, PUT, PATCH, DELETE)
    * @param {string} endpoint - API endpoint path
    * @param {Object} data - Request body data (optional)
    * @param {string} baseUrl - Base URL for the request
+   * @param {number} retryCount - Internal retry counter
    * @returns {Promise} Response data from API
    * @throws {Error} On API errors or invalid responses
    */
-  async request(method, endpoint, data = null, baseUrl = ADMIN_PANEL_API_BASE_URL) {
+  async request(method, endpoint, data = null, baseUrl = ADMIN_PANEL_API_BASE_URL, retryCount = 0) {
     const url = `${baseUrl}${endpoint}`;
     const config = {
       method,
@@ -60,9 +74,17 @@ const API = {
     }
 
     try {
-      console.debug(`📡 API Request: ${method} ${endpoint}`);
+      console.debug(`📡 API Request [Attempt ${retryCount + 1}/${API_CONFIG.MAX_RETRIES + 1}]: ${method} ${endpoint}`);
       console.debug(`📋 Request Body:`, config.body ? JSON.parse(config.body) : 'No body');
+      
+      // Create abort controller for timeout
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), API_CONFIG.REQUEST_TIMEOUT);
+      config.signal = controller.signal;
+
       const response = await fetch(url, config);
+      clearTimeout(timeoutId);
+      
       const result = await response.json();
 
       if (!response.ok) {
@@ -81,6 +103,13 @@ const API = {
           return;
         }
         
+        // Check if error is retryable
+        if (API_CONFIG.RETRY_STATUS_CODES.includes(response.status) && retryCount < API_CONFIG.MAX_RETRIES) {
+          console.warn(`⚠️ Retryable error (${response.status}): Retrying in ${API_CONFIG.RETRY_DELAY}ms`);
+          await new Promise(resolve => setTimeout(resolve, API_CONFIG.RETRY_DELAY));
+          return this.request(method, endpoint, data, baseUrl, retryCount + 1);
+        }
+        
         // Log detailed error information including warnings
         console.error(`❌ API Error ${response.status}:`, result);
         if (result.warning) {
@@ -92,6 +121,17 @@ const API = {
       console.debug(`✅ API Success: ${method} ${endpoint}`);
       return result.data || result;
     } catch (error) {
+      // Handle timeout errors
+      if (error.name === 'AbortError') {
+        console.error(`⏱️ Request timeout (${API_CONFIG.REQUEST_TIMEOUT}ms): ${method} ${endpoint}`);
+        if (retryCount < API_CONFIG.MAX_RETRIES) {
+          console.warn(`⚠️ Retrying after timeout...`);
+          await new Promise(resolve => setTimeout(resolve, API_CONFIG.RETRY_DELAY));
+          return this.request(method, endpoint, data, baseUrl, retryCount + 1);
+        }
+        throw new Error('Request timeout - Server not responding');
+      }
+      
       console.error(`🚨 API Request Failed: ${method} ${endpoint}`, error);
       throw error;
     }
@@ -99,6 +139,16 @@ const API = {
 
   // Auth Endpoints (External Auth Service) - Using Project's auth endpoints
   // Note: Admin panel uses same auth system as Project (port 8080)
+  
+  /**
+   * Admin login endpoint
+   * @param {Object} credentials - Login credentials { email, password }
+   * @returns {Promise} Authentication response with tokens
+   */
+  async adminLogin(credentials) {
+    return this.request('POST', '/auth/login', credentials, AUTH_SERVICE_BASE_URL);
+  },
+
   // Use /auth/signout instead of /auth/logout
   async adminSignOut() {
     // Call the correct auth endpoint
