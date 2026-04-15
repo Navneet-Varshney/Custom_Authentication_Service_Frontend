@@ -109,20 +109,28 @@ class ProjectsService {
   /**
    * Put project on hold
    */
-  async putProjectOnHold(projectId, reason) {
+  async putProjectOnHold(projectId, reasonType, reasonDescription = '') {
+    const data = { onHoldReasonType: reasonType };
+    if (reasonDescription) {
+      data.onHoldReasonDescription = reasonDescription;
+    }
     return apiClient.patch(
       `${API_CONFIG.ENDPOINTS.PROJECTS}/on-hold/${projectId}`,
-      { projectOnHoldReasonType: reason }
+      data
     );
   }
 
   /**
    * Abort project
    */
-  async abortProject(projectId, reason) {
+  async abortProject(projectId, reasonType, reasonDescription = '') {
+    const data = { abortReasonType: reasonType };
+    if (reasonDescription) {
+      data.abortReasonDescription = reasonDescription;
+    }
     return apiClient.patch(
       `${API_CONFIG.ENDPOINTS.PROJECTS}/abort/${projectId}`,
-      { projectAbortReasonType: reason }
+      data
     );
   }
 
@@ -139,20 +147,28 @@ class ProjectsService {
   /**
    * Resume project from hold or abort
    */
-  async resumeProject(projectId, reason) {
+  async resumeProject(projectId, reasonType, reasonDescription = '') {
+    const data = { resumeReasonType: reasonType };
+    if (reasonDescription) {
+      data.resumeReasonDescription = reasonDescription;
+    }
     return apiClient.patch(
       `${API_CONFIG.ENDPOINTS.PROJECTS}/resume/${projectId}`,
-      { projectResumeReasonType: reason }
+      data
     );
   }
 
   /**
    * Activate project
    */
-  async activateProject(projectId, reason) {
+  async activateProject(projectId, reasonType, reasonDescription = '') {
+    const data = { activationReasonType: reasonType };
+    if (reasonDescription) {
+      data.activationReasonDescription = reasonDescription;
+    }
     return apiClient.patch(
       `${API_CONFIG.ENDPOINTS.PROJECTS}/activate/${projectId}`,
-      { projectActivationReasonType: reason }
+      data
     );
   }
 
@@ -163,6 +179,29 @@ class ProjectsService {
     return apiClient.patch(
       `${API_CONFIG.ENDPOINTS.PROJECTS}/archive/${projectId}`,
       {}
+    );
+  }
+
+  /**
+   * Change project owner
+   */
+  async changeProjectOwner(projectId, userId, reasonType, reasonDescription = '', prevOwnerRole = null) {
+    const changeData = {
+      userId,
+      changeOwnerReasonType: reasonType
+    };
+    
+    if (reasonDescription) {
+      changeData.ownerChangeReasonDescription = reasonDescription;
+    }
+    
+    if (prevOwnerRole) {
+      changeData.prevOwnerRole = prevOwnerRole;
+    }
+    
+    return apiClient.patch(
+      `${API_CONFIG.ENDPOINTS.PROJECTS}/change-owner/${projectId}`,
+      changeData
     );
   }
 }
