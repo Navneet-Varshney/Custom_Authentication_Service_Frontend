@@ -312,6 +312,7 @@ class App {
     const routes = {
       '/': './src/pages/dashboard.html',
       'projects': './src/pages/projects.html',
+      'project-detail': './src/pages/project-detail.html',
       'requirements': './src/pages/requirements.html',
       'scope': './src/pages/scope.html',
       'features': './src/pages/features.html',
@@ -347,6 +348,7 @@ class App {
     
     const controllers = {
       'projects': () => import('../pages/projects.js').then(m => new m.ProjectsPage()),
+      'project-detail': () => import('../pages/project-detail.js').then(m => new m.ProjectDetailPage()),
       'requirements': () => import('../pages/requirements.js').then(m => new m.RequirementsPage()),
       'scope': () => import('../pages/scope.js').then(m => new m.ScopePage()),
       'features': () => import('../pages/features.js').then(m => new m.FeaturesPage()),
