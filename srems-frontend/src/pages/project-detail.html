@@ -1,0 +1,502 @@
+<div class="page-container">
+  <!-- Breadcrumb Navigation -->
+  <div class="breadcrumb">
+    <a href="#/projects" class="breadcrumb-link">📁 Projects</a>
+    <span class="breadcrumb-separator">/</span>
+    <span class="breadcrumb-current" id="breadcrumbTitle">Project</span>
+  </div>
+
+  <!-- Project Header -->
+  <div class="project-detail-header">
+    <div class="header-content">
+      <div class="header-title-section">
+        <h1 class="project-title" id="projectTitle">Loading...</h1>
+        <div class="header-meta">
+          <span class="status-badge" id="statusBadge">Active</span>
+          <span class="created-date" id="createdDate">Created: —</span>
+        </div>
+      </div>
+      <div class="header-actions-quick">
+        <button class="btn btn-sm btn-outline-primary" id="btnEditProject">
+          <span>✎</span> Edit
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Project Information Grid -->
+  <div class="project-info-section">
+    <div class="info-grid">
+      <!-- Left Column -->
+      <div class="info-column">
+        <div class="info-card">
+          <h3 class="info-card-title">📋 Overview</h3>
+          <div class="info-row">
+            <label class="info-label">Name</label>
+            <div class="info-value" id="infoName">—</div>
+          </div>
+          <div class="info-row">
+            <label class="info-label">Description</label>
+            <div class="info-value info-multiline" id="infoDescription">—</div>
+          </div>
+          <div class="info-row">
+            <label class="info-label">Problem Statement</label>
+            <div class="info-value info-multiline" id="infoProblem">—</div>
+          </div>
+          <div class="info-row">
+            <label class="info-label">Project Goal</label>
+            <div class="info-value info-multiline" id="infoGoal">—</div>
+          </div>
+        </div>
+
+        <div class="info-card">
+          <h3 class="info-card-title">⚙️ Configuration</h3>
+          <div class="info-row">
+            <label class="info-label">Category</label>
+            <div class="info-value" id="infoCategory">—</div>
+          </div>
+          <div class="info-row">
+            <label class="info-label">Type</label>
+            <div class="info-value" id="infoType">—</div>
+          </div>
+          <div class="info-row">
+            <label class="info-label">Complexity</label>
+            <div class="info-value" id="infoComplexity">—</div>
+          </div>
+          <div class="info-row">
+            <label class="info-label">Criticality</label>
+            <div class="info-value" id="infoCriticality">—</div>
+          </div>
+          <div class="info-row">
+            <label class="info-label">Priority</label>
+            <div class="info-value" id="infoPriority">—</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right Column -->
+      <div class="info-column">
+        <div class="info-card">
+          <h3 class="info-card-title">💰 Resources</h3>
+          <div class="info-row">
+            <label class="info-label">Expected Budget</label>
+            <div class="info-value" id="infoBudget">—</div>
+          </div>
+          <div class="info-row">
+            <label class="info-label">Timeline</label>
+            <div class="info-value" id="infoTimeline">—</div>
+          </div>
+          <div class="info-row">
+            <label class="info-label">Creation Reason</label>
+            <div class="info-value" id="infoCreationReason">—</div>
+          </div>
+        </div>
+
+        <div class="info-card">
+          <h3 class="info-card-title">👤 Ownership</h3>
+          <div class="info-row">
+            <label class="info-label">Owner</label>
+            <div class="info-value" id="infoOwner">—</div>
+          </div>
+          <div class="info-row">
+            <label class="info-label">Project Status</label>
+            <div class="info-value" id="infoProjectStatus">—</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Action Buttons Section -->
+  <div class="project-actions-section">
+    <div class="actions-header">
+      <h3 class="actions-title">🎛️ Project Actions</h3>
+      <p class="actions-subtitle">Available operations for this project</p>
+    </div>
+    
+    <div class="actions-grid" id="actionsGrid">
+      <!-- Status-aware buttons will be rendered here -->
+    </div>
+  </div>
+
+  <!-- Loading State -->
+  <div class="loading-state" id="loadingState">
+    <div class="spinner"></div>
+    <p>Loading project details...</p>
+  </div>
+
+  <!-- Error State -->
+  <div class="error-state hidden" id="errorState">
+    <div class="error-icon">⚠️</div>
+    <p class="error-message" id="errorMessage">Failed to load project</p>
+    <a href="#/projects" class="btn btn-primary btn-sm">Back to Projects</a>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════════════ -->
+<!-- MODALS FOR PROJECT ACTIONS -->
+<!-- ═══════════════════════════════════════════════════════════════════════════════════ -->
+
+<!-- On Hold Modal -->
+<div id="onHoldModal" class="modal hidden">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h2>⏸️ Put Project On Hold</h2>
+      <button class="modal-close" data-close-modal="onHoldModal">&times;</button>
+    </div>
+    <form id="onHoldForm" class="form-stack">
+      <div class="modal-body">
+        <p class="modal-description">This will pause all activities for this project.</p>
+        <div class="form-group">
+          <label for="onHoldReasonType" class="form-label">Reason for On Hold *</label>
+          <select id="onHoldReasonType" class="form-control" required>
+            <option value="">Select a reason</option>
+            <option value="resource_constraints">Resource Constraints</option>
+            <option value="awaiting_client_feedback">Awaiting Client Feedback</option>
+            <option value="budget_issues">Budget Issues</option>
+            <option value="priority_change">Priority Change</option>
+            <option value="technical_challenges">Technical Challenges</option>
+            <option value="other">Other</option>
+          </select>
+          <span class="form-error" id="error-onHoldReasonType"></span>
+        </div>
+        <div class="form-group">
+          <label for="onHoldReasonDescription" class="form-label">Additional Notes (Optional)</label>
+          <textarea id="onHoldReasonDescription" class="form-control" rows="3" placeholder="Provide more context..."></textarea>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-close-modal="onHoldModal">Cancel</button>
+        <button type="submit" class="btn btn-warning">Put On Hold</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Abort Modal -->
+<div id="abortModal" class="modal hidden">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h2>❌ Abort Project</h2>
+      <button class="modal-close" data-close-modal="abortModal">&times;</button>
+    </div>
+    <form id="abortForm" class="form-stack">
+      <div class="modal-body">
+        <p class="modal-description"><strong>Warning:</strong> Aborting the project cannot be easily undone.</p>
+        <div class="form-group">
+          <label for="abortReasonType" class="form-label">Reason for Abort *</label>
+          <select id="abortReasonType" class="form-control" required>
+            <option value="">Select a reason</option>
+            <option value="resource_constraints">Resource Constraints</option>
+            <option value="priority_change">Priority Change</option>
+            <option value="technical_challenges">Technical Challenges</option>
+            <option value="budget_issues">Budget Issues</option>
+            <option value="client_request">Client Request</option>
+            <option value="other">Other</option>
+          </select>
+          <span class="form-error" id="error-abortReasonType"></span>
+        </div>
+        <div class="form-group">
+          <label for="abortReasonDescription" class="form-label">Additional Notes (Optional)</label>
+          <textarea id="abortReasonDescription" class="form-control" rows="3" placeholder="Provide more context..."></textarea>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-close-modal="abortModal">Cancel</button>
+        <button type="submit" class="btn btn-danger">Abort Project</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Resume Modal -->
+<div id="resumeModal" class="modal hidden">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h2>▶️ Resume Project</h2>
+      <button class="modal-close" data-close-modal="resumeModal">&times;</button>
+    </div>
+    <form id="resumeForm" class="form-stack">
+      <div class="modal-body">
+        <p class="modal-description">This will resume all activities for this project.</p>
+        <div class="form-group">
+          <label for="resumeReasonType" class="form-label">Reason for Resume *</label>
+          <select id="resumeReasonType" class="form-control" required>
+            <option value="">Select a reason</option>
+            <option value="resource_availability">Resource Availability</option>
+            <option value="priority_reassessment">Priority Reassessment</option>
+            <option value="technical_breakthrough">Technical Breakthrough</option>
+            <option value="budget_approval">Budget Approval</option>
+            <option value="client_request">Client Request</option>
+            <option value="other">Other</option>
+          </select>
+          <span class="form-error" id="error-resumeReasonType"></span>
+        </div>
+        <div class="form-group">
+          <label for="resumeReasonDescription" class="form-label">Additional Notes (Optional)</label>
+          <textarea id="resumeReasonDescription" class="form-control" rows="3" placeholder="Provide more context..."></textarea>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-close-modal="resumeModal">Cancel</button>
+        <button type="submit" class="btn btn-success">Resume Project</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Activate Modal -->
+<div id="activateModal" class="modal hidden">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h2>✨ Activate Project</h2>
+      <button class="modal-close" data-close-modal="activateModal">&times;</button>
+    </div>
+    <form id="activateForm" class="form-stack">
+      <div class="modal-body">
+        <p class="modal-description">This will mark the project as active and ready for work.</p>
+        <div class="form-group">
+          <label for="activationReasonType" class="form-label">Reason for Activation *</label>
+          <select id="activationReasonType" class="form-control" required>
+            <option value="">Select a reason</option>
+            <option value="ready_for_development">Ready for Development</option>
+            <option value="client_approval">Client Approval</option>
+            <option value="resource_availability">Resource Availability</option>
+            <option value="priority_reassessment">Priority Reassessment</option>
+            <option value="technical_breakthrough">Technical Breakthrough</option>
+            <option value="other">Other</option>
+          </select>
+          <span class="form-error" id="error-activationReasonType"></span>
+        </div>
+        <div class="form-group">
+          <label for="activationReasonDescription" class="form-label">Additional Notes (Optional)</label>
+          <textarea id="activationReasonDescription" class="form-control" rows="3" placeholder="Provide more context..."></textarea>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-close-modal="activateModal">Cancel</button>
+        <button type="submit" class="btn btn-info">Activate Project</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Complete Modal -->
+<div id="completeModal" class="modal hidden">
+  <div class="modal-content modal-sm">
+    <div class="modal-header">
+      <h2>✅ Complete Project</h2>
+      <button class="modal-close" data-close-modal="completeModal">&times;</button>
+    </div>
+    <div class="modal-body">
+      <p class="modal-description">Mark this project as complete? This indicates the project has successfully met all requirements.</p>
+    </div>
+    <div class="modal-footer">
+      <button type="button" class="btn btn-secondary" data-close-modal="completeModal">Cancel</button>
+      <button type="button" class="btn btn-success" id="completeConfirmBtn">Complete Project</button>
+    </div>
+  </div>
+</div>
+
+<!-- Archive Modal -->
+<div id="archiveModal" class="modal hidden">
+  <div class="modal-content modal-sm">
+    <div class="modal-header">
+      <h2>📦 Archive Project</h2>
+      <button class="modal-close" data-close-modal="archiveModal">&times;</button>
+    </div>
+    <div class="modal-body">
+      <p class="modal-description">Archive this project? Archived projects are hidden from the main list but can be recovered.</p>
+    </div>
+    <div class="modal-footer">
+      <button type="button" class="btn btn-secondary" data-close-modal="archiveModal">Cancel</button>
+      <button type="button" class="btn btn-primary" id="archiveConfirmBtn">Archive Project</button>
+    </div>
+  </div>
+</div>
+
+<!-- Change Owner Modal -->
+<div id="changeOwnerModal" class="modal hidden">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h2>👥 Change Project Owner</h2>
+      <button class="modal-close" data-close-modal="changeOwnerModal">&times;</button>
+    </div>
+    <form id="changeOwnerForm" class="form-stack">
+      <div class="modal-body">
+        <p class="modal-description">Transfer ownership of this project to another user.</p>
+        <div class="form-group">
+          <label for="newOwnerId" class="form-label">New Owner *</label>
+          <select id="newOwnerId" class="form-control" required>
+            <option value="">Select new owner</option>
+          </select>
+          <span class="form-error" id="error-newOwnerId"></span>
+        </div>
+        <div class="form-group">
+          <label for="changeOwnerReasonType" class="form-label">Reason for Change *</label>
+          <select id="changeOwnerReasonType" class="form-control" required>
+            <option value="">Select a reason</option>
+            <option value="resignation">Resignation</option>
+            <option value="role_change">Role Change</option>
+            <option value="performance_issues">Performance Issues</option>
+            <option value="personal_reasons">Personal Reasons</option>
+            <option value="other">Other</option>
+          </select>
+          <span class="form-error" id="error-changeOwnerReasonType"></span>
+        </div>
+        <div class="form-group">
+          <label for="changeOwnerDescription" class="form-label">Additional Notes (Optional)</label>
+          <textarea id="changeOwnerDescription" class="form-control" rows="3" placeholder="Provide more context..."></textarea>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-close-modal="changeOwnerModal">Cancel</button>
+        <button type="submit" class="btn btn-primary">Change Owner</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Edit Project Modal (similar to projects page) -->
+<div id="editProjectModal" class="modal hidden">
+  <div class="modal-content modal-lg">
+    <div class="modal-header">
+      <h2>✎ Edit Project</h2>
+      <button class="modal-close" data-close-modal="editProjectModal">&times;</button>
+    </div>
+    <form id="editProjectForm" class="form-stack">
+      <div class="modal-body">
+        <div class="form-group">
+          <label for="editProjectName" class="form-label">Project Name *</label>
+          <input type="text" id="editProjectName" class="form-control" required maxlength="100" />
+          <span class="form-error" id="error-editProjectName"></span>
+        </div>
+
+        <div class="form-group">
+          <label for="editProjectDescription" class="form-label">Description *</label>
+          <textarea id="editProjectDescription" class="form-control" rows="3" required></textarea>
+          <span class="form-error" id="error-editProjectDescription"></span>
+        </div>
+
+        <div class="form-group">
+          <label for="editProblemStatement" class="form-label">Problem Statement *</label>
+          <textarea id="editProblemStatement" class="form-control" rows="3" required></textarea>
+          <span class="form-error" id="error-editProblemStatement"></span>
+        </div>
+
+        <div class="form-group">
+          <label for="editGoal" class="form-label">Project Goal *</label>
+          <textarea id="editGoal" class="form-control" rows="3" required></textarea>
+          <span class="form-error" id="error-editGoal"></span>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="editProjectCategory" class="form-label">Category</label>
+            <select id="editProjectCategory" class="form-control">
+              <option value="">Select Category</option>
+              <option value="individual">Individual</option>
+              <option value="organization">Organization</option>
+              <option value="multi_organization">Multi-Organization</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="editProjectType" class="form-label">Type</label>
+            <select id="editProjectType" class="form-control">
+              <option value="">Select Type</option>
+              <option value="development">Development</option>
+              <option value="enhancement">Enhancement</option>
+              <option value="maintenance">Maintenance</option>
+              <option value="other">Other</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="editExpectedBudget" class="form-label">Expected Budget (USD)</label>
+            <input type="number" id="editExpectedBudget" class="form-control" min="0" step="1" />
+          </div>
+          <div class="form-group">
+            <label for="editExpectedTimeline" class="form-label">Timeline (days)</label>
+            <input type="number" id="editExpectedTimeline" class="form-control" min="1" max="120" />
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="editProjectComplexity" class="form-label">Complexity</label>
+            <select id="editProjectComplexity" class="form-control">
+              <option value="">Select Complexity</option>
+              <option value="LOW">Low</option>
+              <option value="MEDIUM">Medium</option>
+              <option value="HIGH">High</option>
+              <option value="CRITICAL">Critical</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="editProjectCriticality" class="form-label">Criticality</label>
+            <select id="editProjectCriticality" class="form-control">
+              <option value="">Select Criticality</option>
+              <option value="LOW">Low</option>
+              <option value="MEDIUM">Medium</option>
+              <option value="HIGH">High</option>
+              <option value="CRITICAL">Critical</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="editProjectPriority" class="form-label">Priority</label>
+          <select id="editProjectPriority" class="form-control">
+            <option value="">Select Priority</option>
+            <option value="LOW">Low</option>
+            <option value="MEDIUM">Medium</option>
+            <option value="HIGH">High</option>
+            <option value="CRITICAL">Critical</option>
+          </select>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-close-modal="editProjectModal">Cancel</button>
+        <button type="submit" class="btn btn-primary">Save Changes</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Delete Project Modal -->
+<div id="deleteProjectModal" class="modal hidden">
+  <div class="modal-content modal-sm">
+    <div class="modal-header">
+      <h2>🗑️ Delete Project</h2>
+      <button class="modal-close" data-close-modal="deleteProjectModal">&times;</button>
+    </div>
+    <form id="deleteProjectForm" class="form-stack">
+      <div class="modal-body">
+        <p class="modal-description">This action cannot be undone. All requirements and data will be permanently deleted.</p>
+        <div class="form-group">
+          <label for="deletionReasonType" class="form-label">Deletion Reason *</label>
+          <select id="deletionReasonType" class="form-control" required>
+            <option value="">Select a reason</option>
+            <option value="completed_project_archived">Project Completed & Archived</option>
+            <option value="aborted_project_removed">Project Aborted/Removed</option>
+            <option value="duplicate_project_created">Duplicate Project</option>
+            <option value="test_or_demo_project_cleanup">Test/Demo Project</option>
+            <option value="created_by_admin_mistake">Created by Mistake</option>
+            <option value="other">Other</option>
+          </select>
+          <span class="form-error" id="error-deletionReasonType"></span>
+        </div>
+        <div class="form-group">
+          <label for="deletionReasonDescription" class="form-label">Additional Notes (Optional)</label>
+          <textarea id="deletionReasonDescription" class="form-control" rows="3" placeholder="Any additional information..."></textarea>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-close-modal="deleteProjectModal">Cancel</button>
+        <button type="submit" class="btn btn-danger">Delete Permanently</button>
+      </div>
+    </form>
+  </div>
+</div>
