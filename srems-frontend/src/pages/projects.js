@@ -195,7 +195,7 @@ export class ProjectsPage {
 
     card.querySelector('.view-project')?.addEventListener('click', () => {
       store.setCurrentProject(projectId);
-      window.location.hash = `#/requirements?project=${projectId}`;
+      window.location.hash = `#/project-detail?project=${projectId}`;
     });
 
     card.querySelector('.edit-project')?.addEventListener('click', () => this.openEditModal(projectId));
