@@ -13,8 +13,52 @@ export class ProjectDetailPage {
 
   init() {
     this.extractProjectId();
+    this.createModals();
     this.attachEventListeners();
     this.loadProject();
+  }
+
+  createModals() {
+    // Create activate modal
+    if (!document.getElementById('activateModal')) {
+      const activateModal = `
+        <div id="activateModal" class="modal hidden">
+          <div class="modal-overlay" data-close-modal="activateModal"></div>
+          <div class="modal-content">
+            <div class="modal-header">
+              <h2>Activate Project</h2>
+              <button type="button" class="modal-close" data-close-modal="activateModal">&times;</button>
+            </div>
+            <form id="activateForm">
+              <div class="modal-body">
+                <div class="form-group">
+                  <label for="activationReasonType">Activation Reason <span class="required">*</span></label>
+                  <select id="activationReasonType" class="form-select" required>
+                    <option value="">Select a reason...</option>
+                    <option value="ready_for_development">Ready for Development</option>
+                    <option value="client_approval">Client Approval</option>
+                    <option value="resource_availability">Resource Availability</option>
+                    <option value="priority_reassessment">Priority Reassessment</option>
+                    <option value="technical_breakthrough">Technical Breakthrough</option>
+                    <option value="other">Other</option>
+                  </select>
+                  <div id="error-activationReasonType" class="error-message"></div>
+                </div>
+                <div class="form-group">
+                  <label for="activationReasonDescription">Description (optional)</label>
+                  <textarea id="activationReasonDescription" class="form-textarea" placeholder="Provide additional details..." rows="4"></textarea>
+                </div>
+              </div>
+              <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-close-modal="activateModal">Cancel</button>
+                <button type="submit" class="btn btn-primary">Activate</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      `;
+      document.body.insertAdjacentHTML('beforeend', activateModal);
+    }
   }
 
   extractProjectId() {
