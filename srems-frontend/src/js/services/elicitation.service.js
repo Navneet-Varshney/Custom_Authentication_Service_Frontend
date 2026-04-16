@@ -9,23 +9,24 @@ import { API_CONFIG } from '../utils/constants.js';
 class ElicitationService {
   /**
    * Create elicitation
+   * Backend: POST /projects/:projectId/elicitations
    */
   async createElicitation(elicitationData) {
+    const { projectId, ...data } = elicitationData;
     return apiClient.post(
-      `${API_CONFIG.ENDPOINTS.ELICITATION}/create`,
-      elicitationData
+      `/projects/${projectId}/elicitations`,
+      data
     );
   }
 
   /**
    * Get all elicitations
-   * Backend requires: /elicitations/list/:projectId
-   * Using fallback projectId if not provided
+   * Backend: GET /projects/:projectId/elicitations
    */
-  async getElicitations(projectId = 'all', page = 1, pageSize = 10) {
+  async getElicitations(projectId, page = 1, pageSize = 10) {
     try {
       const response = await apiClient.get(
-        `${API_CONFIG.ENDPOINTS.ELICITATION}/list/${projectId}`
+        `/projects/${projectId}/elicitations`
       );
       
       if (!response.success) {
@@ -41,29 +42,33 @@ class ElicitationService {
 
   /**
    * Get single elicitation
+   * Backend: GET /projects/:projectId/elicitations/:elicitationId
    */
-  async getElicitation(elicitationId) {
+  async getElicitation(projectId, elicitationId) {
     return apiClient.get(
-      `${API_CONFIG.ENDPOINTS.ELICITATION}/get/${elicitationId}`
+      `/projects/${projectId}/elicitations/${elicitationId}`
     );
   }
 
   /**
    * Update elicitation
+   * Backend: PATCH /projects/:projectId/elicitations/:elicitationId
    */
-  async updateElicitation(elicitationId, updateData) {
+  async updateElicitation(projectId, elicitationId, updateData) {
     return apiClient.patch(
-      `${API_CONFIG.ENDPOINTS.ELICITATION}/update/${elicitationId}`,
+      `/projects/${projectId}/elicitations/${elicitationId}`,
       updateData
     );
   }
 
   /**
    * Delete elicitation
+   * Backend: DELETE /projects/:projectId/elicitations/:elicitationId
    */
-  async deleteElicitation(elicitationId) {
+  async deleteElicitation(projectId, elicitationId, deleteData = {}) {
     return apiClient.delete(
-      `${API_CONFIG.ENDPOINTS.ELICITATION}/delete/${elicitationId}`
+      `/projects/${projectId}/elicitations/${elicitationId}`,
+      deleteData
     );
   }
 
@@ -72,7 +77,7 @@ class ElicitationService {
    */
   async getElicitationsByProject(projectId) {
     return apiClient.get(
-      `${API_CONFIG.ENDPOINTS.ELICITATION}/project/${projectId}`
+      `/projects/${projectId}/elicitations`
     );
   }
 }
