@@ -1,0 +1,193 @@
+<div class="page-container">
+  <!-- Breadcrumb Navigation -->
+  <div class="breadcrumb">
+    <a href="#/elaboration" class="breadcrumb-link">📝 Requirements Elaboration</a>
+    <span class="breadcrumb-separator">/</span>
+    <span class="breadcrumb-current" id="breadcrumbTitle">Elaboration</span>
+  </div>
+
+  <!-- Elaboration Header -->
+  <div class="project-detail-header">
+    <div class="header-content">
+      <div class="header-title-section">
+        <h1 class="project-title" id="elaborationTitle">Loading...</h1>
+        <div class="header-meta">
+          <span class="status-badge" id="statusBadge">Draft</span>
+          <span class="created-date" id="createdDate">Created: —</span>
+        </div>
+      </div>
+      <div class="header-actions-quick">
+        <button class="btn btn-sm btn-outline-primary" id="btnEditElaboration">
+          <span>✎</span> Edit
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Elaboration Information Grid -->
+  <div class="project-info-section">
+    <div class="info-grid">
+      <!-- Left Column -->
+      <div class="info-column">
+        <div class="info-card">
+          <h3 class="info-card-title">📋 Requirements</h3>
+          <div class="info-row">
+            <label class="info-label">Requirement Title</label>
+            <div class="info-value" id="infoTitle">—</div>
+          </div>
+          <div class="info-row">
+            <label class="info-label">Description</label>
+            <div class="info-value info-multiline" id="infoDescription">—</div>
+          </div>
+          <div class="info-row">
+            <label class="info-label">Detailed Specification</label>
+            <div class="info-value info-multiline" id="infoSpecification">—</div>
+          </div>
+          <div class="info-row">
+            <label class="info-label">Acceptance Criteria</label>
+            <div class="info-value info-multiline" id="infoCriteria">—</div>
+          </div>
+        </div>
+
+        <div class="info-card">
+          <h3 class="info-card-title">⚙️ Dependencies</h3>
+          <div class="info-row">
+            <label class="info-label">Related Requirements</label>
+            <div class="info-value info-multiline" id="infoDependencies">—</div>
+          </div>
+          <div class="info-row">
+            <label class="info-label">Technical Constraints</label>
+            <div class="info-value info-multiline" id="infoConstraints">—</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right Column -->
+      <div class="info-column">
+        <div class="info-card">
+          <h3 class="info-card-title">📊 Classification</h3>
+          <div class="info-row">
+            <label class="info-label">Requirement Type</label>
+            <div class="info-value" id="infoType">—</div>
+          </div>
+          <div class="info-row">
+            <label class="info-label">Priority</label>
+            <div class="info-value" id="infoPriority">—</div>
+          </div>
+          <div class="info-row">
+            <label class="info-label">Risk Level</label>
+            <div class="info-value" id="infoRisk">—</div>
+          </div>
+          <div class="info-row">
+            <label class="info-label">Status</label>
+            <div class="info-value" id="infoStatus">—</div>
+          </div>
+        </div>
+
+        <div class="info-card">
+          <h3 class="info-card-title">👤 Ownership</h3>
+          <div class="info-row">
+            <label class="info-label">Associated Project</label>
+            <div class="info-value" id="infoProject">—</div>
+          </div>
+          <div class="info-row">
+            <label class="info-label">Owner</label>
+            <div class="info-value" id="infoOwner">—</div>
+          </div>
+          <div class="info-row">
+            <label class="info-label">Last Updated</label>
+            <div class="info-value" id="infoUpdated">—</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Action Buttons -->
+  <div class="actions-section">
+    <div class="actions-group">
+      <button class="btn btn-outline-danger" id="btnDeleteElaboration">🗑️ Delete Elaboration</button>
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════════════════════════════════════════════════ -->
+  <!-- MODALS -->
+  <!-- ════════════════════════════════════════════════════════════════════════════ -->
+
+  <!-- Edit Elaboration Modal -->
+  <div id="editElaborationModal" class="modal hidden">
+    <div class="modal-overlay" onclick="this.closest('.modal').classList.add('hidden')"></div>
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>Edit Elaboration</h2>
+        <button class="modal-close" data-close-modal="editElaborationModal">&times;</button>
+      </div>
+      <form id="editElaborationForm" class="modal-form">
+        <div class="form-group checkbox-group">
+          <label class="checkbox-label">
+            <input type="checkbox" id="editAllowParallelMeetings" class="form-input">
+            <span>Allow Parallel Meetings</span>
+          </label>
+          <small class="form-hint">Enable multiple meetings to occur simultaneously</small>
+        </div>
+
+        <div class="form-actions">
+          <button type="submit" class="btn btn-primary">💾 Save Changes</button>
+          <button type="button" class="btn btn-secondary" data-close-modal="editElaborationModal">Cancel</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Delete Elaboration Modal -->
+  <div id="deleteElaborationModal" class="modal hidden">
+    <div class="modal-overlay" onclick="this.closest('.modal').classList.add('hidden')"></div>
+    <div class="modal-content modal-content-sm">
+      <div class="modal-header">
+        <h2>Delete Elaboration</h2>
+        <button class="modal-close" data-close-modal="deleteElaborationModal">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p class="modal-warning">⚠️ This action cannot be undone. Are you sure?</p>
+        <form id="deleteElaborationForm" class="modal-form">
+          <div class="form-group">
+            <label for="deletionReasonType" class="form-label">Deletion Reason *</label>
+            <select id="deletionReasonType" class="form-input" required>
+              <option value="">-- Select a reason --</option>
+              <option value="duplicate">Duplicate Requirement</option>
+              <option value="out_of_scope">Out of Scope</option>
+              <option value="superseded">Superseded</option>
+              <option value="invalid">Invalid</option>
+              <option value="other">Other</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="deletionReasonDescription" class="form-label">Details (Optional)</label>
+            <textarea id="deletionReasonDescription" class="form-input" placeholder="Additional information..." rows="2"></textarea>
+          </div>
+
+          <div class="form-actions">
+            <button type="submit" class="btn btn-danger">🗑️ Delete Permanently</button>
+            <button type="button" class="btn btn-secondary" data-close-modal="deleteElaborationModal">Cancel</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Loading & Error States -->
+  <div id="loadingState" class="state-container hidden">
+    <div class="loading-spinner">
+      <div class="spinner"></div>
+      <p>Loading elaboration...</p>
+    </div>
+  </div>
+
+  <div id="errorState" class="state-container hidden">
+    <div class="error-message">
+      <p>❌ Error: <span id="errorMessage">Unable to load elaboration</span></p>
+      <button class="btn btn-primary" onclick="window.location.hash='#/elaboration'">Back to List</button>
+    </div>
+  </div>
+</div>
