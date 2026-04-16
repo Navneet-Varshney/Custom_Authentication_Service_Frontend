@@ -1,0 +1,193 @@
+<div class="page-container">
+  <!-- Breadcrumb Navigation -->
+  <div class="breadcrumb">
+    <a href="#/elicitation" class="breadcrumb-link">📊 Requirements Elicitation</a>
+    <span class="breadcrumb-separator">/</span>
+    <span class="breadcrumb-current" id="breadcrumbTitle">Elicitation Session</span>
+  </div>
+
+  <!-- Elicitation Header -->
+  <div class="project-detail-header">
+    <div class="header-content">
+      <div class="header-title-section">
+        <h1 class="project-title" id="elicitationTitle">Loading...</h1>
+        <div class="header-meta">
+          <span class="status-badge" id="statusBadge">Active</span>
+          <span class="created-date" id="createdDate">Created: —</span>
+        </div>
+      </div>
+      <div class="header-actions-quick">
+        <button class="btn btn-sm btn-outline-primary" id="btnEditElicitation">
+          <span>✎</span> Edit
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Elicitation Information Grid -->
+  <div class="project-info-section">
+    <div class="info-grid">
+      <!-- Left Column -->
+      <div class="info-column">
+        <div class="info-card">
+          <h3 class="info-card-title">📋 Session Details</h3>
+          <div class="info-row">
+            <label class="info-label">Elicitation Mode</label>
+            <div class="info-value" id="infoMode">—</div>
+          </div>
+          <div class="info-row">
+            <label class="info-label">Session Description</label>
+            <div class="info-value info-multiline" id="infoDescription">—</div>
+          </div>
+          <div class="info-row">
+            <label class="info-label">Objectives</label>
+            <div class="info-value info-multiline" id="infoObjectives">—</div>
+          </div>
+        </div>
+
+        <div class="info-card">
+          <h3 class="info-card-title">👥 Participants</h3>
+          <div class="info-row">
+            <label class="info-label">Facilitator</label>
+            <div class="info-value" id="infoFacilitator">—</div>
+          </div>
+          <div class="info-row">
+            <label class="info-label">Stakeholders</label>
+            <div class="info-value info-multiline" id="infoStakeholders">—</div>
+          </div>
+          <div class="info-row">
+            <label class="info-label">Attendees</label>
+            <div class="info-value" id="infoAttendees">—</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right Column -->
+      <div class="info-column">
+        <div class="info-card">
+          <h3 class="info-card-title">📅 Schedule</h3>
+          <div class="info-row">
+            <label class="info-label">Session Date</label>
+            <div class="info-value" id="infoSessionDate">—</div>
+          </div>
+          <div class="info-row">
+            <label class="info-label">Duration</label>
+            <div class="info-value" id="infoDuration">—</div>
+          </div>
+          <div class="info-row">
+            <label class="info-label">Location/Method</label>
+            <div class="info-value" id="infoLocation">—</div>
+          </div>
+        </div>
+
+        <div class="info-card">
+          <h3 class="info-card-title">📝 Documentation</h3>
+          <div class="info-row">
+            <label class="info-label">Key Findings</label>
+            <div class="info-value info-multiline" id="infoFindings">—</div>
+          </div>
+          <div class="info-row">
+            <label class="info-label">Associated Project</label>
+            <div class="info-value" id="infoProject">—</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Action Buttons -->
+  <div class="actions-section">
+    <div class="actions-group">
+      <button class="btn btn-outline-danger" id="btnDeleteElicitation">🗑️ Delete Session</button>
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════════════════════════════════════════════════ -->
+  <!-- MODALS -->
+  <!-- ════════════════════════════════════════════════════════════════════════════ -->
+
+  <!-- Edit Elicitation Modal -->
+  <div id="editElicitationModal" class="modal hidden">
+    <div class="modal-overlay" onclick="this.closest('.modal').classList.add('hidden')"></div>
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>Edit Elicitation Session</h2>
+        <button class="modal-close" data-close-modal="editElicitationModal">&times;</button>
+      </div>
+      <form id="editElicitationForm" class="modal-form">
+        <div class="form-group">
+          <label for="editMode" class="form-label">Elicitation Mode *</label>
+          <select id="editMode" class="form-input" required>
+            <option value="">-- Select Mode --</option>
+            <option value="OPEN">Open</option>
+            <option value="FAST">Fast</option>
+          </select>
+        </div>
+
+        <div class="form-group checkbox-group">
+          <label class="checkbox-label">
+            <input type="checkbox" id="editAllowParallelMeetings" class="form-input">
+            <span>Allow Parallel Meetings</span>
+          </label>
+          <small class="form-hint">Enable multiple meetings to occur simultaneously</small>
+        </div>
+
+        <div class="form-actions">
+          <button type="submit" class="btn btn-primary">💾 Save Changes</button>
+          <button type="button" class="btn btn-secondary" data-close-modal="editElicitationModal">Cancel</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Delete Elicitation Modal -->
+  <div id="deleteElicitationModal" class="modal hidden">
+    <div class="modal-overlay" onclick="this.closest('.modal').classList.add('hidden')"></div>
+    <div class="modal-content modal-content-sm">
+      <div class="modal-header">
+        <h2>Delete Elicitation Session</h2>
+        <button class="modal-close" data-close-modal="deleteElicitationModal">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p class="modal-warning">⚠️ This action cannot be undone. Are you sure?</p>
+        <form id="deleteElicitationForm" class="modal-form">
+          <div class="form-group">
+            <label for="deletionReasonType" class="form-label">Deletion Reason *</label>
+            <select id="deletionReasonType" class="form-input" required>
+              <option value="">-- Select a reason --</option>
+              <option value="invalid_session">Invalid Session</option>
+              <option value="incomplete_data">Incomplete Data</option>
+              <option value="no_longer_needed">No Longer Needed</option>
+              <option value="other">Other</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="deletionReasonDescription" class="form-label">Details (Optional)</label>
+            <textarea id="deletionReasonDescription" class="form-input" placeholder="Additional information..." rows="2"></textarea>
+          </div>
+
+          <div class="form-actions">
+            <button type="submit" class="btn btn-danger">🗑️ Delete Permanently</button>
+            <button type="button" class="btn btn-secondary" data-close-modal="deleteElicitationModal">Cancel</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Loading & Error States -->
+  <div id="loadingState" class="state-container hidden">
+    <div class="loading-spinner">
+      <div class="spinner"></div>
+      <p>Loading elicitation session...</p>
+    </div>
+  </div>
+
+  <div id="errorState" class="state-container hidden">
+    <div class="error-message">
+      <p>❌ Error: <span id="errorMessage">Unable to load session</span></p>
+      <button class="btn btn-primary" onclick="window.location.hash='#/elicitation'">Back to List</button>
+    </div>
+  </div>
+</div>
