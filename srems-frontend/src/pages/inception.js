@@ -33,16 +33,10 @@ export class InceptionPage {
         <div class="modal-content">
           <div class="modal-header">
             <h2>Create Inception Document</h2>
-            <button class="modal-close" id="btnCloseInceptionModal">&times;</button>
+            <button type="button" class="modal-close" id="btnCloseInceptionModal">&times;</button>
           </div>
           <div class="modal-body">
             <form id="inceptionForm">
-              <div class="form-group">
-                <label for="inceptionVision" class="form-label">Project Vision</label>
-                <textarea id="inceptionVision" class="form-input" placeholder="Describe the project vision and goals..." rows="5"></textarea>
-                <small class="form-hint">Define what this project aims to achieve</small>
-              </div>
-              
               <div class="form-group checkbox-group">
                 <label class="checkbox-label">
                   <input type="checkbox" id="inceptionParallelMeetings" class="form-input">
@@ -53,8 +47,8 @@ export class InceptionPage {
             </form>
           </div>
           <div class="modal-footer">
-            <button class="btn btn-secondary" id="btnCancelInception">Cancel</button>
-            <button class="btn btn-primary" id="btnSaveInception">Create Inception</button>
+            <button type="button" class="btn btn-secondary" id="btnCancelInception">Cancel</button>
+            <button type="button" class="btn btn-primary" id="btnSaveInception">Create Inception</button>
           </div>
         </div>
       </div>
@@ -150,8 +144,29 @@ export class InceptionPage {
       const container = document.getElementById('inceptionContainer');
       container.innerHTML = '<div class="loading-spinner"><div class="spinner"></div><p>Loading inception documents...</p></div>';
 
-      // Get current project from store
-      const currentProjectId = store.state.projects.current?._id;
+      // Get current project from store (handle both object and string formats)
+      let currentProjectId = store.state.projects.current?._id || store.state.projects.current?.id || store.state.projects.current;
+      
+      if (!currentProjectId) {
+        console.log('🔄 Attempting to restore project from localStorage...');
+        const STORAGE_KEYS = {
+          CURRENT_PROJECT: 'CURRENT_PROJECT'
+        };
+        const savedProject = localStorage.getItem(STORAGE_KEYS.CURRENT_PROJECT);
+        if (savedProject) {
+          try {
+            const projectData = typeof savedProject === 'string' ? JSON.parse(savedProject) : savedProject;
+            currentProjectId = projectData?._id || projectData?.id || projectData;
+            console.log('✅ Restored project from localStorage:', currentProjectId);
+            // Update store with restored project
+            store.state.projects.current = projectData;
+          } catch (e) {
+            console.error('Failed to parse saved project:', e);
+            currentProjectId = savedProject;
+          }
+        }
+      }
+
       if (!currentProjectId) {
         showToast('Please select a project first', 'warning');
         this.inceptions = [];
@@ -269,20 +284,36 @@ export class InceptionPage {
 
   async saveInception() {
     try {
-      const currentProjectId = store.state.projects.current?._id;
+      // Handle both object and string formats for project ID
+      let currentProjectId = store.state.projects.current?._id || store.state.projects.current?.id || store.state.projects.current;
+      console.log('🔍 Current Project ID:', currentProjectId);
+      console.log('🔍 Store State:', store.state.projects.current);
+      
+      // Try to restore from localStorage if not in store
       if (!currentProjectId) {
+        console.log('🔄 Restoring project from localStorage...');
+        const STORAGE_KEYS = { CURRENT_PROJECT: 'CURRENT_PROJECT' };
+        const savedProject = localStorage.getItem(STORAGE_KEYS.CURRENT_PROJECT);
+        if (savedProject) {
+          try {
+            const projectData = typeof savedProject === 'string' ? JSON.parse(savedProject) : savedProject;
+            currentProjectId = projectData?._id || projectData?.id || projectData;
+            console.log('✅ Restored from localStorage:', currentProjectId);
+          } catch (e) {
+            console.error('Failed to parse saved project:', e);
+            currentProjectId = savedProject;
+          }
+        }
+      }
+      
+      if (!currentProjectId) {
+        console.warn('⚠️ No project ID found');
         showToast('Please select a project first', 'warning');
         return;
       }
 
-      const inceptionVision = document.getElementById('inceptionVision').value.trim();
       const allowParallelMeetings = document.getElementById('inceptionParallelMeetings').checked;
-
-      // Validate vision field
-      if (!inceptionVision) {
-        showToast('Project vision is required', 'warning');
-        return;
-      }
+      console.log('📝 Form Data:', { projectId: currentProjectId, allowParallelMeetings });
 
       // Show loading state
       const btn = document.getElementById('btnSaveInception');
@@ -291,25 +322,35 @@ export class InceptionPage {
       btn.textContent = 'Creating...';
 
       // Call service
+      console.log('🚀 Calling API...');
       const response = await inceptionService.createInception({
         projectId: currentProjectId,
-        productVision: inceptionVision,
         allowParallelMeetings
       });
+
+      console.log('📦 API Response:', response);
 
       // Reset button
       btn.disabled = false;
       btn.textContent = originalText;
 
+      // Validate response
+      if (!response.success) {
+        console.error('❌ API returned success=false:', response.message);
+        showToast(response.message || 'Failed to create inception', 'error');
+        return;
+      }
+
+      console.log('✅ Success! Closing modal...');
       // Close modal and reload
       this.closeCreateModal();
-      showToast('Inception document created successfully', 'success');
+      showToast('✅ Inception created successfully', 'success');
       
       // Reload inceptions list
       await this.loadInceptions();
 
     } catch (error) {
-      console.error('Failed to create inception:', error);
+      console.error('❌ Exception caught:', error);
       showToast(error.message || 'Failed to create inception document', 'error');
       
       // Reset button
