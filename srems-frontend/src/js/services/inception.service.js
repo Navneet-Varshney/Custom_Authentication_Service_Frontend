@@ -9,17 +9,19 @@ import { API_CONFIG } from '../utils/constants.js';
 class InceptionService {
   /**
    * Create inception document
+   * Backend: POST /projects/:projectId/inceptions
    */
   async createInception(inceptionData) {
+    const { projectId, ...data } = inceptionData;
     return apiClient.post(
-      `${API_CONFIG.ENDPOINTS.INCEPTION}/create`,
-      inceptionData
+      `/projects/${projectId}/inceptions`,
+      data
     );
   }
 
   /**
    * Get all inception documents for a project
-   * Backend requires: /inceptions/list/:projectId where projectId is MongoDB ObjectId
+   * Backend: GET /projects/:projectId/inceptions
    * @param {string} projectId - MongoDB ObjectId of the project (REQUIRED)
    * @returns {Array} List of inception documents or empty array on error
    */
@@ -37,7 +39,7 @@ class InceptionService {
       }
 
       const response = await apiClient.get(
-        `${API_CONFIG.ENDPOINTS.INCEPTION}/list/${projectId}`
+        `/projects/${projectId}/inceptions`
       );
       
       if (!response.success) {
@@ -54,29 +56,33 @@ class InceptionService {
 
   /**
    * Get single inception document
+   * Backend: GET /projects/:projectId/inceptions/:inceptionId
    */
-  async getInception(inceptionId) {
+  async getInception(inceptionId, projectId) {
     return apiClient.get(
-      `${API_CONFIG.ENDPOINTS.INCEPTION}/get/${inceptionId}`
+      `/projects/${projectId}/inceptions/${inceptionId}`
     );
   }
 
   /**
    * Update inception document
+   * Backend: PATCH /projects/:projectId/inceptions/:inceptionId
    */
-  async updateInception(inceptionId, updateData) {
+  async updateInception(projectId, inceptionId, updateData) {
     return apiClient.patch(
-      `${API_CONFIG.ENDPOINTS.INCEPTION}/update/${inceptionId}`,
+      `/projects/${projectId}/inceptions/${inceptionId}`,
       updateData
     );
   }
 
   /**
    * Delete inception document
+   * Backend: DELETE /projects/:projectId/inceptions/:inceptionId
    */
-  async deleteInception(inceptionId) {
+  async deleteInception(projectId, inceptionId, deleteData = {}) {
     return apiClient.delete(
-      `${API_CONFIG.ENDPOINTS.INCEPTION}/delete/${inceptionId}`
+      `/projects/${projectId}/inceptions/${inceptionId}`,
+      deleteData
     );
   }
 
@@ -85,7 +91,7 @@ class InceptionService {
    */
   async getInceptionsByProject(projectId) {
     return apiClient.get(
-      `${API_CONFIG.ENDPOINTS.INCEPTION}/project/${projectId}`
+      `/projects/${projectId}/inceptions`
     );
   }
 }
