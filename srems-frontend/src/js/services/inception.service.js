@@ -9,19 +9,19 @@ import { API_CONFIG } from '../utils/constants.js';
 class InceptionService {
   /**
    * Create inception document
-   * Backend: POST /projects/:projectId/inceptions
+   * Backend: POST /inceptions/create/:projectId
    */
   async createInception(inceptionData) {
     const { projectId, ...data } = inceptionData;
     return apiClient.post(
-      `/projects/${projectId}/inceptions`,
+      `/inceptions/create/${projectId}`,
       data
     );
   }
 
   /**
    * Get all inception documents for a project
-   * Backend: GET /projects/:projectId/inceptions
+   * Backend: GET /inceptions/list/:projectId
    * @param {string} projectId - MongoDB ObjectId of the project (REQUIRED)
    * @returns {Array} List of inception documents or empty array on error
    */
@@ -39,7 +39,7 @@ class InceptionService {
       }
 
       const response = await apiClient.get(
-        `/projects/${projectId}/inceptions`
+        `/inceptions/list/${projectId}`
       );
       
       if (!response.success) {
@@ -55,34 +55,51 @@ class InceptionService {
   }
 
   /**
+   * Get latest (active) inception for a project
+   * Backend: GET /inceptions/get-latest/:projectId
+   */
+  async getLatestInception(projectId) {
+    try {
+      if (!projectId) {
+        throw new Error('Project ID is required');
+      }
+      const response = await apiClient.get(`/inceptions/get-latest/${projectId}`);
+      return response.data || null;
+    } catch (error) {
+      console.error('Failed to fetch latest inception:', error);
+      return null;
+    }
+  }
+
+  /**
    * Get single inception document
-   * Backend: GET /projects/:projectId/inceptions/:inceptionId
+   * Backend: GET /inceptions/get/:inceptionId
    */
   async getInception(inceptionId, projectId) {
     return apiClient.get(
-      `/projects/${projectId}/inceptions/${inceptionId}`
+      `/inceptions/get/${inceptionId}`
     );
   }
 
   /**
    * Update inception document
-   * Backend: PATCH /projects/:projectId/inceptions/:inceptionId
+   * Backend: PATCH /inceptions/update/:projectId
    */
   async updateInception(projectId, inceptionId, updateData) {
     return apiClient.patch(
-      `/projects/${projectId}/inceptions/${inceptionId}`,
-      updateData
+      `/inceptions/update/${projectId}`,
+      { inceptionId, ...updateData }
     );
   }
 
   /**
    * Delete inception document
-   * Backend: DELETE /projects/:projectId/inceptions/:inceptionId
+   * Backend: DELETE /inceptions/delete/:projectId
    */
   async deleteInception(projectId, inceptionId, deleteData = {}) {
     return apiClient.delete(
-      `/projects/${projectId}/inceptions/${inceptionId}`,
-      deleteData
+      `/inceptions/delete/${projectId}`,
+      { inceptionId, ...deleteData }
     );
   }
 
@@ -91,7 +108,7 @@ class InceptionService {
    */
   async getInceptionsByProject(projectId) {
     return apiClient.get(
-      `/projects/${projectId}/inceptions`
+      `/inceptions/list/${projectId}`
     );
   }
 }
