@@ -1,4 +1,4 @@
-import { showToast, debounce } from '../js/utils/helpers.js';
+import { showToast, debounce, showConfirmDialog } from '../js/utils/helpers.js';
 import inceptionService from '../js/services/inception.service.js';
 import { store } from '../js/store/store.js';
 
@@ -6,6 +6,7 @@ export class InceptionPage {
   constructor() {
     this.inceptions = [];
     this.filteredInceptions = [];
+    this.currentProjectId = null;  // Store projectId as instance variable
     this.init();
   }
 
@@ -144,21 +145,18 @@ export class InceptionPage {
       const container = document.getElementById('inceptionContainer');
       container.innerHTML = '<div class="loading-spinner"><div class="spinner"></div><p>Loading inception documents...</p></div>';
 
-      // Get current project from store (handle both object and string formats)
+      // Get current project from store
       let currentProjectId = store.state.projects.current?._id || store.state.projects.current?.id || store.state.projects.current;
       
       if (!currentProjectId) {
         console.log('🔄 Attempting to restore project from localStorage...');
-        const STORAGE_KEYS = {
-          CURRENT_PROJECT: 'CURRENT_PROJECT'
-        };
+        const STORAGE_KEYS = { CURRENT_PROJECT: 'CURRENT_PROJECT' };
         const savedProject = localStorage.getItem(STORAGE_KEYS.CURRENT_PROJECT);
         if (savedProject) {
           try {
             const projectData = typeof savedProject === 'string' ? JSON.parse(savedProject) : savedProject;
             currentProjectId = projectData?._id || projectData?.id || projectData;
             console.log('✅ Restored project from localStorage:', currentProjectId);
-            // Update store with restored project
             store.state.projects.current = projectData;
           } catch (e) {
             console.error('Failed to parse saved project:', e);
@@ -175,14 +173,39 @@ export class InceptionPage {
         return;
       }
 
-      const data = await inceptionService.getInceptions(currentProjectId);
-      this.inceptions = Array.isArray(data) ? data : [];
-      this.filteredInceptions = this.inceptions;
-      this.renderInceptions();
+      // ✅ STORE PROJECT ID FOR LATER USE IN DELETE/EDIT
+      this.currentProjectId = currentProjectId;
+      console.log('💾 Stored projectId:', this.currentProjectId);
+
+      // ✅ TRY TO LOAD EXISTING INCEPTION FIRST
+      console.log('🔍 Checking for existing inception...');
+      const existingInception = await inceptionService.getLatestInception(currentProjectId);
+      
+      if (existingInception) {
+        console.log('✅ Found existing inception:', existingInception);
+        this.inceptions = [existingInception];
+        this.filteredInceptions = [existingInception];
+        
+        // Hide create button - inception already exists
+        const btnCreate = document.getElementById('btnCreateInception');
+        const btnCreateEmpty = document.getElementById('btnCreateInceptionEmpty');
+        if (btnCreate) btnCreate.style.display = 'none';
+        if (btnCreateEmpty) btnCreateEmpty.style.display = 'none';
+        
+        this.renderInceptions();
+        showToast('Inception loaded successfully', 'success');
+        return;
+      }
+
+      // If no existing inception, show empty state with create option
+      console.log('ℹ️ No existing inception found');
+      this.inceptions = [];
+      this.filteredInceptions = [];
+      this.showEmptyState();
+      
     } catch (error) {
       console.error('Failed to load inceptions:', error);
       showToast(error.message || 'Failed to load inception documents', 'error');
-      // Initialize with empty arrays to prevent .map() errors
       this.inceptions = [];
       this.filteredInceptions = [];
       this.showEmptyState();
@@ -219,24 +242,110 @@ export class InceptionPage {
     }
 
     emptyState.classList.add('hidden');
-    container.innerHTML = this.filteredInceptions.map(item => `
-      <div class="card">
-        <div class="card-header">
-          <h3>${item.title || 'Untitled Inception'}</h3>
-          <span class="status-badge status-${item.status || 'draft'}">${item.status || 'Draft'}</span>
+    container.innerHTML = this.filteredInceptions.map(item => {
+      // Safe date parsing
+      let createdDate = 'N/A';
+      try {
+        if (item.createdAt) {
+          const dateObj = new Date(item.createdAt);
+          if (!isNaN(dateObj.getTime())) {
+            createdDate = dateObj.toLocaleDateString();
+          }
+        }
+      } catch (e) {
+        console.error('Date parsing error:', e);
+        createdDate = 'N/A';
+      }
+
+      // Map backend fields to display fields
+      const displayItem = {
+        id: item._id || item.id,
+        title: item.title || `Inception - ${createdDate}`,
+        status: item.isFrozen ? 'Frozen' : (item.isDeleted ? 'Deleted' : 'Active'),
+        projectName: item.projectName || item.projectId || 'N/A',
+        vision: item.vision || 'Not yet defined',
+        createdAt: createdDate,
+        allowParallelMeetings: item.allowParallelMeetings
+      };
+
+      console.log('📋 Rendering inception item:', {
+        itemId: item._id || item.id,
+        displayItemId: displayItem.id,
+        itemData: item
+      });
+
+      return `
+        <div class="card">
+          <div class="card-header">
+            <h3>${displayItem.title}</h3>
+            <span class="status-badge status-${displayItem.status.toLowerCase()}">${displayItem.status}</span>
+          </div>
+          <div class="card-body">
+            <p><strong>Status:</strong> ${displayItem.status}</p>
+            <p><strong>Project:</strong> ${displayItem.projectName}</p>
+            <p><strong>Parallel Meetings:</strong> ${displayItem.allowParallelMeetings ? 'Allowed' : 'Not Allowed'}</p>
+            <p><strong>Created:</strong> ${displayItem.createdAt}</p>
+          </div>
+          <div class="card-actions">
+            <button class="btn btn-sm btn-primary btnViewInception" data-id="${displayItem.id}">View</button>
+            <button class="btn btn-sm btn-warning btnEditInception" data-id="${displayItem.id}">Edit</button>
+            <button class="btn btn-sm btn-danger btnDeleteInception" data-id="${displayItem.id}">Delete</button>
+          </div>
         </div>
-        <div class="card-body">
-          <p><strong>Project:</strong> ${item.projectName || 'N/A'}</p>
-          <p><strong>Vision:</strong> ${item.vision || 'Not defined'}</p>
-          <p><strong>Created:</strong> ${new Date(item.createdAt).toLocaleDateString() || 'N/A'}</p>
-        </div>
-        <div class="card-actions">
-          <button class="btn btn-sm btn-primary" data-id="${item.id}">View</button>
-          <button class="btn btn-sm btn-warning" data-id="${item.id}">Edit</button>
-          <button class="btn btn-sm btn-danger" data-id="${item.id}">Delete</button>
-        </div>
-      </div>
-    `).join('');
+      `;
+    }).join('');
+
+    // Attach event listeners to buttons
+    this.attachRenderEventListeners();
+  }
+
+  attachRenderEventListeners() {
+    // Delete buttons
+    document.querySelectorAll('.btnDeleteInception')?.forEach(btn => {
+      btn.addEventListener('click', async (e) => {
+        const id = e.target.dataset.id;
+        console.log('🗑️ Delete button clicked:', {
+          inceptionId: id,
+          projectId: this.currentProjectId,
+          domElement: e.target,
+          allAttributes: e.target.attributes
+        });
+        
+        const confirmed = await showConfirmDialog('Delete Inception', 'This action cannot be undone. Are you sure?');
+        if (confirmed) {
+          try {
+            if (!this.currentProjectId) {
+              throw new Error('Project ID not available');
+            }
+            console.log('🔄 Deleting inception:', { projectId: this.currentProjectId, inceptionId: id });
+            await inceptionService.deleteInception(this.currentProjectId, id);
+            showToast('Inception deleted successfully', 'success');
+            await this.loadInceptions();
+          } catch (error) {
+            console.error('❌ Delete error:', error);
+            showToast(error.message || 'Failed to delete inception', 'error');
+          }
+        }
+      });
+    });
+
+    // View buttons
+    document.querySelectorAll('.btnViewInception')?.forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        const id = e.target.dataset.id;
+        console.log('👁️ View inception:', id);
+        // TODO: Open detail view
+      });
+    });
+
+    // Edit buttons
+    document.querySelectorAll('.btnEditInception')?.forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        const id = e.target.dataset.id;
+        console.log('✏️ Edit inception:', id);
+        showToast('Edit feature coming soon', 'info');
+      });
+    });
   }
 
   showEmptyState() {
