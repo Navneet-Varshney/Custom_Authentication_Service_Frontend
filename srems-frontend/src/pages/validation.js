@@ -31,7 +31,24 @@ export class ValidationPage {
 
   async loadRequirements() {
     try {
-      const projectId = store.getState().currentProject;
+      // Get current project from store or localStorage
+      let projectId = store.state.projects.current?._id || 
+                     store.state.projects.current?.id || 
+                     store.state.projects.current;
+      
+      if (!projectId) {
+        const savedProject = localStorage.getItem('CURRENT_PROJECT');
+        if (savedProject) {
+          try {
+            const projectData = typeof savedProject === 'string' ? JSON.parse(savedProject) : savedProject;
+            projectId = projectData?._id || projectData?.id || projectData;
+            store.state.projects.current = projectData;
+          } catch (e) {
+            console.error('Failed to parse saved project:', e);
+          }
+        }
+      }
+
       if (!projectId) {
         showToast('Please select a project', 'warning');
         return;
