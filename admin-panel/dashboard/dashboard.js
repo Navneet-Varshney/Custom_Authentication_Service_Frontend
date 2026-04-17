@@ -1586,7 +1586,18 @@ async function createNewAdmin(adminData) {
     loadAdminsData();
   } catch (error) {
     console.error('❌ Error creating admin:', error);
-    showNotification('Failed to create admin: ' + error.message, 'error');
+    
+    // Check for authorization errors
+    const errorMsg = error.message.toLowerCase();
+    if (errorMsg.includes('authorization') || errorMsg.includes('permission') || errorMsg.includes('restricted')) {
+      showNotification(
+        '⛔ PERMISSION DENIED: Only SUPER_ADMIN or INTERNAL_ADMIN can create other admins. Your account role does not have this permission.',
+        'error',
+        8000
+      );
+    } else {
+      showNotification('❌ Failed to create admin: ' + error.message, 'error');
+    }
   }
 }
 

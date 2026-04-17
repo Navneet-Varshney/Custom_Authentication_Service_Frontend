@@ -113,8 +113,17 @@ const API = {
         // Log detailed error information including warnings
         console.error(`❌ API Error ${response.status}:`, result);
         if (result.warning) {
-          console.error('⚠️  Validation Warning Details:', JSON.stringify(result.warning, null, 2));
+          console.warn('⚠️  Error Details:', result.warning);
         }
+        
+        // Handle authorization errors with better messaging
+        if (response.status === 403 && result.warning) {
+          const warningMsg = typeof result.warning === 'string' ? result.warning : result.message;
+          if (warningMsg && warningMsg.includes('permission')) {
+            throw new Error(`❌ AUTHORIZATION ERROR: You don't have permission to perform this action. ${warningMsg}`);
+          }
+        }
+        
         throw new Error(result.message || `API Error: ${response.status}`);
       }
 
