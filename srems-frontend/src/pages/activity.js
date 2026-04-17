@@ -93,23 +93,20 @@ export class ActivityPage {
   }
 
   mapBackendActivity(activity) {
-    // Convert backend ActivityTrackerModel to frontend display format
+    // Convert backend response to frontend display format
+    // Backend only sends: id, description, eventType, timestamp
+    const description = activity.description || 'Activity logged';
+    const eventType = activity.eventType || 'UNKNOWN_EVENT';
+    const timestamp = activity.timestamp || new Date().toISOString();
+    
     return {
-      _id: activity._id,
-      eventType: activity.eventType,
-      description: activity.description,
-      userId: activity.userId,
-      userType: activity.userType,
-      deviceName: activity.deviceName || 'Unknown',
-      createdAt: activity.createdAt,
-      oldData: activity.oldData,
-      newData: activity.newData,
+      _id: activity.id || activity._id,
+      eventType: eventType,
+      description: description,
+      timestamp: new Date(timestamp),
       
       // display shortcuts
-      type: this.getActivityType(activity.eventType),
-      user: activity.userType ? `${activity.userType} (${activity.userId})` : activity.userId,
-      timestamp: new Date(activity.createdAt),
-      changes: activity.oldData && activity.newData ? { before: activity.oldData, after: activity.newData } : {}
+      type: this.getActivityType(eventType)
     };
   }
 
@@ -133,7 +130,6 @@ export class ActivityPage {
       const typeMatch = !typeFilter || activity.eventType === typeFilter;
       const searchMatch = !searchFilter || 
         (activity.description || '').toLowerCase().includes(searchFilter) ||
-        (activity.user || '').toLowerCase().includes(searchFilter) ||
         (activity.eventType || '').toLowerCase().includes(searchFilter);
 
       return typeMatch && searchMatch;
@@ -187,7 +183,21 @@ export class ActivityPage {
   createActivityItem(activity) {
     const icon = this.getActivityIcon(activity.type);
     const color = this.getActivityColor(activity.type);
-    const time = formatDate(activity.timestamp).split(' ')[1] || 'N/A';
+    
+    // Extract time from timestamp - handle both Date objects and strings
+    let time = 'N/A';
+    try {
+      const dateObj = activity.timestamp instanceof Date ? activity.timestamp : new Date(activity.timestamp);
+      if (dateObj && !isNaN(dateObj)) {
+        const hours = String(dateObj.getHours()).padStart(2, '0');
+        const minutes = String(dateObj.getMinutes()).padStart(2, '0');
+        const seconds = String(dateObj.getSeconds()).padStart(2, '0');
+        time = `${hours}:${minutes}:${seconds}`;
+      }
+    } catch (e) {
+      console.warn('Failed to parse timestamp:', activity.timestamp);
+    }
+    
     const eventDesc = this.getEventDescription(activity.eventType);
 
     return `
@@ -204,16 +214,8 @@ export class ActivityPage {
           </div>
           <p style="margin: 4px 0; color: #666; font-size: 13px;">${activity.description}</p>
           <div class="activity-meta" style="display: flex; gap: 15px; font-size: 12px; color: #888; margin-top: 6px;">
-            <span>👤 ${activity.user}</span>
-            <span>🖥️ ${activity.deviceName}</span>
-            <span>📌 ${activity.eventType}</span>
+            <span>� ${activity.eventType}</span>
           </div>
-          ${Object.keys(activity.changes).length > 0 ? `
-            <details style="margin-top: 8px; font-size: 12px;">
-              <summary style="cursor: pointer; color: #0069d9;">View Changes</summary>
-              <pre style="margin: 6px 0; padding: 8px; background: #fff; border: 1px solid #ddd; border-radius: 3px; overflow: auto; max-height: 150px; font-size: 11px;">${JSON.stringify(activity.changes, null, 2)}</pre>
-            </details>
-          ` : ''}
         </div>
       </div>
     `;
@@ -302,16 +304,29 @@ export class ActivityPage {
       return;
     }
 
-    const headers = ['Date', 'Time', 'Event Type', 'Description', 'User', 'Device', 'User Type'];
-    const rows = this.filteredActivities.map(activity => [
-      formatDate(activity.timestamp).split(' ')[0],
-      formatDate(activity.timestamp).split(' ')[1] || 'N/A',
-      activity.eventType,
-      activity.description,
-      activity.user,
-      activity.deviceName,
-      activity.userType || 'N/A'
-    ]);
+    const headers = ['Date', 'Time', 'Event Type', 'Description'];
+    const rows = this.filteredActivities.map(activity => {
+      const dateStr = formatDate(activity.timestamp).split(' ')[0];
+      let timeStr = 'N/A';
+      try {
+        const dateObj = activity.timestamp instanceof Date ? activity.timestamp : new Date(activity.timestamp);
+        if (dateObj && !isNaN(dateObj)) {
+          const hours = String(dateObj.getHours()).padStart(2, '0');
+          const minutes = String(dateObj.getMinutes()).padStart(2, '0');
+          const seconds = String(dateObj.getSeconds()).padStart(2, '0');
+          timeStr = `${hours}:${minutes}:${seconds}`;
+        }
+      } catch (e) {
+        console.warn('Failed to parse timestamp for export');
+      }
+      
+      return [
+        dateStr,
+        timeStr,
+        activity.eventType,
+        activity.description
+      ];
+    });
 
     const csv = [
       headers.join(','),
