@@ -1,0 +1,1 @@
+sed -i '135,137s/activity\.\([a-z]*\)\.toLowerCase()/(\0 || "").toLowerCase()/g' activity.js

@@ -7,6 +7,7 @@ export class InceptionDetailPage {
     this.inceptionId = null;
     this.projectId = null;
     this.inception = null;
+    this.actionOnLoad = null; // 'delete' or 'edit' to auto-open modal
     this.init();
   }
 
@@ -17,7 +18,7 @@ export class InceptionDetailPage {
   }
 
   extractIds() {
-    // Extract from hash: #/inception-detail?inception=<id>&project=<projectId>
+    // Extract from hash: #/inception-detail?inception=<id>&project=<projectId>&action=<delete|edit>
     const hash = window.location.hash.substring(2);
     const queryIndex = hash.indexOf('?');
     
@@ -30,6 +31,7 @@ export class InceptionDetailPage {
     const params = new URLSearchParams(queryString);
     this.inceptionId = params.get('inception');
     this.projectId = params.get('project');
+    this.actionOnLoad = params.get('action'); // 'delete' or 'edit'
     
     if (!this.inceptionId) {
       this.showError('No inception document specified');
@@ -95,8 +97,18 @@ export class InceptionDetailPage {
         return;
       }
 
-      this.inception = response.data?.data || response.data;
+      // Backend returns { success, message, data: { inception } }
+      this.inception = response.data?.inception || response.data;
       this.renderInception();
+      
+      // Auto-open modal based on action parameter from URL
+      if (this.actionOnLoad === 'delete') {
+        console.log('🗑️ Auto-opening delete modal');
+        setTimeout(() => this.openDeleteModal(), 300);
+      } else if (this.actionOnLoad === 'edit') {
+        console.log('✏️ Auto-opening edit modal');
+        setTimeout(() => this.openEditModal(), 300);
+      }
       
       if (loadingState) loadingState.classList.add('hidden');
     } catch (error) {
@@ -108,6 +120,9 @@ export class InceptionDetailPage {
   renderInception() {
     if (!this.inception) return;
 
+    // Calculate status from boolean fields
+    const status = this.inception.isFrozen ? 'Frozen' : (this.inception.isDeleted ? 'Deleted' : 'Active');
+
     // Update breadcrumb title
     const breadcrumb = document.getElementById('breadcrumbTitle');
     if (breadcrumb) breadcrumb.textContent = 'Inception Document';
@@ -118,8 +133,8 @@ export class InceptionDetailPage {
 
     const statusBadge = document.getElementById('statusBadge');
     if (statusBadge) {
-      statusBadge.textContent = this.inception.status || 'Active';
-      statusBadge.className = `status-badge status-${(this.inception.status || 'active').toLowerCase()}`;
+      statusBadge.textContent = status;
+      statusBadge.className = `status-badge status-${status.toLowerCase()}`;
     }
 
     const createdDate = document.getElementById('createdDate');
@@ -127,16 +142,42 @@ export class InceptionDetailPage {
       createdDate.textContent = `Created: ${formatDate(this.inception.createdAt) || '—'}`;
     }
 
-    // Update information grid - show settings
-    document.getElementById('infoVision').textContent = this.inception.allowParallelMeetings ? 'Enabled' : 'Disabled';
-    document.getElementById('infoGoals').textContent = this.inception.createdBy || '—';
-    document.getElementById('infoObjectives').textContent = this.inception.projectId || '—';
-    document.getElementById('infoScope').textContent = formatDate(this.inception.createdAt) || '—';
-    document.getElementById('infoScale').textContent = this.inception.status || 'Active';
-    document.getElementById('infoBeneficiary').textContent = this.inception._id || '—';
-    document.getElementById('infoStakeholders').textContent = this.inception.frozen ? 'Yes' : 'No';
-    document.getElementById('infoProject').textContent = this.inception.projectName || this.projectId || '—';
-    document.getElementById('infoDocStatus').textContent = this.inception.status || 'Active';
+    // Update information grid - show all available data
+    // Parallel Meetings Setting
+    const infoVision = document.getElementById('infoVision');
+    if (infoVision) infoVision.textContent = this.inception.allowParallelMeetings ? 'Allowed' : 'Not Allowed';
+    
+    // Created By
+    const infoGoals = document.getElementById('infoGoals');
+    if (infoGoals) infoGoals.textContent = this.inception.createdBy || '—';
+    
+    // Project ID
+    const infoObjectives = document.getElementById('infoObjectives');
+    if (infoObjectives) infoObjectives.textContent = this.inception.projectId || '—';
+    
+    // Version (Cycle)
+    const infoScope = document.getElementById('infoScope');
+    if (infoScope) infoScope.textContent = this.inception.version?.major ? `Cycle ${this.inception.version.major}.${this.inception.version.minor || 0}` : '—';
+    
+    // Status (Active/Frozen/Deleted)
+    const infoScale = document.getElementById('infoScale');
+    if (infoScale) infoScale.textContent = status;
+    
+    // Inception ID
+    const infoBeneficiary = document.getElementById('infoBeneficiary');
+    if (infoBeneficiary) infoBeneficiary.textContent = this.inception._id || '—';
+    
+    // Frozen Status
+    const infoStakeholders = document.getElementById('infoStakeholders');
+    if (infoStakeholders) infoStakeholders.textContent = this.inception.isFrozen ? 'Yes' : 'No';
+    
+    // Project ID (display)
+    const infoProject = document.getElementById('infoProject');
+    if (infoProject) infoProject.textContent = this.inception.projectId || '—';
+    
+    // Document Status
+    const infoDocStatus = document.getElementById('infoDocStatus');
+    if (infoDocStatus) infoDocStatus.textContent = status;
 
     // Populate edit form with current values
     this.populateEditForm();
@@ -171,7 +212,7 @@ export class InceptionDetailPage {
         return;
       }
 
-      this.inception = response.data?.data || response.data;
+      this.inception = response.data?.inception || response.data;
       this.renderInception();
       hideModal('editInceptionModal');
       showToast('Inception document updated successfully', 'success');
@@ -185,11 +226,12 @@ export class InceptionDetailPage {
     e.preventDefault();
 
     try {
-      const reasonType = document.getElementById('deletionReasonType').value;
-      const reasonDescription = document.getElementById('deletionReasonDescription').value;
+      const reasonType = document.getElementById('deletionReasonType')?.value?.trim() || '';
+      const reasonDescription = document.getElementById('deletionReasonDescription')?.value?.trim() || '';
 
+      // Validate reason type - must be non-empty
       if (!reasonType) {
-        showToast('Please select a deletion reason', 'error');
+        showToast('Please select a valid deletion reason from the dropdown', 'error');
         return;
       }
 
@@ -197,9 +239,12 @@ export class InceptionDetailPage {
         deletionReasonType: reasonType
       };
 
+      // Add description only if provided
       if (reasonDescription) {
         deleteData.deletionReasonDescription = reasonDescription;
       }
+
+      console.log('🗑️ Sending delete request:', { projectId: this.projectId, inceptionId: this.inceptionId, deleteData });
 
       const response = await inceptionService.deleteInception(this.projectId, this.inceptionId, deleteData);
 
