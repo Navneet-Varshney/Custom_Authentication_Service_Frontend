@@ -161,6 +161,10 @@ const API = {
   },
 
   async createAdmin(adminData) {
+    // Ensure all required fields are present
+    if (!adminData.firstName || !adminData.email || !adminData.password || !adminData.adminType || !adminData.role || !adminData.creationReason) {
+      throw new Error('Missing required fields: firstName, email, password, adminType, role, creationReason');
+    }
     return this.request('POST', '/admins/create-admin', adminData);
   },
 
@@ -172,16 +176,22 @@ const API = {
     return this.request('PUT', `/admins/update-admin`, { ...adminData, adminId });
   },
 
-  async blockAdmin(adminId, blockReason = '', reasonDescription = '') {
-    const data = { adminId };
-    if (blockReason) data.blockReason = blockReason;
+  async blockAdmin(adminId, blockReason = 'admin_action', reasonDescription = '') {
+    if (!adminId) throw new Error('adminId is required');
+    const data = { 
+      adminId,
+      blockReason: blockReason || 'admin_action'
+    };
     if (reasonDescription) data.reasonDescription = reasonDescription;
     return this.request('POST', `/admins/block-admin`, data);
   },
 
-  async unblockAdmin(adminId, unblockReason = '', reasonDescription = '') {
-    const data = { adminId };
-    if (unblockReason) data.unblockReason = unblockReason;
+  async unblockAdmin(adminId, unblockReason = 'admin_action', reasonDescription = '') {
+    if (!adminId) throw new Error('adminId is required');
+    const data = { 
+      adminId,
+      unblockReason: unblockReason || 'admin_action'
+    };
     if (reasonDescription) data.reasonDescription = reasonDescription;
     return this.request('POST', `/admins/unblock-admin`, data);
   },
@@ -193,6 +203,10 @@ const API = {
   },
 
   async createClient(clientData) {
+    // Ensure all required fields are present
+    if (!clientData.firstName || !clientData.email || !clientData.password || !clientData.creationReason || !clientData.role) {
+      throw new Error('Missing required fields: firstName, email, password, creationReason, role');
+    }
     return this.request('POST', '/admins/create-client', clientData);
   },
 
@@ -219,8 +233,24 @@ const API = {
     return this.request('POST', `/users/unblock`, data);
   },
 
-  async convertUserToClient(userId) {
-    return this.request('POST', `/admins/convert-user-to-client`, { userId });
+  async convertUserToClient(userId, convertReason, role, organizationIds = [], reasonDescription = '') {
+    // Ensure all required fields are present
+    if (!userId || !convertReason || !role) {
+      throw new Error('Missing required fields: userId, convertReason, role');
+    }
+    
+    const data = {
+      userId,
+      convertReason,
+      role,
+      organizationIds
+    };
+    
+    if (reasonDescription) {
+      data.reasonDescription = reasonDescription;
+    }
+    
+    return this.request('POST', `/admins/convert-user-to-client`, data);
   },
 
   // Organization Endpoints
@@ -240,8 +270,10 @@ const API = {
     return this.request('PATCH', `/organizations/update/${orgId}`, orgData);
   },
 
-  async addUserToOrganization(orgId, userId) {
-    return this.request('POST', `/organizations/create-org-user`, { organizationId: orgId, userId });
+  async addUserToOrganization(orgId, userId, role, creationReason, reasonDescription = '') {
+    const data = { organizationId: orgId, userId, role, creationReason };
+    if (reasonDescription) data.reasonDescription = reasonDescription;
+    return this.request('POST', `/organizations/create-org-user`, data);
   },
 
   async removeUserFromOrganization(orgUserId, deletionReason = '') {
@@ -316,24 +348,48 @@ const API = {
   },
 
   // Activity Tracker Endpoints
-  async getActivityTracker(adminId, page = 1, limit = 10) {
-    return this.request('POST', `/activity-trackers/admin-activities`, { 
-      adminId, 
-      reason: 'Admin Check',
-      reasonDescription: 'Checking admin activities',
+  
+  /**
+   * Get Admin Activities - View activity history of a specific admin
+   * @param {string} userId - Admin ID whose activities to view
+   * @param {string} reason - Reason for viewing (enum: security_audit, compliance_check, suspicious_activity_investigation, periodic_review, incident_investigation, performance_monitoring, admin_oversight, support_request, other)
+   * @param {string} reasonDescription - Optional description
+   * @param {number} page - Page number
+   * @param {number} limit - Items per page
+   */
+  async getAdminActivities(userId, reason, reasonDescription = '', page = 1, limit = 10) {
+    if (!userId || !reason) {
+      throw new Error('Missing required fields: userId, reason');
+    }
+    
+    const data = {
+      userId,
+      reason,
       page,
       limit
-    });
+    };
+    
+    if (reasonDescription) {
+      data.reasonDescription = reasonDescription;
+    }
+    
+    return this.request('POST', `/activity-trackers/admin-activities`, data);
   },
 
+  /**
+   * Get Current Admin's Activities - No reason required, not logged
+   * @param {number} page - Page number
+   * @param {number} limit - Items per page
+   */
   async getMyActivities(page = 1, limit = 10) {
     return this.request('GET', `/activity-trackers/my-activities?page=${page}&limit=${limit}`);
   },
 
-  async getActivityDetail(activityId) {
-    return this.request('GET', `/activity-trackers?activityId=${activityId}`);
-  },
-
+  /**
+   * List All Activities - Requires authorization
+   * @param {number} page - Page number
+   * @param {number} limit - Items per page
+   */
   async listActivities(page = 1, limit = 10) {
     return this.request('GET', `/activity-trackers/list?page=${page}&limit=${limit}`);
   },
@@ -351,6 +407,112 @@ const API = {
     if (unblockReason) data.unblockReason = unblockReason;
     if (reasonDescription) data.reasonDescription = reasonDescription;
     return this.request('POST', `/devices/unblock`, data);
+  },
+
+  // Client Conversion Request Endpoints
+  async getMyClientConversionRequests(page = 1, limit = 10) {
+    // ⚠️ Backend endpoint not implemented yet - returning empty data
+    return { data: [], pagination: { page, limit, total: 0 } };
+  },
+
+  async listClientConversionRequests(page = 1, limit = 10) {
+    // ⚠️ Backend endpoint not implemented yet - returning empty data
+    return { data: [], pagination: { page, limit, total: 0 } };
+  },
+
+  async getClientConversionRequest(requestId) {
+    // ⚠️ Backend endpoint not implemented yet
+    throw new Error('Backend endpoint not yet implemented');
+  },
+
+  async createClientConversionRequest(requestData) {
+    return this.request('POST', '/client-conversion-requests/create', requestData);
+  },
+
+  async approveClientConversionRequest(requestId, approvalReason = '', reasonDescription = '') {
+    // ⚠️ Backend endpoint not implemented yet
+    throw new Error('Backend endpoint not yet implemented');
+  },
+
+  async rejectClientConversionRequest(requestId, rejectionReason = '', reasonDescription = '') {
+    // ⚠️ Backend endpoint not implemented yet
+    throw new Error('Backend endpoint not yet implemented');
+  },
+
+  async deleteClientConversionRequest(requestId, deletionReason = '') {
+    // ⚠️ Backend endpoint not implemented yet
+    throw new Error('Backend endpoint not yet implemented');
+  },
+
+  async withdrawClientConversionRequest(requestId, withdrawalReason = '') {
+    // ⚠️ Backend endpoint not implemented yet
+    throw new Error('Backend endpoint not yet implemented');
+  },
+
+  async updateClientConversionRequest(requestId, updateData) {
+    // ⚠️ Backend endpoint not implemented yet
+    throw new Error('Backend endpoint not yet implemented');
+  },
+
+  // Organization User Request Endpoints - NOT IMPLEMENTED IN BACKEND YET
+  async getMyOrganizationChangeRequests(page = 1, limit = 10) {
+    // ⚠️ Backend endpoint not implemented yet
+    throw new Error('Organization User Request endpoints not yet implemented in backend');
+  },
+
+  async listOrganizationChangeRequests(page = 1, limit = 10) {
+    // ⚠️ Backend endpoint not implemented yet
+    throw new Error('Organization User Request endpoints not yet implemented in backend');
+  },
+
+  async getOrganizationChangeRequest(requestId) {
+    // ⚠️ Backend endpoint not implemented yet
+    throw new Error('Organization User Request endpoints not yet implemented in backend');
+  },
+
+  async createOrganizationChangeRequest(requestData) {
+    // ⚠️ Backend endpoint not implemented yet
+    throw new Error('Organization User Request endpoints not yet implemented in backend');
+  },
+
+  async approveOrganizationChangeRequest(requestId, approvalReason = '', reasonDescription = '') {
+    // ⚠️ Backend endpoint not implemented yet
+    throw new Error('Organization User Request endpoints not yet implemented in backend');
+  },
+
+  async rejectOrganizationChangeRequest(requestId, rejectionReason = '', reasonDescription = '') {
+    // ⚠️ Backend endpoint not implemented yet
+    throw new Error('Organization User Request endpoints not yet implemented in backend');
+  },
+
+  async deleteOrganizationChangeRequest(requestId, deletionReason = '') {
+    // ⚠️ Backend endpoint not implemented yet
+    throw new Error('Organization User Request endpoints not yet implemented in backend');
+  },
+
+  async withdrawOrganizationChangeRequest(requestId, withdrawalReason = '') {
+    // ⚠️ Backend endpoint not implemented yet
+    throw new Error('Organization User Request endpoints not yet implemented in backend');
+  },
+
+  async updateOrganizationChangeRequest(requestId, updateData) {
+    // ⚠️ Backend endpoint not implemented yet
+    throw new Error('Organization User Request endpoints not yet implemented in backend');
+  },
+
+  async addOrganizationUserByOwner(requestId, approvalData = {}) {
+    // ⚠️ Backend endpoint not implemented yet
+    throw new Error('Organization User Request endpoints not yet implemented in backend');
+  },
+
+  async removeOrganizationUserByOwner(requestId, approvalData = {}) {
+    // ⚠️ Backend endpoint not implemented yet
+    throw new Error('Organization User Request endpoints not yet implemented in backend');
+  },
+
+  async changeOrganizationOwner(requestId, approvalData = {}) {
+    // ⚠️ Backend endpoint not implemented yet
+    throw new Error('Organization User Request endpoints not yet implemented in backend');
   },
 };
 
