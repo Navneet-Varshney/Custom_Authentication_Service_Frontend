@@ -9,20 +9,25 @@ import { API_CONFIG } from '../utils/constants.js';
 class ProductVisionService {
   /**
    * Create product vision
+   * Backend: POST /product-vision/create/:projectId
    */
   async createProductVision(visionData) {
+    const { projectId, ...data } = visionData;
     return apiClient.post(
-      `${API_CONFIG.ENDPOINTS.PRODUCT_VISION}/create`,
-      visionData
+      `${API_CONFIG.ENDPOINTS.PRODUCT_VISION}/create/${projectId}`,
+      data
     );
   }
 
   /**
    * Get product vision for a project
-   * Backend: /product-vision/get/:projectId (NO list endpoint)
+   * Backend: /product-vision/get/:projectId
    */
-  async getProductVisions(projectId = 'all') {
+  async getProductVisions(projectId) {
     try {
+      if (!projectId) {
+        throw new Error('Project ID is required to fetch product visions');
+      }
       const response = await apiClient.get(
         `${API_CONFIG.ENDPOINTS.PRODUCT_VISION}/get/${projectId}`
       );
@@ -44,34 +49,37 @@ class ProductVisionService {
 
   /**
    * Get product vision by ID
+   * Backend: GET /product-vision/get/:projectId
    */
-  async getProductVisionById(visionId) {
+  async getProductVisionById(projectId) {
     return apiClient.get(
-      `${API_CONFIG.ENDPOINTS.PRODUCT_VISION}/get/${visionId}`
+      `${API_CONFIG.ENDPOINTS.PRODUCT_VISION}/get/${projectId}`
     );
   }
 
   /**
-   * Update product vision
+   * Backend: PATCH /product-vision/update/:projectId
    */
-  async updateProductVision(visionId, updateData) {
+  async updateProductVision(projectId, visionId, updateData) {
     return apiClient.patch(
-      `${API_CONFIG.ENDPOINTS.PRODUCT_VISION}/update/${visionId}`,
+      `${API_CONFIG.ENDPOINTS.PRODUCT_VISION}/update/${projectId}`,
+      { visionId, ...updateData }FIG.ENDPOINTS.PRODUCT_VISION}/update/${visionId}`,
       updateData
     );
   }
 
   /**
-   * Delete product vision
+   * Backend: DELETE /product-vision/delete/:projectId
    */
-  async deleteProductVision(visionId) {
+  async deleteProductVision(projectId, visionId) {
     return apiClient.delete(
-      `${API_CONFIG.ENDPOINTS.PRODUCT_VISION}/delete/${visionId}`
+      `${API_CONFIG.ENDPOINTS.PRODUCT_VISION}/delete/${projectId}`,
+      { visionId }
     );
   }
 
   /**
-   * Get product visions by product
+   * Get product visions by product (deprecated - use getProductVisions instead)
    */
   async getProductVisionsByProduct(productId) {
     return apiClient.get(
@@ -80,6 +88,7 @@ class ProductVisionService {
   }
 
   /**
+   * Get product visions by status (deprecated)
    * Get product visions by status
    */
   async getProductVisionsByStatus(status) {
