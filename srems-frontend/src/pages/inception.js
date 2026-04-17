@@ -179,9 +179,12 @@ export class InceptionPage {
 
       // ✅ TRY TO LOAD EXISTING INCEPTION FIRST
       console.log('🔍 Checking for existing inception...');
-      const existingInception = await inceptionService.getLatestInception(currentProjectId);
+      const response = await inceptionService.getLatestInception(currentProjectId);
       
-      if (existingInception) {
+      // Backend returns { success, message, data: { inception } } - unwrap it
+      const existingInception = response?.data?.inception || response?.inception || response;
+      
+      if (existingInception && existingInception._id) {
         console.log('✅ Found existing inception:', existingInception);
         this.inceptions = [existingInception];
         this.filteredInceptions = [existingInception];
@@ -213,7 +216,7 @@ export class InceptionPage {
   }
 
   applyFilters() {
-    const status = document.getElementById('filterStatus').value;
+    const statusFilter = document.getElementById('filterStatus').value;
     const search = document.getElementById('searchInception').value.toLowerCase();
 
     // Ensure inceptions is always an array
@@ -222,10 +225,16 @@ export class InceptionPage {
     }
 
     this.filteredInceptions = this.inceptions.filter(item => {
-      const statusMatch = !status || item.status === status;
+      // Calculate status from boolean fields
+      const itemStatus = item.isFrozen ? 'Frozen' : (item.isDeleted ? 'Deleted' : 'Active');
+      const statusMatch = !statusFilter || itemStatus === statusFilter;
+      
+      // Search in title, project ID, and product vision
       const searchMatch = !search || 
-        item.title?.toLowerCase().includes(search) ||
-        item.projectName?.toLowerCase().includes(search);
+        `Inception - Cycle ${item.version?.major || 1}.${item.version?.minor || 0}`.toLowerCase().includes(search) ||
+        (item.projectId || '').toString().toLowerCase().includes(search) ||
+        (item.productVision || '').toLowerCase().includes(search);
+      
       return statusMatch && searchMatch;
     });
 
@@ -260,12 +269,13 @@ export class InceptionPage {
       // Map backend fields to display fields
       const displayItem = {
         id: item._id || item.id,
-        title: item.title || `Inception - ${createdDate}`,
+        title: `Inception - Cycle ${item.version?.major || 1}.${item.version?.minor || 0}`,
         status: item.isFrozen ? 'Frozen' : (item.isDeleted ? 'Deleted' : 'Active'),
-        projectName: item.projectName || item.projectId || 'N/A',
-        vision: item.vision || 'Not yet defined',
+        projectName: item.projectId || 'N/A',
+        productVision: item.productVision || 'Not yet defined',
         createdAt: createdDate,
-        allowParallelMeetings: item.allowParallelMeetings
+        allowParallelMeetings: item.allowParallelMeetings,
+        _id: item._id
       };
 
       console.log('📋 Rendering inception item:', {
@@ -282,14 +292,15 @@ export class InceptionPage {
           </div>
           <div class="card-body">
             <p><strong>Status:</strong> ${displayItem.status}</p>
-            <p><strong>Project:</strong> ${displayItem.projectName}</p>
+            <p><strong>Project ID:</strong> ${displayItem.projectName}</p>
+            <p><strong>Product Vision:</strong> ${displayItem.productVision}</p>
             <p><strong>Parallel Meetings:</strong> ${displayItem.allowParallelMeetings ? 'Allowed' : 'Not Allowed'}</p>
             <p><strong>Created:</strong> ${displayItem.createdAt}</p>
           </div>
           <div class="card-actions">
-            <button class="btn btn-sm btn-primary btnViewInception" data-id="${displayItem.id}">View</button>
-            <button class="btn btn-sm btn-warning btnEditInception" data-id="${displayItem.id}">Edit</button>
-            <button class="btn btn-sm btn-danger btnDeleteInception" data-id="${displayItem.id}">Delete</button>
+            <button class="btn btn-sm btn-primary btnViewInception" data-id="${displayItem._id}">View</button>
+            <button class="btn btn-sm btn-warning btnEditInception" data-id="${displayItem._id}">Edit</button>
+            <button class="btn btn-sm btn-danger btnDeleteInception" data-id="${displayItem._id}">Delete</button>
           </div>
         </div>
       `;
@@ -300,50 +311,46 @@ export class InceptionPage {
   }
 
   attachRenderEventListeners() {
-    // Delete buttons
+    // Delete buttons - Navigate to detail page where delete is handled with proper form
     document.querySelectorAll('.btnDeleteInception')?.forEach(btn => {
-      btn.addEventListener('click', async (e) => {
+      btn.addEventListener('click', (e) => {
         const id = e.target.dataset.id;
-        console.log('🗑️ Delete button clicked:', {
-          inceptionId: id,
-          projectId: this.currentProjectId,
-          domElement: e.target,
-          allAttributes: e.target.attributes
-        });
+        console.log('🗑️ Delete button clicked - navigating to detail page:', id);
         
-        const confirmed = await showConfirmDialog('Delete Inception', 'This action cannot be undone. Are you sure?');
-        if (confirmed) {
-          try {
-            if (!this.currentProjectId) {
-              throw new Error('Project ID not available');
-            }
-            console.log('🔄 Deleting inception:', { projectId: this.currentProjectId, inceptionId: id });
-            await inceptionService.deleteInception(this.currentProjectId, id);
-            showToast('Inception deleted successfully', 'success');
-            await this.loadInceptions();
-          } catch (error) {
-            console.error('❌ Delete error:', error);
-            showToast(error.message || 'Failed to delete inception', 'error');
-          }
+        if (!this.currentProjectId) {
+          showToast('Project ID not available', 'error');
+          return;
         }
+        // Navigate to detail page with delete action flag
+        window.location.hash = `#/inception-detail?inception=${id}&project=${this.currentProjectId}&action=delete`;
       });
     });
 
-    // View buttons
+    // View buttons - Navigate to detail page
     document.querySelectorAll('.btnViewInception')?.forEach(btn => {
       btn.addEventListener('click', (e) => {
         const id = e.target.dataset.id;
         console.log('👁️ View inception:', id);
-        // TODO: Open detail view
+        
+        if (!this.currentProjectId) {
+          showToast('Project ID not available', 'error');
+          return;
+        }
+        window.location.hash = `#/inception-detail?inception=${id}&project=${this.currentProjectId}`;
       });
     });
 
-    // Edit buttons
+    // Edit buttons - Navigate to detail page with edit action
     document.querySelectorAll('.btnEditInception')?.forEach(btn => {
       btn.addEventListener('click', (e) => {
         const id = e.target.dataset.id;
         console.log('✏️ Edit inception:', id);
-        showToast('Edit feature coming soon', 'info');
+        
+        if (!this.currentProjectId) {
+          showToast('Project ID not available', 'error');
+          return;
+        }
+        window.location.hash = `#/inception-detail?inception=${id}&project=${this.currentProjectId}&action=edit`;
       });
     });
   }
