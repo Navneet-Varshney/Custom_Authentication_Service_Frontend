@@ -8,7 +8,7 @@ const otpMessage = document.getElementById("otpMessage");
 const otpTimerEl = document.getElementById("otpTimer");
 
 // ===== State =====
-let otpTimeLeft = 600; // 10 minutes default, will be reset by timer on load
+let otpTimeLeft = 120; // 2 minutes default, will be reset by timer on load
 let otpInterval;
 let resendInterval;
 let canResend = true;
@@ -78,7 +78,7 @@ otpBoxes.forEach((box, idx) => {
 // ===== OTP Expiry Timer =====
 function startOtpTimer() {
   clearInterval(otpInterval);
-  otpTimeLeft = 600; // Reset to 10 minutes on each resend
+  otpTimeLeft = 120; // Reset to 2 minutes on each resend
 
   // Reset verify button only if it's not mid-request
   if (verifyBtn.textContent !== "Verifying...") {
@@ -259,6 +259,15 @@ otpForm.addEventListener("submit", async (e) => {
         localStorage.removeItem("resetPasswordEmail");
         
         // 2FA complete — go to dashboard
+        window.location.href = "../app/dashboard.html";
+      } else if (otpPurpose === "EMAIL_VERIFICATION") {
+        // ✅ Email verified from login — auto-login and go to dashboard
+        localStorage.removeItem("signupEmail");
+        localStorage.removeItem("signupPhone");
+        localStorage.removeItem("otpDeliveryMode");
+        localStorage.removeItem("otpPurpose");
+        
+        console.log("✅ Email verified! Auto-logging in...");
         window.location.href = "../app/dashboard.html";
       } else {
         // Signup verification complete — go to dashboard
