@@ -14,38 +14,28 @@
     <div class="filter-group">
       <label for="filterActivityType" class="filter-label">Activity Type</label>
       <select id="filterActivityType" class="filter-select">
-        <option value="">All Activities</option>
-        <option value="create">Created</option>
-        <option value="update">Updated</option>
-        <option value="delete">Deleted</option>
-        <option value="comment">Comment</option>
-        <option value="approve">Approved</option>
-        <option value="reject">Rejected</option>
-        <option value="status-change">Status Changed</option>
+        <option value="">Most Recent Activities</option>
+        <option value="CREATE_PROJECT">Project Created</option>
+        <option value="UPDATE_PROJECT">Project Updated</option>
+        <option value="DELETE_PROJECT">Project Deleted</option>
+        <option value="CREATE_INCEPTION">Inception Created</option>
+        <option value="UPDATE_INCEPTION">Inception Updated</option>
+        <option value="CREATE_COMMENT">Comment Added</option>
+        <option value="CREATE_STAKEHOLDER">Stakeholder Added</option>
       </select>
-    </div>
-
-    <div class="filter-group">
-      <label for="filterActivityEntity" class="filter-label">Entity Type</label>
-      <select id="filterActivityEntity" class="filter-select">
-        <option value="">All Entities</option>
-        <option value="requirement">Requirement</option>
-        <option value="project">Project</option>
-        <option value="scope">Scope</option>
-        <option value="feature">Feature</option>
-        <option value="stakeholder">Stakeholder</option>
-      </select>
-    </div>
-
-    <div class="filter-group">
-      <label for="filterActivityDate" class="filter-label">Date Range</label>
-      <input type="date" id="filterActivityDate" class="filter-input" />
     </div>
 
     <div class="filter-group">
       <label for="searchActivity" class="filter-label">Search</label>
-      <input type="text" id="searchActivity" class="filter-input" placeholder="Search activities..." />
+      <input type="text" id="searchActivity" class="filter-input" placeholder="Search by description, event, user..." />
     </div>
+  </div>
+
+  <!-- Pagination Controls -->
+  <div style="display: flex; justify-content: space-between; align-items: center; margin: 15px 0; padding: 10px; background: #f5f5f5; border-radius: 4px;">
+    <button class="btn btn-secondary" id="btnPrevPage" style="padding: 6px 12px; font-size: 13px;">← Previous</button>
+    <span id="pageInfo" style="font-size: 13px; color: #666; font-weight: 500;">Page 1 of 0</span>
+    <button class="btn btn-secondary" id="btnNextPage" style="padding: 6px 12px; font-size: 13px;">Next →</button>
   </div>
 
   <!-- Activity Timeline -->
