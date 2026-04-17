@@ -49,6 +49,14 @@
             <span class="material-icons">history</span>
             <span class="label">Activities</span>
           </a>
+          <a href="#client-conversion-requests" class="nav-link" data-page="client-conversion-requests">
+            <span class="material-icons">person_add</span>
+            <span class="label">Client Requests</span>
+          </a>
+          <a href="#organization-user-requests" class="nav-link" data-page="organization-user-requests">
+            <span class="material-icons">groups</span>
+            <span class="label">Org User Requests</span>
+          </a>
         </nav>
 
         <div class="sidebar-footer">
@@ -132,10 +140,20 @@
           <div id="admins" class="page">
             <div class="page-header">
               <h2>Admin Management</h2>
-              <button class="btn btn-primary" id="addAdminBtn">
-                <span class="material-icons">add</span>
-                Add Admin
-              </button>
+              <div style="display: flex; gap: 10px;">
+                <button class="btn btn-primary" id="addAdminBtn">
+                  <span class="material-icons">add</span>
+                  Add Admin
+                </button>
+                <button class="btn btn-success" id="addClientBtn" style="background: #48bb78;">
+                  <span class="material-icons">add</span>
+                  Add Client
+                </button>
+                <button class="btn btn-info" id="convertUserBtn" style="background: #4299e1;">
+                  <span class="material-icons">person_add</span>
+                  Convert User to Client
+                </button>
+              </div>
             </div>
 
             <div class="filters">
@@ -223,8 +241,8 @@
                 <thead>
                   <tr>
                     <th>Organization Name</th>
+                    <th>Organization Type</th>
                     <th>Email</th>
-                    <th>Contact</th>
                     <th>Status</th>
                     <th>Users</th>
                     <th>Created</th>
@@ -276,8 +294,7 @@
           <!-- Activities Page -->
           <div id="activities" class="page">
             <div class="page-header">
-              <h2>Activity Logs</h2>
-            </div>
+              <h2>Activity Logs</h2>            </div>
 
             <div class="filters">
               <input type="text" id="activitySearch" placeholder="Search activities..." />
@@ -304,6 +321,84 @@
                   </tr>
                 </thead>
                 <tbody id="activitiesList">
+                  <tr class="loading-row"><td colspan="6">Loading...</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Client Conversion Requests Page -->
+          <div id="client-conversion-requests" class="page">
+            <div class="page-header">
+              <h2>Client Conversion Requests</h2>
+              <button class="btn btn-primary" id="createClientConversionReqBtn">
+                <span class="material-icons">add</span>
+                Create Request
+              </button>
+            </div>
+
+            <div class="filters">
+              <input type="text" id="clientConversionSearch" placeholder="Search requests..." />
+              <select id="clientConversionStatusFilter">
+                <option value="">All Status</option>
+                <option value="pending">Pending</option>
+                <option value="approved">Approved</option>
+                <option value="rejected">Rejected</option>
+              </select>
+            </div>
+
+            <div class="table-container">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Request ID</th>
+                    <th>User ID</th>
+                    <th>Status</th>
+                    <th>Created</th>
+                    <th>Updated</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="clientConversionRequestsList">
+                  <tr class="loading-row"><td colspan="6">Loading...</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Organization User Requests Page -->
+          <div id="organization-user-requests" class="page">
+            <div class="page-header">
+              <h2>Organization User Requests</h2>
+              <button class="btn btn-primary" id="createOrgUserReqBtn">
+                <span class="material-icons">add</span>
+                Create Request
+              </button>
+            </div>
+
+            <div class="filters">
+              <input type="text" id="orgUserReqSearch" placeholder="Search requests..." />
+              <select id="orgUserReqStatusFilter">
+                <option value="">All Status</option>
+                <option value="pending">Pending</option>
+                <option value="approved">Approved</option>
+                <option value="rejected">Rejected</option>
+              </select>
+            </div>
+
+            <div class="table-container">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Request ID</th>
+                    <th>Organization</th>
+                    <th>User ID</th>
+                    <th>Status</th>
+                    <th>Created</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="orgUserRequestsList">
                   <tr class="loading-row"><td colspan="6">Loading...</td></tr>
                 </tbody>
               </table>
@@ -402,10 +497,11 @@
             <label>Organization Type *</label>
             <select id="orgType" required>
               <option value="">Select type</option>
-              <option value="CORPORATE">Corporate</option>
-              <option value="EDUCATIONAL">Educational</option>
-              <option value="GOVERNMENT">Government</option>
-              <option value="NONPROFIT">Non-Profit</option>
+              <option value="FINTECH">FinTech</option>
+              <option value="EDTECH">EdTech</option>
+              <option value="HEALTHTECH">HealthTech</option>
+              <option value="ECOMMERCE">E-Commerce</option>
+              <option value="SAAS">SaaS</option>
               <option value="OTHER">Other</option>
             </select>
           </div>
@@ -439,11 +535,12 @@
             <label>Creation Reason *</label>
             <select id="orgCreationReason" required>
               <option value="">Select reason</option>
-              <option value="NewClient">New Client</option>
-              <option value="Expansion">Expansion</option>
-              <option value="Partnership">Partnership</option>
-              <option value="Acquisition">Acquisition</option>
-              <option value="Other">Other</option>
+              <option value="new_organization">New Organization</option>
+              <option value="merger">Merger</option>
+              <option value="acquisition">Acquisition</option>
+              <option value="reorganization">Reorganization</option>
+              <option value="admin_request">Admin Request</option>
+              <option value="other">Other</option>
             </select>
           </div>
 
@@ -462,6 +559,490 @@
             <button type="button" class="btn btn-secondary" onclick="closeOrgModal()">Cancel</button>
           </div>
         </form>
+      </div>
+    </div>
+
+    <!-- Organization Update Modal -->
+    <div id="updateOrgModal" class="modal" style="display: none;">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2>Update Organization</h2>
+          <button class="modal-close" onclick="closeUpdateOrgModal()" style="background: none; border: none; font-size: 24px; cursor: pointer;">&times;</button>
+        </div>
+        <form id="updateOrgForm" class="modal-form">
+          <div class="form-group">
+            <label>Organization Name *</label>
+            <input type="text" id="updateOrgName" required placeholder="Enter organization name" />
+          </div>
+
+          <div class="form-group">
+            <label>Organization Type *</label>
+            <select id="updateOrgType" required>
+              <option value="">Select type</option>
+              <option value="FINTECH">FinTech</option>
+              <option value="EDTECH">EdTech</option>
+              <option value="HEALTHTECH">HealthTech</option>
+              <option value="ECOMMERCE">E-Commerce</option>
+              <option value="SAAS">SaaS</option>
+              <option value="OTHER">Other</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label>Description <span style="font-size: 12px; color: #999;">(Optional)</span></label>
+            <textarea id="updateOrgDescription" placeholder="Enter description" style="min-height: 60px; padding: 10px; border: 1px solid #ddd; border-radius: 4px; font-family: inherit;"></textarea>
+          </div>
+
+          <div class="form-group">
+            <label>Website URL <span style="font-size: 12px; color: #999;">(Optional)</span></label>
+            <input type="url" id="updateOrgWebsiteUrl" placeholder="https://example.com" />
+          </div>
+
+          <div class="form-group">
+            <label>Contact Email <span style="font-size: 12px; color: #999;">(Optional)</span></label>
+            <input type="email" id="updateOrgContactEmail" placeholder="Enter contact email" />
+          </div>
+
+          <div class="form-group">
+            <label>Contact Country Code <span style="font-size: 12px; color: #999;">(Optional, e.g., +1)</span></label>
+            <input type="text" id="updateOrgContactCountryCode" placeholder="e.g., +1" />
+          </div>
+
+          <div class="form-group">
+            <label>Contact Local Phone Number <span style="font-size: 12px; color: #999;">(Optional, e.g., 2025551234)</span></label>
+            <input type="tel" id="updateOrgContactLocalNumber" placeholder="e.g., 2025551234" />
+          </div>
+
+          <div class="form-group">
+            <label>Update Reason *</label>
+            <select id="updateOrgReason" required>
+              <option value="">Select reason</option>
+              <option value="rebranding">Rebranding</option>
+              <option value="contact_info_update">Contact Info Update</option>
+              <option value="role_change">Role Change</option>
+              <option value="error_correction">Error Correction</option>
+              <option value="admin_request">Admin Request</option>
+              <option value="compliance_update">Compliance Update</option>
+              <option value="other">Other</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label>Update Reason Description <span style="font-size: 12px; color: #999;">(Optional)</span></label>
+            <textarea id="updateOrgReasonDescription" placeholder="Provide additional details..." style="min-height: 60px; padding: 10px; border: 1px solid #ddd; border-radius: 4px; font-family: inherit;"></textarea>
+          </div>
+
+          <div class="form-actions">
+            <button type="submit" class="btn btn-primary">Update Organization</button>
+            <button type="button" class="btn btn-secondary" onclick="closeUpdateOrgModal()">Cancel</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Client Creation Modal -->
+    <div id="clientModal" class="modal" style="display: none;">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2>Create New Client</h2>
+          <button class="modal-close" onclick="closeClientModal()" style="background: none; border: none; font-size: 24px; cursor: pointer;">&times;</button>
+        </div>
+        <form id="clientForm" class="modal-form">
+          <div class="form-group">
+            <label>First Name * <span style="font-size: 12px; color: #666;">(2-50 chars)</span></label>
+            <input type="text" id="clientFirstName" required placeholder="Enter first name" />
+          </div>
+
+          <div class="form-group">
+            <label>Email * <span style="font-size: 12px; color: #666;">(Valid email address)</span></label>
+            <input type="email" id="clientEmail" required placeholder="Enter email address" />
+          </div>
+
+          <div class="form-group">
+            <label>Password * <span style="font-size: 12px; color: #666;">(8-64 chars, uppercase, lowercase, numbers, special chars)</span></label>
+            <input type="password" id="clientPassword" required placeholder="Enter password (e.g., Ravan@123)" />
+          </div>
+
+          <div class="form-group">
+            <label>Role *</label>
+            <select id="clientRole" required>
+              <option value="">Select role</option>
+              <option value="sponsor">Sponsor</option>
+              <option value="partner">Partner</option>
+              <option value="vendor">Vendor</option>
+              <option value="end_user">End User</option>
+              <option value="other">Other</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label>Creation Reason *</label>
+            <select id="clientCreationReason" required>
+              <option value="">Select reason</option>
+              <option value="new_client_onboarding">New Client Onboarding</option>
+              <option value="user_upgrade">User Upgrade</option>
+              <option value="business_expansion">Business Expansion</option>
+              <option value="special_arrangement">Special Arrangement</option>
+              <option value="migration">Migration</option>
+              <option value="other">Other</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label>Reason Description <span style="font-size: 12px; color: #999;">(Optional)</span></label>
+            <textarea id="clientReasonDescription" placeholder="Provide additional details..." style="min-height: 60px; padding: 10px; border: 1px solid #ddd; border-radius: 4px; font-family: inherit;"></textarea>
+          </div>
+
+          <div class="form-group">
+            <label>Country Code <span style="font-size: 12px; color: #999;">(Optional, e.g., +1)</span></label>
+            <input type="text" id="clientCountryCode" placeholder="e.g., +1" />
+          </div>
+
+          <div class="form-group">
+            <label>Local Phone Number <span style="font-size: 12px; color: #999;">(Optional)</span></label>
+            <input type="tel" id="clientLocalNumber" placeholder="e.g., 2025551234" />
+          </div>
+
+          <div class="form-group">
+            <label>Organization IDs <span style="font-size: 12px; color: #999;">(Optional - comma separated)</span></label>
+            <input type="text" id="clientOrgIds" placeholder="e.g., org123,org456" />
+          </div>
+
+          <div class="form-actions">
+            <button type="submit" class="btn btn-primary">Create Client</button>
+            <button type="button" class="btn btn-secondary" onclick="closeClientModal()">Cancel</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Convert User to Client Modal -->
+    <div id="convertUserModal" class="modal" style="display: none;">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2>Convert User to Client</h2>
+          <button class="modal-close" onclick="closeConvertUserModal()" style="background: none; border: none; font-size: 24px; cursor: pointer;">&times;</button>
+        </div>
+        <form id="convertUserForm" class="modal-form">
+          <div class="form-group">
+            <label>User ID * <span style="font-size: 12px; color: #666;">(e.g., USR0000001)</span></label>
+            <input type="text" id="convertUserId" required placeholder="Enter User ID" />
+          </div>
+
+          <div class="form-group">
+            <label>Convert Reason *</label>
+            <select id="convertReason" required>
+              <option value="">Select reason</option>
+              <option value="user_upgrade_request">User Upgrade Request</option>
+              <option value="admin_decision">Admin Decision</option>
+              <option value="business_expansion">Business Expansion</option>
+              <option value="service_tier_change">Service Tier Change</option>
+              <option value="special_arrangement">Special Arrangement</option>
+              <option value="migration">Migration</option>
+              <option value="other">Other</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label>Role *</label>
+            <select id="convertRole" required>
+              <option value="">Select role</option>
+              <option value="sponsor">Sponsor</option>
+              <option value="partner">Partner</option>
+              <option value="vendor">Vendor</option>
+              <option value="end_user">End User</option>
+              <option value="other">Other</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label>Organization IDs <span style="font-size: 12px; color: #999;">(Optional - comma separated)</span></label>
+            <input type="text" id="convertOrgIds" placeholder="e.g., org123,org456" />
+          </div>
+
+          <div class="form-group">
+            <label>Reason Description <span style="font-size: 12px; color: #999;">(Optional)</span></label>
+            <textarea id="convertReasonDescription" placeholder="Provide additional details..." style="min-height: 60px; padding: 10px; border: 1px solid #ddd; border-radius: 4px; font-family: inherit;"></textarea>
+          </div>
+
+          <div class="form-actions">
+            <button type="submit" class="btn btn-primary">Convert to Client</button>
+            <button type="button" class="btn btn-secondary" onclick="closeConvertUserModal()">Cancel</button>
+          </div>
+        </form>
+      </div>
+    </div>
+    <!-- View Admin Activities Modal -->
+    <div id="viewAdminActivitiesModal" class="modal" style="display: none;">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2>View Admin Activities</h2>
+          <button class="modal-close" onclick="closeViewAdminActivitiesModal()" style="background: none; border: none; font-size: 24px; cursor: pointer;">&times;</button>
+        </div>
+        <form id="viewAdminActivitiesForm" class="modal-form">
+          <div class="form-group">
+            <label>Admin ID * <span style="font-size: 12px; color: #666;">(e.g., ADM0000001)</span></label>
+            <input type="text" id="viewActivityAdminId" required placeholder="Enter Admin ID" />
+          </div>
+
+          <div class="form-group">
+            <label>Reason for Viewing *</label>
+            <select id="viewActivityReason" required>
+              <option value="">Select reason</option>
+              <option value="security_audit">Security Audit</option>
+              <option value="compliance_check">Compliance Check</option>
+              <option value="suspicious_activity_investigation">Suspicious Activity Investigation</option>
+              <option value="periodic_review">Periodic Review</option>
+              <option value="incident_investigation">Incident Investigation</option>
+              <option value="performance_monitoring">Performance Monitoring</option>
+              <option value="admin_oversight">Admin Oversight</option>
+              <option value="support_request">Support Request</option>
+              <option value="other">Other</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label>Reason Description <span style="font-size: 12px; color: #999;">(Optional)</span></label>
+            <textarea id="viewActivityReasonDescription" placeholder="Provide additional details..." style="min-height: 60px; padding: 10px; border: 1px solid #ddd; border-radius: 4px; font-family: inherit;"></textarea>
+          </div>
+
+          <div class="form-actions">
+            <button type="submit" class="btn btn-primary">View Activities</button>
+            <button type="button" class="btn btn-secondary" onclick="closeViewAdminActivitiesModal()">Cancel</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Client Conversion Request Modal -->
+    <div id="clientConversionReqModal" class="modal" style="display: none;">
+      <div class="modal-content" style="max-width: 700px;">
+        <div class="modal-header">
+          <h2>✨ Request Client Conversion</h2>
+          <button class="modal-close" onclick="closeClientConversionReqModal()" style="background: none; border: none; font-size: 24px; cursor: pointer;">&times;</button>
+        </div>
+        <form id="clientConversionReqForm" class="modal-form">
+          
+          <!-- Basic Information Section -->
+          <div>
+            <div class="form-grid full">
+              <div class="form-group">
+                <label>👤 User ID <span>(e.g., USR0000001)</span></label>
+                <input type="text" id="convReqUserId" required placeholder="Enter User ID" />
+              </div>
+            </div>
+
+            <div class="form-grid">
+              <div class="form-group">
+                <label>📋 Request Type</label>
+                <select id="convReqRequestType" required onchange="updateConversionFormFields()">
+                  <option value="">Select request type</option>
+                  <option value="single_organization">Single Organization</option>
+                  <option value="multiple_organizations">Multiple Organizations (up to 2)</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label>💼 Reason for Conversion</label>
+                <select id="convReqConversionReason" required>
+                  <option value="">Select reason</option>
+                  <option value="role_expansion">Role Expansion</option>
+                  <option value="partnership_request">Partnership Request</option>
+                  <option value="employment_verification">Employment Verification</option>
+                  <option value="business_onboarding">Business Onboarding</option>
+                  <option value="other">Other</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="form-group full">
+              <label>📝 Additional Details <span>(Optional)</span></label>
+              <textarea id="convReqReasonDescription" placeholder="Provide any additional context or details..."></textarea>
+            </div>
+          </div>
+
+          <!-- Organization Claims Section -->
+          <div id="organizationClaimsSection" style="display: none;">
+            <div class="org-claims-section">
+              <h4>Organization Claim(s)</h4>
+              
+              <!-- Existing Organizations -->
+              <div id="existingOrgContainer" style="display: none;">
+                <div class="org-claim-box">
+                  <h5>🏢 Existing Organization</h5>
+                  <div class="form-grid">
+                    <div class="form-group full">
+                      <label>Organization ID <span>(e.g., org0000001)</span></label>
+                      <input type="text" class="existingOrgId" placeholder="Enter Organization ID" />
+                    </div>
+                    <div class="form-group">
+                      <label>Work Email</label>
+                      <input type="email" class="existingOrgEmail" placeholder="your.name@company.com" />
+                    </div>
+                    <div class="form-group">
+                      <label>Designation <span>(Optional)</span></label>
+                      <input type="text" class="existingOrgDesignation" placeholder="e.g., Senior Manager" />
+                    </div>
+                    <div class="form-group full">
+                      <label>Message <span>(Optional)</span></label>
+                      <textarea class="existingOrgMessage" placeholder="Add any additional message..."></textarea>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- New Organizations -->
+              <div id="newOrgContainer" style="display: none;">
+                <div class="org-claim-box">
+                  <h5>🆕 New Organization</h5>
+                  <div class="form-grid">
+                    <div class="form-group full">
+                      <label>Organization Name</label>
+                      <input type="text" class="newOrgName" placeholder="e.g., Tech Corp" />
+                    </div>
+                    <div class="form-group">
+                      <label>Website</label>
+                      <input type="url" class="newOrgWebsite" placeholder="https://techcorp.com" />
+                    </div>
+                    <div class="form-group">
+                      <label>Work Email</label>
+                      <input type="email" class="newOrgEmail" placeholder="your.name@techcorp.com" />
+                    </div>
+                    <div class="form-group">
+                      <label>Designation <span>(Optional)</span></label>
+                      <input type="text" class="newOrgDesignation" placeholder="e.g., Senior Manager" />
+                    </div>
+                    <div class="form-group full">
+                      <label>Message <span>(Optional)</span></label>
+                      <textarea class="newOrgMessage" placeholder="Add any additional message..."></textarea>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Form Actions -->
+          <div class="form-actions">
+            <button type="submit" class="btn btn-primary">Submit Request ✓</button>
+            <button type="button" class="btn btn-secondary" onclick="closeClientConversionReqModal()">Cancel</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Organization User Request Modal -->
+    <div id="orgUserReqModal" class="modal" style="display: none;">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2>Create Organization User Request</h2>
+          <button class="modal-close" onclick="closeOrgUserReqModal()" style="background: none; border: none; font-size: 24px; cursor: pointer;">&times;</button>
+        </div>
+        <form id="orgUserReqForm" class="modal-form">
+          <div class="form-group">
+            <label>Organization ID * <span style="font-size: 12px; color: #666;">(e.g., org0000001)</span></label>
+            <input type="text" id="orgReqOrgId" required placeholder="Enter Organization ID" />
+          </div>
+
+          <div class="form-group">
+            <label>User ID * <span style="font-size: 12px; color: #666;">(e.g., USR0000001)</span></label>
+            <input type="text" id="orgReqUserId" required placeholder="Enter User ID" />
+          </div>
+
+          <div class="form-group">
+            <label>Request Type *</label>
+            <select id="orgReqType" required>
+              <option value="">Select type</option>
+              <option value="add_user">Add User</option>
+              <option value="remove_user">Remove User</option>
+              <option value="change_owner">Change Owner</option>
+              <option value="update_role">Update Role</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label>Reason *</label>
+            <select id="orgReqReason" required>
+              <option value="">Select reason</option>
+              <option value="new_hire">New Hire</option>
+              <option value="promotion">Promotion</option>
+              <option value="transfer">Transfer</option>
+              <option value="departure">Departure</option>
+              <option value="restructuring">Restructuring</option>
+              <option value="other">Other</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label>Description <span style="font-size: 12px; color: #999;">(Optional)</span></label>
+            <textarea id="orgReqDescription" placeholder="Provide additional details..." style="min-height: 60px; padding: 10px; border: 1px solid #ddd; border-radius: 4px; font-family: inherit;"></textarea>
+          </div>
+
+          <div class="form-actions">
+            <button type="submit" class="btn btn-primary">Create Request</button>
+            <button type="button" class="btn btn-secondary" onclick="closeOrgUserReqModal()">Cancel</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Add Org User Modal (Direct) -->
+    <div id="addOrgUserModal" class="modal" style="display: none;">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2>Add User to Organization</h2>
+          <button class="modal-close" onclick="closeAddOrgUserModal()" style="background: none; border: none; font-size: 24px; cursor: pointer;">&times;</button>
+        </div>
+        <form id="addOrgUserForm" class="modal-form">
+          <!-- Hidden field - populated automatically -->
+          <input type="hidden" id="addOrgUserOrgId" />
+
+          <div class="form-group">
+            <label>User ID * <span style="font-size: 12px; color: #666;">(e.g., USR0000001)</span></label>
+            <input type="text" id="addOrgUserUserId" required placeholder="Enter User ID" />
+          </div>
+
+          <div class="form-group">
+            <label>Role * <span style="font-size: 12px; color: #666;">(Organization role)</span></label>
+            <input type="text" id="addOrgUserRole" required placeholder="e.g., manager, analyst" />
+          </div>
+
+          <div class="form-group">
+            <label>Creation Reason *</label>
+            <select id="addOrgUserCreationReason" required>
+              <option value="">Select reason</option>
+              <option value="new_employee">New Employee</option>
+              <option value="role_change">Role Change</option>
+              <option value="department_transfer">Department Transfer</option>
+              <option value="temporary_assignment">Temporary Assignment</option>
+              <option value="admin_request">Admin Request</option>
+              <option value="other">Other</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label>Reason Description <span style="font-size: 12px; color: #999;">(Optional)</span></label>
+            <textarea id="addOrgUserReasonDescription" placeholder="Provide additional details..." style="min-height: 60px; padding: 10px; border: 1px solid #ddd; border-radius: 4px; font-family: inherit;"></textarea>
+          </div>
+
+          <div class="form-actions">
+            <button type="submit" class="btn btn-primary">Add User</button>
+            <button type="button" class="btn btn-secondary" onclick="closeAddOrgUserModal()">Cancel</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Organization Users List Modal -->
+    <div id="orgUsersListModal" class="modal" style="display: none;">
+      <div class="modal-content" style="max-width: 900px;">
+        <div class="modal-header">
+          <h2>Organization Users</h2>
+          <button class="modal-close" onclick="closeOrgUsersListModal()" style="background: none; border: none; font-size: 24px; cursor: pointer;">&times;</button>
+        </div>
+        <div id="orgUsersListContainer" style="max-height: 500px; overflow-y: auto;">
+          <!-- Users list will be populated here -->
+        </div>
       </div>
     </div>
 
@@ -489,8 +1070,40 @@
         border-radius: 8px;
         padding: 30px;
         min-width: 400px;
-        max-width: 500px;
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        max-width: 700px;
+        max-height: 90vh;
+        overflow-y: auto;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+        animation: slideIn 0.3s ease-out;
+      }
+
+      @keyframes slideIn {
+        from {
+          opacity: 0;
+          transform: translateY(-30px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      .modal-content::-webkit-scrollbar {
+        width: 8px;
+      }
+
+      .modal-content::-webkit-scrollbar-track {
+        background: #f1f1f1;
+        border-radius: 10px;
+      }
+
+      .modal-content::-webkit-scrollbar-thumb {
+        background: #667eea;
+        border-radius: 10px;
+      }
+
+      .modal-content::-webkit-scrollbar-thumb:hover {
+        background: #5568d3;
       }
 
       .modal-header {
