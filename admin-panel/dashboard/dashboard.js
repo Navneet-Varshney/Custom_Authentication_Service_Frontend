@@ -265,6 +265,8 @@ async function navigateToPage(page) {
     organizations: 'Organization Management',
     devices: 'Device Management',
     activities: 'Activity Logs',
+    'client-conversion-requests': 'Client Conversion Requests',
+    'organization-user-requests': 'Organization User Requests',
   };
 
   document.getElementById('pageTitle').textContent = titles[page] || 'Dashboard';
@@ -285,6 +287,12 @@ async function navigateToPage(page) {
       break;
     case 'activities':
       loadActivitiesData();
+      break;
+    case 'client-conversion-requests':
+      loadClientConversionRequests();
+      break;
+    case 'organization-user-requests':
+      loadOrganizationUserRequests();
       break;
   }
 
@@ -442,11 +450,13 @@ function displayAdmins(admins) {
 }
 
 async function blockAdmin(adminId) {
-  const blockReason = prompt('Enter reason for blocking admin:');
+  const blockReason = prompt('Select block reason:\nOptions: admin_action, security_threat, policy_violation, suspicious_activity, other\n\nEnter reason:');
   if (!blockReason) return;
   
+  const reasonDescription = prompt('Enter additional description (optional):');
+  
   try {
-    await API.blockAdmin(adminId, blockReason);
+    await API.blockAdmin(adminId, blockReason, reasonDescription || '');
     showNotification('Admin blocked successfully', 'success');
     loadAdminsData();
   } catch (error) {
@@ -456,11 +466,13 @@ async function blockAdmin(adminId) {
 }
 
 async function unblockAdmin(adminId) {
-  const unblockReason = prompt('Enter reason for unblocking admin:');
+  const unblockReason = prompt('Select unblock reason:\nOptions: admin_action, manual_review, appeal_granted, error_correction, other\n\nEnter reason:');
   if (!unblockReason) return;
   
+  const reasonDescription = prompt('Enter additional description (optional):');
+  
   try {
-    await API.unblockAdmin(adminId, unblockReason);
+    await API.unblockAdmin(adminId, unblockReason, reasonDescription || '');
     showNotification('Admin unblocked successfully', 'success');
     loadAdminsData();
   } catch (error) {
@@ -612,7 +624,10 @@ async function loadOrganizationsData() {
   try {
     const orgsList = document.getElementById('organizationsList');
     console.log('📡 Fetching organizations from backend...');
-    const organizations = await API.getOrganizations(1, 10);
+    const response = await API.getOrganizations(1, 10);
+    
+    // Handle response structure - could be array or wrapped in data field
+    const organizations = Array.isArray(response) ? response : (response?.data || response?.organizations || []);
 
     if (!organizations || organizations.length === 0) {
       orgsList.innerHTML = `<tr><td colspan="7" style="padding: 20px; text-align: center; color: #666;">No organizations found</td></tr>`;
@@ -698,16 +713,29 @@ async function unblockDeviceAction() {
 async function loadActivitiesData() {
   try {
     const activitiesList = document.getElementById('activitiesList');
-    console.log('📡 Fetching activities from backend...');
+    console.log('📡 Fetching all activities from backend...');
+    operationState.startLoading('activities');
+    
     const activities = await API.listActivities(1, 20);
+    
+    operationState.stopLoading('activities');
 
     if (!activities || activities.length === 0) {
-      activitiesList.innerHTML = `<tr><td colspan="6" style="padding: 20px; text-align: center; color: #666;">No activities found</td></tr>`;
+      activitiesList.innerHTML = `<tr><td colspan="6" style="padding: 20px; text-align: center; color: #666;">No activities found. Use "View Admin Activities" button to fetch specific admin's activities.</td></tr>`;
       return;
     }
 
+    // Store activities in dashboardData
+    dashboardData.activities = activities;
+
+    // Debug: Log first activity to see actual structure
+    console.log('📊 Sample Activity Data:', JSON.stringify(activities[0], null, 2));
+    console.log('🔍 Full activities array:', activities);
+
     displayActivities(activities);
+    console.log(`✅ Loaded ${activities.length} activities`);
   } catch (error) {
+    operationState.stopLoading('activities');
     console.error('Failed to load activities:', error);
     const activitiesList = document.getElementById('activitiesList');
     activitiesList.innerHTML = `<tr><td colspan="6" style="padding: 20px; text-align: center; color: #e74c3c;">Failed to load activities: ${error.message}</td></tr>`;
@@ -716,16 +744,17 @@ async function loadActivitiesData() {
 
 function displayActivities(activities) {
   const activitiesList = document.getElementById('activitiesList');
+  
   activitiesList.innerHTML = activities
     .map(
       (activity) => `
     <tr>
-      <td>${activity.adminId}</td>
-      <td>${activity.action}</td>
-      <td>${activity.entityType}</td>
-      <td>${activity.entityId}</td>
-      <td>${formatDate(activity.timestamp)}</td>
-      <td><button class="btn btn-sm btn-primary" onclick="showActivityDetails('${activity._id}')">View</button></td>
+      <td>${activity.adminId || '-'}</td>
+      <td>${activity.eventType || '-'}</td>
+      <td>${activity.adminActions?.performedOn || activity.description?.substring(0, 20) || '-'}</td>
+      <td>${activity.adminActions?.targetId ? String(activity.adminActions.targetId).substring(0, 8) : '-'}</td>
+      <td>${formatDate(activity.createdAt)}</td>
+      <td><button class="btn btn-sm btn-primary" onclick="showActivityDetails('${activity.id}')">View</button></td>
     </tr>
   `
     )
@@ -733,15 +762,23 @@ function displayActivities(activities) {
 }
 
 function showActivityDetails(activityId) {
-  const activity = dashboardData.activities.find((a) => a._id === activityId);
+  const activity = dashboardData.activities.find((a) => a.id === activityId);
   if (activity) {
+    const performedOn = activity.adminActions?.performedOn || 'System Event';
+    const targetId = activity.adminActions?.targetId || '-';
+    const reason = activity.adminActions?.reason || 'N/A';
+    
     alert(`
 Activity Details:
 Admin: ${activity.adminId}
-Action: ${activity.action}
-Entity: ${activity.entityType}
-Timestamp: ${formatDate(activity.timestamp)}
-Changes: ${JSON.stringify(activity.changes, null, 2)}
+Event Type: ${activity.eventType}
+Performed By: ${activity.performedBy}
+Device Type: ${activity.deviceType || 'N/A'}
+Performed On: ${performedOn}
+Target ID: ${targetId}
+Reason: ${reason}
+Description: ${activity.description}
+Timestamp: ${formatDate(activity.createdAt)}
     `);
   }
 }
@@ -842,8 +879,10 @@ function filterActivities() {
 
   const filtered = dashboardData.activities.filter((activity) => {
     const matchesSearch =
-      activity.action.toLowerCase().includes(searchTerm) || activity.entityId.toLowerCase().includes(searchTerm);
-    const matchesType = !typeFilter || activity.action === typeFilter;
+      activity.eventType.toLowerCase().includes(searchTerm) || 
+      activity.adminId.toLowerCase().includes(searchTerm) ||
+      activity.description.toLowerCase().includes(searchTerm);
+    const matchesType = !typeFilter || activity.eventType === typeFilter;
     return matchesSearch && matchesType;
   });
 
@@ -885,69 +924,58 @@ function formatDate(dateString) {
   }
 }
 
-// Display Activities
-function displayActivities(activities) {
-  const activitiesList = document.getElementById('activitiesList');
-  activitiesList.innerHTML = activities
-    .map(
-      (activity) => `
-    <tr>
-      <td>${activity.adminId}</td>
-      <td>${activity.action}</td>
-      <td>${activity.entityType}</td>
-      <td>${activity.entityId}</td>
-      <td>${formatDate(activity.timestamp)}</td>
-      <td><button class="btn btn-sm btn-primary" onclick="showActivityDetails('${activity._id}')">View</button></td>
-    </tr>
-  `
-    )
-    .join('');
-}
-
-function showActivityDetails(activityId) {
-  const activity = dashboardData.activities.find((a) => a._id === activityId);
-  if (activity) {
-    alert(`
-Activity Details:
-Admin: ${activity.adminId}
-Action: ${activity.action}
-Entity: ${activity.entityType}
-Timestamp: ${formatDate(activity.timestamp)}
-Changes: ${JSON.stringify(activity.changes, null, 2)}
-    `);
-  }
-}
-
 // Display Organizations
+// Store organizations globally for modal access
+let currentOrganizations = [];
+
 function displayOrganizations(orgs) {
+  currentOrganizations = orgs; // Store for modal access
   const orgsList = document.getElementById('organizationsList');
   orgsList.innerHTML = orgs
     .map(
-      (org) => `
+      (org, index) => {
+        // Use _id, id, or organizationId - fallback to index
+        const orgId = org._id || org.id || org.organizationId || index;
+        
+        return `
     <tr>
       <td>${org.organizationName}</td>
-      <td>${org.email}</td>
-      <td>${org.contactPerson || org.contact || '-'}</td>
-      <td>${getStatusBadge(org.isDisabled ? 'disabled' : 'active')}</td>
+      <td>${org.organizationType || org.orgType || '-'}</td>
+      <td>${org.email || org.contactEmail || '-'}</td>
+      <td>${getStatusBadge(org.isActive === false ? 'disabled' : 'active')}</td>
       <td>${org.users?.length || 0}</td>
       <td>${formatDate(org.createdAt)}</td>
       <td>
-        ${
-          org.isDisabled
-            ? `<button class="btn btn-sm btn-secondary" onclick="enableOrganization('${org._id}')">Enable</button>`
-            : `<button class="btn btn-sm btn-danger" onclick="disableOrganization('${org._id}')">Disable</button>`
-        }
+        <div style="display: flex; gap: 4px; flex-wrap: nowrap; align-items: center; justify-content: flex-start;">
+          <button class="btn btn-sm btn-info" style="padding: 5px 10px; font-size: 12px; white-space: nowrap;" onclick="openUpdateOrgModal('${orgId}')">Edit</button>
+          <button class="btn btn-sm btn-success" style="padding: 5px 10px; font-size: 12px; white-space: nowrap;" onclick="openAddOrgUserModal('${orgId}')">Add</button>
+          ${
+            org.isActive === false
+              ? `<button class="btn btn-sm btn-secondary" style="padding: 5px 10px; font-size: 12px; white-space: nowrap;" onclick="enableOrganization('${orgId}')">On</button>`
+              : `<button class="btn btn-sm btn-danger" style="padding: 5px 10px; font-size: 12px; white-space: nowrap;" onclick="disableOrganization('${orgId}')">Off</button>`
+          }
+          <button class="btn btn-sm btn-danger" style="padding: 5px 10px; font-size: 12px; white-space: nowrap;" onclick="confirmDeleteOrganization('${orgId}')">Del</button>
+        </div>
       </td>
     </tr>
-  `
+  `;
+      }
     )
     .join('');
 }
 
 async function disableOrganization(orgId) {
   if (!confirmAction('Are you sure you want to disable this organization?')) return;
+  
+  const reason = prompt('Please provide the reason for disabling this organization:\n\nOptions:\n- policy_violation\n- suspended_for_review\n- inactivity\n- compliance_issue\n- unauthorized_activity\n- admin_request\n- temporary_suspension\n- other\n\nEnter reason:')?.trim();
+  
+  if (!reason) {
+    showNotification('Reason is required', 'error');
+    return;
+  }
+  
   try {
-    await API.disableOrganization(orgId);
+    await API.disableOrganization(orgId, reason);
     showNotification('Organization disabled successfully', 'success');
     loadOrganizationsData();
   } catch (error) {
@@ -958,8 +986,16 @@ async function disableOrganization(orgId) {
 
 async function enableOrganization(orgId) {
   if (!confirmAction('Are you sure you want to enable this organization?')) return;
+  
+  const reason = prompt('Please provide the reason for enabling this organization:\n\nOptions:\n- review_completed\n- suspension_period_ended\n- issue_resolved\n- appeal_approved\n- compliance_verified\n- admin_decision\n- other\n\nEnter reason:')?.trim();
+  
+  if (!reason) {
+    showNotification('Reason is required', 'error');
+    return;
+  }
+  
   try {
-    await API.enableOrganization(orgId);
+    await API.enableOrganization(orgId, reason);
     showNotification('Organization enabled successfully', 'success');
     loadOrganizationsData();
   } catch (error) {
@@ -968,10 +1004,62 @@ async function enableOrganization(orgId) {
   }
 }
 
-async function deleteOrganization(orgId) {
+// Update Organization Modal
+function openUpdateOrgModal(orgId) {
+  // Find the organization from stored data
+  const orgData = currentOrganizations.find(o => (o._id || o.id || o.organizationId) === orgId);
+  
+  if (!orgData) {
+    showNotification('Organization not found', 'error');
+    return;
+  }
+  
+  // FIRST: Reset the form to clear any old data
+  document.getElementById('updateOrgForm').reset();
+  
+  // Store the org ID for submission
+  document.getElementById('updateOrgForm').dataset.orgId = orgId;
+  
+  // Populate form with existing data
+  document.getElementById('updateOrgName').value = orgData.organizationName || '';
+  document.getElementById('updateOrgType').value = orgData.organizationType || orgData.orgType || '';
+  document.getElementById('updateOrgDescription').value = orgData.description || '';
+  document.getElementById('updateOrgWebsiteUrl').value = orgData.websiteUrl || '';
+  document.getElementById('updateOrgContactEmail').value = orgData.contactEmail || '';
+  document.getElementById('updateOrgContactCountryCode').value = orgData.contactCountryCode || '';
+  document.getElementById('updateOrgContactLocalNumber').value = orgData.contactLocalNumber || '';
+  
+  // DEFAULT: Set Update Reason to empty (user must select)
+  document.getElementById('updateOrgReason').value = '';
+  document.getElementById('updateOrgReasonDescription').value = '';
+  
+  console.log('✏️ Edit modal opened for org:', orgId, 'Org Data:', orgData);
+  
+  document.getElementById('updateOrgModal').style.display = 'flex';
+}
+
+function closeUpdateOrgModal() {
+  document.getElementById('updateOrgModal').style.display = 'none';
+  document.getElementById('updateOrgForm').reset();
+  delete document.getElementById('updateOrgForm').dataset.orgId;
+}
+
+// Delete Organization Confirmation
+function confirmDeleteOrganization(orgId) {
   if (!confirmAction('Are you sure you want to DELETE this organization? This action cannot be undone!')) return;
+  deleteOrganization(orgId);
+}
+
+async function deleteOrganization(orgId) {
+  const reason = prompt('Please provide the reason for deleting this organization:\n\nOptions:\n- out_of_business\n- merger\n- acquisition\n- reorganization\n- admin_request\n- other\n\nEnter reason:')?.trim();
+  
+  if (!reason) {
+    showNotification('Reason is required', 'error');
+    return;
+  }
+  
   try {
-    await API.deleteOrganization(orgId);
+    await API.deleteOrganization(orgId, reason);
     showNotification('Organization deleted successfully', 'success');
     loadOrganizationsData();
   } catch (error) {
@@ -1038,14 +1126,34 @@ async function unblockDevice(deviceUUID) {
 // Button Listeners
 function setupButtonListeners() {
   const addAdminBtn = document.getElementById('addAdminBtn');
+  const addClientBtn = document.getElementById('addClientBtn');
+  const convertUserBtn = document.getElementById('convertUserBtn');
   const addOrgBtn = document.getElementById('addOrgBtn');
+  const createClientConversionReqBtn = document.getElementById('createClientConversionReqBtn');
+  const createOrgUserReqBtn = document.getElementById('createOrgUserReqBtn');
 
   if (addAdminBtn) {
     addAdminBtn.addEventListener('click', openAdminModal);
   }
 
+  if (addClientBtn) {
+    addClientBtn.addEventListener('click', openClientModal);
+  }
+
+  if (convertUserBtn) {
+    convertUserBtn.addEventListener('click', openConvertUserModal);
+  }
+
   if (addOrgBtn) {
     addOrgBtn.addEventListener('click', openOrgModal);
+  }
+
+  if (createClientConversionReqBtn) {
+    createClientConversionReqBtn.addEventListener('click', openClientConversionReqModal);
+  }
+
+  if (createOrgUserReqBtn) {
+    createOrgUserReqBtn.addEventListener('click', openOrgUserReqModal);
   }
 
   // Admin Form Submission
@@ -1127,6 +1235,12 @@ function setupButtonListeners() {
         return;
       }
 
+      // Phone validation: both country code and local number must be provided together
+      if ((contactCountryCode && !contactLocalNumber) || (!contactCountryCode && contactLocalNumber)) {
+        showNotification('Both country code and local number must be provided together', 'error');
+        return;
+      }
+
       const orgData = {
         organizationName: orgName,
         orgType: orgType,
@@ -1137,13 +1251,247 @@ function setupButtonListeners() {
       if (description) orgData.description = description;
       if (websiteUrl) orgData.websiteUrl = websiteUrl;
       if (contactEmail) orgData.contactEmail = contactEmail;
-      if (contactCountryCode) orgData.contactCountryCode = contactCountryCode;
-      if (contactLocalNumber) orgData.contactLocalNumber = contactLocalNumber;
+      if (contactCountryCode && contactLocalNumber) {
+        orgData.contactCountryCode = contactCountryCode;
+        orgData.contactLocalNumber = contactLocalNumber;
+      }
       if (logUrl) orgData.logUrl = logUrl;
       if (reasonDescription) orgData.reasonDescription = reasonDescription;
 
       await createNewOrganization(orgData);
       closeOrgModal();
+    });
+  }
+
+  // Organization Update Form Submission
+  const updateOrgForm = document.getElementById('updateOrgForm');
+  if (updateOrgForm) {
+    updateOrgForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      console.log('🔄 Update Organization Form Submitted');
+      
+      const orgId = e.target.dataset.orgId;
+      console.log('📋 Organization ID:', orgId);
+      
+      if (!orgId) {
+        showNotification('Organization ID not found', 'error');
+        return;
+      }
+
+      // Only include fields that have values (avoid empty optional fields)
+      const orgData = {
+        organizationName: document.getElementById('updateOrgName').value.trim(),
+        orgType: document.getElementById('updateOrgType').value.trim(),
+        updationReason: document.getElementById('updateOrgReason').value.trim()
+      };
+
+      console.log('📝 Base org data:', orgData);
+
+      // Add optional fields only if they have valid values
+      const description = document.getElementById('updateOrgDescription').value.trim();
+      if (description && description.length >= 10) {
+        orgData.description = description;
+      }
+
+      const website = document.getElementById('updateOrgWebsiteUrl').value.trim();
+      if (website && website.length >= 8) {
+        orgData.website = website;
+      }
+
+      const contactEmail = document.getElementById('updateOrgContactEmail').value.trim();
+      if (contactEmail && contactEmail.length >= 5) {
+        orgData.contactEmail = contactEmail;
+      }
+
+      const countryCode = document.getElementById('updateOrgContactCountryCode').value.trim();
+      const localNumber = document.getElementById('updateOrgContactLocalNumber').value.trim();
+      
+      // Both must be provided together if either is provided
+      if (countryCode || localNumber) {
+        if (!countryCode || !localNumber) {
+          showNotification('Both country code and local number must be provided together', 'error');
+          return;
+        }
+        if (countryCode.length >= 1 && localNumber.length >= 9) {
+          orgData.contactCountryCode = countryCode;
+          orgData.contactLocalNumber = localNumber;
+        }
+      }
+
+      const reasonDesc = document.getElementById('updateOrgReasonDescription').value.trim();
+      if (reasonDesc && reasonDesc.length >= 10) {
+        orgData.reasonDescription = reasonDesc;
+      }
+
+      // Validate required fields
+      if (!orgData.organizationName || !orgData.orgType || !orgData.updationReason) {
+        let missing = [];
+        if (!orgData.organizationName) missing.push('Organization Name');
+        if (!orgData.orgType) missing.push('Organization Type');
+        if (!orgData.updationReason) missing.push('Update Reason');
+        console.warn('⚠️ Missing required fields:', missing);
+        showNotification(`Please fill in all required fields: ${missing.join(', ')}`, 'error');
+        return;
+      }
+
+      console.log('📤 Final org data to send:', orgData);
+
+      try {
+        console.log('🔄 Updating organization...');
+        await API.updateOrganization(orgId, orgData);
+        console.log('✅ Update successful - reloading organizations');
+        showNotification('Organization updated successfully', 'success');
+        closeUpdateOrgModal();
+        loadOrganizationsData(); // Reload the list
+      } catch (error) {
+        console.error('❌ Error updating organization:', error);
+        showNotification('Failed to update organization: ' + error.message, 'error');
+      }
+    });
+  }
+
+  // Client Form Submission
+  const clientForm = document.getElementById('clientForm');
+  if (clientForm) {
+    clientForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      const firstName = document.getElementById('clientFirstName').value.trim();
+      const email = document.getElementById('clientEmail').value.trim();
+      const password = document.getElementById('clientPassword').value;
+      const role = document.getElementById('clientRole').value;
+      const creationReason = document.getElementById('clientCreationReason').value;
+      const reasonDescription = document.getElementById('clientReasonDescription').value.trim();
+      const countryCode = document.getElementById('clientCountryCode').value.trim();
+      const localNumber = document.getElementById('clientLocalNumber').value.trim();
+      const orgIdsInput = document.getElementById('clientOrgIds').value.trim();
+
+      // Validate firstName
+      if (firstName.length < 2 || firstName.length > 50) {
+        showNotification('First name must be 2-50 characters long', 'error');
+        return;
+      }
+
+      // Validate email
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(email)) {
+        showNotification('Please enter a valid email address', 'error');
+        return;
+      }
+
+      // Validate password
+      if (password.length < 8 || password.length > 64) {
+        showNotification('Password must be 8-64 characters long', 'error');
+        return;
+      }
+
+      const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,64}$/;
+      if (!passwordRegex.test(password)) {
+        showNotification('Password must contain uppercase, lowercase, numbers, and special characters', 'error');
+        return;
+      }
+
+      // Validate required fields
+      if (!role || !creationReason) {
+        showNotification('Please fill in all required fields', 'error');
+        return;
+      }
+
+      const clientData = {
+        firstName: firstName,
+        email: email,
+        password: password,
+        role: role,
+        creationReason: creationReason,
+      };
+
+      if (reasonDescription) clientData.reasonDescription = reasonDescription;
+      if (countryCode) clientData.countryCode = countryCode;
+      if (localNumber) clientData.localNumber = localNumber;
+      
+      // Parse organization IDs
+      if (orgIdsInput) {
+        clientData.orgIds = orgIdsInput.split(',').map(id => id.trim()).filter(id => id);
+      }
+
+      await createNewClient(clientData);
+      closeClientModal();
+    });
+  }
+
+  // Convert User to Client Form Submission
+  const convertUserForm = document.getElementById('convertUserForm');
+  if (convertUserForm) {
+    convertUserForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      const userId = document.getElementById('convertUserId').value.trim();
+      const convertReason = document.getElementById('convertReason').value;
+      const role = document.getElementById('convertRole').value;
+      const reasonDescription = document.getElementById('convertReasonDescription').value.trim();
+      const orgIdsInput = document.getElementById('convertOrgIds').value.trim();
+
+      // Validate required fields
+      if (!userId || !convertReason || !role) {
+        showNotification('Please fill in all required fields', 'error');
+        return;
+      }
+
+      const organizationIds = orgIdsInput 
+        ? orgIdsInput.split(',').map(id => id.trim()).filter(id => id)
+        : [];
+
+      await convertUserToClientAction(userId, convertReason, role, organizationIds, reasonDescription);
+      closeConvertUserModal();
+    });
+  }
+
+  // Client Conversion Request Form Submission
+  const clientConversionReqForm = document.getElementById('clientConversionReqForm');
+  if (clientConversionReqForm) {
+    clientConversionReqForm.addEventListener('submit', handleClientConversionReqSubmit);
+  }
+
+  // Organization User Request Form Submission
+  const orgUserReqForm = document.getElementById('orgUserReqForm');
+  if (orgUserReqForm) {
+    orgUserReqForm.addEventListener('submit', handleOrgUserReqSubmit);
+  }
+
+  // Add Org User Form Submission
+  const addOrgUserForm = document.getElementById('addOrgUserForm');
+  if (addOrgUserForm) {
+    addOrgUserForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      const orgId = document.getElementById('addOrgUserOrgId').value.trim();
+      const userId = document.getElementById('addOrgUserUserId').value.trim();
+      const role = document.getElementById('addOrgUserRole').value.trim();
+      const creationReason = document.getElementById('addOrgUserCreationReason').value;
+      const reasonDescription = document.getElementById('addOrgUserReasonDescription').value.trim() || '';
+
+      // Validate required fields
+      if (!orgId || !userId || !role || !creationReason) {
+        showNotification('Please fill in all required fields', 'error');
+        return;
+      }
+
+      // Validate userId format (must be exactly 10 characters)
+      if (userId.length !== 10) {
+        showNotification(`User ID must be exactly 10 characters (received: ${userId.length})`, 'error');
+        return;
+      }
+
+      try {
+        await API.addUserToOrganization(orgId, userId, role, creationReason, reasonDescription);
+        showNotification('User added to organization successfully', 'success');
+        closeAddOrgUserModal();
+        // Reload org data
+        await loadOrganizationsData();
+      } catch (error) {
+        console.error('Error adding user to organization:', error);
+        showNotification('Failed to add user: ' + error.message, 'error');
+      }
     });
   }
 }
@@ -1181,13 +1529,53 @@ function closeOrgModal() {
   }
 }
 
+function openClientModal() {
+  const modal = document.getElementById('clientModal');
+  if (modal) {
+    modal.classList.add('show');
+    document.getElementById('clientForm').reset();
+  }
+}
+
+function closeClientModal() {
+  const modal = document.getElementById('clientModal');
+  if (modal) {
+    modal.classList.remove('show');
+    document.getElementById('clientForm').reset();
+  }
+}
+
+function openConvertUserModal() {
+  const modal = document.getElementById('convertUserModal');
+  if (modal) {
+    modal.classList.add('show');
+    document.getElementById('convertUserForm').reset();
+  }
+}
+
+function closeConvertUserModal() {
+  const modal = document.getElementById('convertUserModal');
+  if (modal) {
+    modal.classList.remove('show');
+    document.getElementById('convertUserForm').reset();
+  }
+}
+
 // Close modals when clicking outside
 window.addEventListener('click', (e) => {
   const adminModal = document.getElementById('adminModal');
   const orgModal = document.getElementById('orgModal');
+  const clientModal = document.getElementById('clientModal');
+  const convertUserModal = document.getElementById('convertUserModal');
+  const updateOrgModal = document.getElementById('updateOrgModal');
+  const orgUsersListModal = document.getElementById('orgUsersListModal');
   
   if (e.target === adminModal) closeAdminModal();
   if (e.target === orgModal) closeOrgModal();
+  if (e.target === clientModal) closeClientModal();
+  if (e.target === convertUserModal) closeConvertUserModal();
+  if (e.target === updateOrgModal) closeUpdateOrgModal();
+  if (e.target === orgUsersListModal) closeOrgUsersListModal();
 });
 
 async function createNewAdmin(adminData) {
@@ -1211,6 +1599,33 @@ async function createNewOrganization(orgData) {
     console.error('Error creating organization:', error);
     showNotification('Failed to create organization: ' + error.message, 'error');
   }
+}
+
+async function createNewClient(clientData) {
+  try {
+    console.log('📤 Sending client creation request:', clientData);
+    await API.createClient(clientData);
+    showNotification('✅ Client created successfully!', 'success');
+    loadAdminsData();
+  } catch (error) {
+    console.error('❌ Error creating client:', error);
+    showNotification('Failed to create client: ' + error.message, 'error');
+  }
+}
+
+async function convertUserToClientAction(userId, convertReason, role, organizationIds = [], reasonDescription = '') {
+  try {
+    console.log('📤 Converting user to client:', { userId, convertReason, role, organizationIds, reasonDescription });
+    await API.convertUserToClient(userId, convertReason, role, organizationIds, reasonDescription);
+    showNotification('✅ User converted to client successfully!', 'success');
+    loadAdminsData();
+  } catch (error) {
+    console.error('❌ Error converting user:', error);
+    showNotification('Failed to convert user: ' + error.message, 'error');
+  }
+}
+
+async function viewAdminActivitiesAction(adminId, reason, reasonDescription = '') {
 }
 
 // Organization User Management Functions
@@ -1248,31 +1663,52 @@ async function listOrgUsers(orgId) {
     const users = await API.listOrgUsers(orgId);
     const usersList = users.data || users || [];
     
-    let display = `<h4>Users in Organization</h4><table class="table"><thead><tr><th>Email</th><th>Name</th><th>Role</th><th>Status</th><th>Actions</th></tr></thead><tbody>`;
+    let display = `<table class="data-table" style="width: 100%; margin-top: 10px;">
+      <thead>
+        <tr>
+          <th>Email</th>
+          <th>Name</th>
+          <th>Role</th>
+          <th>Status</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>`;
     
-    usersList.forEach(user => {
-      display += `<tr>
-        <td>${user.email}</td>
-        <td>${user.fullName || '-'}</td>
-        <td>${user.role || '-'}</td>
-        <td>${getStatusBadge(user.isDisabled ? 'disabled' : 'active')}</td>
-        <td>
-          ${user.isDisabled ? 
-            `<button class="btn btn-sm btn-secondary" onclick="enableOrgUser('${user._id}')">Enable</button>` :
-            `<button class="btn btn-sm btn-warning" onclick="disableOrgUser('${user._id}')">Disable</button>`
-          }
-          <button class="btn btn-sm btn-danger" onclick="removeUserFromOrganization('${orgId}', '${user._id}')">Remove</button>
-        </td>
-      </tr>`;
-    });
+    if (usersList.length === 0) {
+      display += `<tr><td colspan="5" style="text-align: center; padding: 20px;">No users found in this organization</td></tr>`;
+    } else {
+      usersList.forEach(user => {
+        display += `<tr>
+          <td>${user.email}</td>
+          <td>${user.fullName || '-'}</td>
+          <td>${user.role || '-'}</td>
+          <td>${getStatusBadge(user.isDisabled ? 'disabled' : 'active')}</td>
+          <td>
+            ${user.isDisabled ? 
+              `<button class="btn btn-sm btn-secondary" onclick="enableOrgUser('${user._id}')">Enable</button>` :
+              `<button class="btn btn-sm btn-warning" onclick="disableOrgUser('${user._id}')">Disable</button>`
+            }
+            <button class="btn btn-sm btn-danger" onclick="removeUserFromOrganization('${orgId}', '${user._id}')">Remove</button>
+          </td>
+        </tr>`;
+      });
+    }
     
     display += `</tbody></table>`;
     
-    alert(display);
+    // Use modal instead of alert
+    document.getElementById('orgUsersListContainer').innerHTML = display;
+    document.getElementById('orgUsersListModal').style.display = 'flex';
   } catch (error) {
     console.error('Error listing org users:', error);
     showNotification('Failed to list users: ' + error.message, 'error');
   }
+}
+
+function closeOrgUsersListModal() {
+  document.getElementById('orgUsersListModal').style.display = 'none';
+  document.getElementById('orgUsersListContainer').innerHTML = '';
 }
 
 async function disableOrgUser(orgUserId) {
@@ -1281,6 +1717,7 @@ async function disableOrgUser(orgUserId) {
   try {
     await API.disableOrgUser(orgUserId);
     showNotification('Organization user disabled successfully', 'success');
+    // Note: Refresh logic would be implemented if we store current orgId
   } catch (error) {
     console.error('Error disabling org user:', error);
     showNotification('Failed to disable user: ' + error.message, 'error');
@@ -1293,9 +1730,282 @@ async function enableOrgUser(orgUserId) {
   try {
     await API.enableOrgUser(orgUserId);
     showNotification('Organization user enabled successfully', 'success');
+    // Note: Refresh logic would be implemented if we store current orgId
   } catch (error) {
     console.error('Error enabling org user:', error);
     showNotification('Failed to enable user: ' + error.message, 'error');
+  }
+}
+
+// CLIENT CONVERSION REQUESTS DISPLAY & MODALS
+function displayClientConversionRequests(requests) {
+  const tbody = document.getElementById('clientConversionRequestsList');
+  if (!requests || requests.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 20px;">No client conversion requests found</td></tr>';
+    return;
+  }
+
+  tbody.innerHTML = requests.map(req => `
+    <tr>
+      <td>${req.requestId || req._id || 'N/A'}</td>
+      <td>${req.userId || 'N/A'}</td>
+      <td><span class="badge ${req.status === 'approved' ? 'badge-success' : req.status === 'rejected' ? 'badge-danger' : 'badge-warning'}">${req.status || 'pending'}</span></td>
+      <td>${formatDate(req.createdAt)}</td>
+      <td>${formatDate(req.updatedAt)}</td>
+      <td>
+        <button class="btn-sm btn-info" onclick="viewClientConversionRequest('${req.requestId || req._id}')">View</button>
+        ${req.status === 'pending' ? `
+          <button class="btn-sm btn-success" onclick="approveClientConversionRequest('${req.requestId || req._id}')">Approve</button>
+          <button class="btn-sm btn-danger" onclick="rejectClientConversionRequest('${req.requestId || req._id}')">Reject</button>
+        ` : ''}
+      </td>
+    </tr>
+  `).join('');
+}
+
+function displayOrganizationUserRequests(requests) {
+  const tbody = document.getElementById('orgUserRequestsList');
+  if (!requests || requests.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 20px;">No organization user requests found</td></tr>';
+    return;
+  }
+
+  tbody.innerHTML = requests.map(req => `
+    <tr>
+      <td>${req.requestId || req._id || 'N/A'}</td>
+      <td>${req.organizationId || 'N/A'}</td>
+      <td>${req.userId || 'N/A'}</td>
+      <td><span class="badge ${req.status === 'approved' ? 'badge-success' : req.status === 'rejected' ? 'badge-danger' : 'badge-warning'}">${req.status || 'pending'}</span></td>
+      <td>${formatDate(req.createdAt)}</td>
+      <td>
+        <button class="btn-sm btn-info" onclick="viewOrgUserRequest('${req.requestId || req._id}')">View</button>
+        ${req.status === 'pending' ? `
+          <button class="btn-sm btn-success" onclick="approveOrgUserRequest('${req.requestId || req._id}')">Approve</button>
+          <button class="btn-sm btn-danger" onclick="rejectOrgUserRequest('${req.requestId || req._id}')">Reject</button>
+        ` : ''}
+      </td>
+    </tr>
+  `).join('');
+}
+
+// MODAL FUNCTIONS FOR CLIENT CONVERSION REQUESTS
+function openClientConversionReqModal() {
+  document.getElementById('clientConversionReqModal').classList.add('show');
+}
+
+function closeClientConversionReqModal() {
+  document.getElementById('clientConversionReqModal').classList.remove('show');
+  document.getElementById('clientConversionReqForm').reset();
+  resetConversionFormFields();
+}
+
+function updateConversionFormFields() {
+  const requestType = document.getElementById('convReqRequestType').value;
+  const claimsSection = document.getElementById('organizationClaimsSection');
+  const existingOrgContainer = document.getElementById('existingOrgContainer');
+  const newOrgContainer = document.getElementById('newOrgContainer');
+
+  if (!requestType) {
+    claimsSection.style.display = 'none';
+    return;
+  }
+
+  claimsSection.style.display = 'block';
+  // For now, show both options - user will choose by filling one or the other
+  existingOrgContainer.style.display = 'block';
+  newOrgContainer.style.display = 'block';
+}
+
+function resetConversionFormFields() {
+  document.getElementById('organizationClaimsSection').style.display = 'none';
+  document.getElementById('existingOrgContainer').style.display = 'none';
+  document.getElementById('newOrgContainer').style.display = 'none';
+}
+
+// MODAL FUNCTIONS FOR ORG USER REQUESTS
+function openOrgUserReqModal() {
+  showNotification('Organization User Requests are not yet available in the backend', 'warning');
+}
+
+function closeOrgUserReqModal() {
+  document.getElementById('orgUserReqModal').classList.remove('show');
+  document.getElementById('orgUserReqForm').reset();
+}
+
+// MODAL FUNCTIONS FOR ADD ORG USER (Direct)
+function openAddOrgUserModal(orgId = null) {
+  // Reset form first
+  document.getElementById('addOrgUserForm').reset();
+  
+  // Auto-populate org ID if provided
+  if (orgId) {
+    document.getElementById('addOrgUserOrgId').value = orgId;
+    console.log('✏️ Add Org User modal opened for Org ID:', orgId);
+  } else {
+    console.warn('⚠️ No organization ID provided');
+  }
+  
+  document.getElementById('addOrgUserModal').classList.add('show');
+}
+
+function closeAddOrgUserModal() {
+  document.getElementById('addOrgUserModal').classList.remove('show');
+  document.getElementById('addOrgUserForm').reset();
+}
+
+// FORM SUBMISSION HANDLERS
+async function handleClientConversionReqSubmit(e) {
+  e.preventDefault();
+  
+  try {
+    const userId = document.getElementById('convReqUserId').value;
+    const requestType = document.getElementById('convReqRequestType').value;
+    const conversionReason = document.getElementById('convReqConversionReason').value;
+    const reasonDescription = document.getElementById('convReqReasonDescription').value || '';
+
+    // Collect existing organization data
+    const organizations = [];
+    const existingOrgId = document.querySelector('.existingOrgId')?.value;
+    const existingOrgEmail = document.querySelector('.existingOrgEmail')?.value;
+    
+    if (existingOrgId && existingOrgEmail) {
+      organizations.push({
+        organizationId: existingOrgId,
+        workEmail: existingOrgEmail,
+        designation: document.querySelector('.existingOrgDesignation')?.value || null,
+        message: document.querySelector('.existingOrgMessage')?.value || null
+      });
+    }
+
+    // Collect new organization data
+    const newOrganizations = [];
+    const newOrgName = document.querySelector('.newOrgName')?.value;
+    const newOrgWebsite = document.querySelector('.newOrgWebsite')?.value;
+    const newOrgEmail = document.querySelector('.newOrgEmail')?.value;
+    
+    if (newOrgName && newOrgWebsite && newOrgEmail) {
+      newOrganizations.push({
+        organizationName: newOrgName,
+        website: newOrgWebsite,
+        workEmail: newOrgEmail,
+        designation: document.querySelector('.newOrgDesignation')?.value || null,
+        message: document.querySelector('.newOrgMessage')?.value || null
+      });
+    }
+
+    // Validate required fields
+    if (!userId || !requestType || !conversionReason) {
+      showNotification('Please fill all required fields', 'warning');
+      return;
+    }
+
+    if (organizations.length === 0 && newOrganizations.length === 0) {
+      showNotification('Please provide at least one organization claim', 'warning');
+      return;
+    }
+
+    const requestData = {
+      userId,
+      requestType,
+      conversionReason,
+      reasonDescription,
+      organizations,
+      newOrganizations
+    };
+
+    await API.createClientConversionRequest(requestData);
+    showNotification('Client conversion request created successfully', 'success');
+    closeClientConversionReqModal();
+    // Reload the list
+    await loadClientConversionRequests();
+  } catch (error) {
+    console.error('Error creating client conversion request:', error);
+    showNotification('Failed to create request: ' + error.message, 'error');
+  }
+}
+
+async function handleOrgUserReqSubmit(e) {
+  e.preventDefault();
+  showNotification('Organization User Requests are not yet available in the backend', 'warning');
+}
+
+// ACTION HANDLERS
+async function approveClientConversionRequest(requestId) {
+  showNotification('Client Conversion Request approval is not yet available in the backend', 'warning');
+}
+
+async function rejectClientConversionRequest(requestId) {
+  showNotification('Client Conversion Request rejection is not yet available in the backend', 'warning');
+}
+
+async function approveOrgUserRequest(requestId) {
+  showNotification('Organization User Requests are not yet available in the backend', 'warning');
+}
+
+async function rejectOrgUserRequest(requestId) {
+  showNotification('Organization User Requests are not yet available in the backend', 'warning');
+}
+
+async function viewClientConversionRequest(requestId) {
+  showNotification('Client Conversion Request details are not yet available in the backend', 'warning');
+}
+
+async function viewOrgUserRequest(requestId) {
+  showNotification('Organization User Requests are not yet available in the backend', 'warning');
+}
+
+// DATA LOADING FUNCTIONS
+async function loadClientConversionRequests() {
+  try {
+    const result = await API.listClientConversionRequests(1, 20);
+    dashboardData.clientConversionRequests = result.data || result || [];
+    displayClientConversionRequests(dashboardData.clientConversionRequests);
+    
+    // Show disabled message if empty
+    if (dashboardData.clientConversionRequests.length === 0) {
+      const container = document.getElementById('clientConversionRequestsContent');
+      if (container) {
+        container.innerHTML = `
+          <div class="disabled-module-message">
+            <h3>⚠️ Feature Coming Soon</h3>
+            <p>Client Conversion Request listing is not yet available in the backend.</p>
+            <p style="font-size: 12px; color: #999; margin-top: 10px;">Only the 'Create' request feature is available.</p>
+          </div>
+        `;
+      }
+    }
+  } catch (error) {
+    console.error('Error loading client conversion requests:', error);
+    const container = document.getElementById('clientConversionRequestsContent');
+    if (container) {
+      container.innerHTML = `
+        <div class="disabled-module-message">
+          <h3>⚠️ Feature Coming Soon</h3>
+          <p>Client Conversion Request listing is not yet available in the backend.</p>
+          <p style="font-size: 12px; color: #999; margin-top: 10px;">Only the 'Create' request feature is available.</p>
+        </div>
+      `;
+    }
+  }
+}
+
+async function loadOrganizationUserRequests() {
+  try {
+    const result = await API.listOrganizationChangeRequests(1, 20);
+    dashboardData.organizationUserRequests = result.data || result || [];
+    displayOrganizationUserRequests(dashboardData.organizationUserRequests);
+  } catch (error) {
+    console.error('Error loading organization user requests:', error);
+    const container = document.getElementById('organizationUserRequestsContent');
+    if (container) {
+      container.innerHTML = `
+        <div class="disabled-module-message">
+          <h3>⚠️ Feature Coming Soon</h3>
+          <p>Organization User Request management is not yet available in the backend.</p>
+          <p style="font-size: 12px; color: #999; margin-top: 10px;">This feature will be enabled in a future update.</p>
+        </div>
+      `;
+    }
   }
 }
 
