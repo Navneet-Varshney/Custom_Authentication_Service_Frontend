@@ -64,6 +64,50 @@ export function initFormSubmit({ form, phoneInput, emailInput, passwordInput, co
           displayMsg = data.warning;
         }
         
+        // ✅ Check if email/phone not verified — trigger OTP verification flow
+        if (res.status === 403 && 
+            (displayMsg.toLowerCase().includes("email") || displayMsg.toLowerCase().includes("phone")) && 
+            displayMsg.toLowerCase().includes("not verified")) {
+          console.log("📧 Unverified contact detected — Triggering OTP flow");
+          
+          try {
+            // Call backend to send OTP
+            const otpReqBody = { purpose: "EMAIL_VERIFICATION" };
+            if (emailInput.value) otpReqBody.email = emailInput.value.trim();
+            if (localNumber) {
+              otpReqBody.countryCode = countryCode;
+              otpReqBody.localNumber = localNumber;
+              otpReqBody.phone = `+${countryCode}${localNumber}`;
+            }
+
+            const otpRes = await fetch(`${API_BASE}/verification/resend-verification`, {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                "x-device-uuid": deviceUUID,
+              },
+              body: JSON.stringify(otpReqBody),
+            });
+
+            if (otpRes.ok) {
+              localStorage.setItem("otpDeliveryMode", emailInput.value ? "EMAIL" : "PHONE");
+              localStorage.setItem("otpPurpose", "EMAIL_VERIFICATION");
+              localStorage.setItem("signupEmail", emailInput.value || "");
+              localStorage.setItem("signupPhone", localNumber ? `+${countryCode}${localNumber}` : "");
+              
+              console.log("✅ OTP sent. Redirecting to verification page...");
+              window.location.href = "otp.html";
+              return;
+            } else {
+              const otpError = await otpRes.json();
+              displayMsg = otpError.message || "Could not send verification code. Please try again.";
+            }
+          } catch (err) {
+            console.error("❌ OTP request error:", err);
+            displayMsg = "Could not initiate email verification. Please try again.";
+          }
+        }
+        
         // Check if account is deactivated and show activation link
         if (displayMsg.toLowerCase().includes("deactivated")) {
           if (loginError) {
