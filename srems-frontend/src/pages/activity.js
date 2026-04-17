@@ -6,6 +6,8 @@ export class ActivityPage {
   constructor() {
     this.activities = [];
     this.filteredActivities = [];
+    this.pagination = { page: 1, limit: 20, total: 0, totalPages: 0 };
+    this.currentPage = 1;
     this.init();
   }
 
@@ -16,105 +18,128 @@ export class ActivityPage {
 
   attachEventListeners() {
     document.getElementById('btnExportActivity')?.addEventListener('click', () => this.exportActivity());
-    document.getElementById('filterActivityType')?.addEventListener('change', () => this.applyFilters());
-    document.getElementById('filterActivityEntity')?.addEventListener('change', () => this.applyFilters());
-    document.getElementById('filterActivityDate')?.addEventListener('change', () => this.applyFilters());
-    document.getElementById('searchActivity')?.addEventListener('input', debounce(() => this.applyFilters(), 300));
+    document.getElementById('btnNextPage')?.addEventListener('click', () => this.loadNextPage());
+    document.getElementById('btnPrevPage')?.addEventListener('click', () => this.loadPrevPage());
+    document.getElementById('filterActivityType')?.addEventListener('change', () => {
+      console.log('🔽 [ACTIVITY] Filter changed');
+      this.currentPage = 1;
+      this.applyFilters();
+      this.renderActivities();
+    });
+    document.getElementById('searchActivity')?.addEventListener('input', debounce(() => {
+      console.log('🔍 [ACTIVITY] Search input detected');
+      this.currentPage = 1;
+      this.applyFilters();
+      this.renderActivities();
+    }, 300));
   }
 
   async loadActivities() {
     try {
-      const data = await activityTrackerService.getActivities();
-      // Ensure activities is always an array
-      this.activities = Array.isArray(data) ? data : (data?.data || []);
-      this.filteredActivities = [...this.activities];
+      const container = document.getElementById('activityContainer');
+      if (container) {
+        container.innerHTML = '<div class="loading-spinner"><div class="spinner"></div><p>Loading activities...</p></div>';
+      }
+
+      console.log('📋 [ACTIVITY] Loading MY activities, page:', this.currentPage);
+
+      // Call service to get current user's activity
+      const response = await activityTrackerService.getMyActivity(this.currentPage, 20);
+      
+      console.log('📦 [ACTIVITY] Response:', response);
+
+      if (!response || !response.success) {
+        throw new Error(response?.message || 'Failed to fetch activities');
+      }
+
+      // Parse backend response - handle both single and double-nested data structure
+      let rawActivities = [];
+      if (response?.data?.data?.activities && Array.isArray(response.data.data.activities)) {
+        rawActivities = response.data.data.activities;
+        console.log('✅ [ACTIVITY] Found activities in response.data.data.activities:', rawActivities.length);
+      } else if (response?.data?.activities && Array.isArray(response.data.activities)) {
+        rawActivities = response.data.activities;
+        console.log('✅ [ACTIVITY] Found activities in response.data.activities:', rawActivities.length);
+      } else if (Array.isArray(response?.data)) {
+        rawActivities = response.data;
+        console.log('✅ [ACTIVITY] Found activities as direct array:', rawActivities.length);
+      } else {
+        console.warn('⚠️ [ACTIVITY] Could not find activities in response structure');
+      }
+      
+      // Parse pagination - handle both locations
+      this.pagination = response?.data?.data?.pagination || 
+                        response?.data?.pagination || 
+                        { page: 1, limit: 20, total: 0, totalPages: 0 };
+
+      console.log('✅ [ACTIVITY] Loaded', rawActivities.length, 'activities, total:', this.pagination.total);
+
+      // Map backend fields to display format
+      this.activities = rawActivities.map(activity => this.mapBackendActivity(activity));
+
+      // Apply filters
+      this.applyFilters();
       this.renderActivities();
+      this.updatePagination();
+
     } catch (error) {
-      console.error('Failed to load activities:', error);
-      // Fallback to mock data if backend is not available
-      this.loadMockActivities();
+      console.error('❌ [ACTIVITY] Error:', error);
+      showToast(error.message || 'Failed to load activities', 'error');
+      const container = document.getElementById('activityContainer');
+      if (container) {
+        container.innerHTML = `<div class="error-message" style="padding: 20px; color: #d00;">${error.message || 'Failed to load activities'}</div>`;
+      }
     }
   }
 
-  loadMockActivities() {
-    // Fallback mock data when backend is not available
-    const mockActivities = [
-      {
-        id: '1',
-        type: 'create',
-        entity: 'project',
-        entityName: 'E-Commerce Platform',
-        user: 'John Doe',
-        timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000),
-        description: 'Created new project',
-        changes: {}
-      },
-      {
-        id: '2',
-        type: 'create',
-        entity: 'requirement',
-        entityName: 'User login with email',
-        user: 'Jane Smith',
-        timestamp: new Date(Date.now() - 1.5 * 60 * 60 * 1000),
-        description: 'Added new functional requirement',
-        changes: { type: 'functional', priority: 'critical' }
-      },
-      {
-        id: '3',
-        type: 'update',
-        entity: 'requirement',
-        entityName: 'User login with email',
-        user: 'John Doe',
-        timestamp: new Date(Date.now() - 1 * 60 * 60 * 1000),
-        description: 'Updated requirement priority',
-        changes: { priority: { from: 'high', to: 'critical' } }
-      },
-      {
-        id: '4',
-        type: 'comment',
-        entity: 'requirement',
-        entityName: 'User login with email',
-        user: 'Alice Johnson',
-        timestamp: new Date(Date.now() - 30 * 60 * 1000),
-        description: 'Added comment about two-factor authentication',
-        changes: {}
-      },
-      {
-        id: '5',
-        type: 'approve',
-        entity: 'requirement',
-        entityName: 'User login with email',
-        user: 'Manager',
-        timestamp: new Date(Date.now() - 10 * 60 * 1000),
-        description: 'Approved requirement after stakeholder review',
-        changes: {}
-      }
-    ];
+  mapBackendActivity(activity) {
+    // Convert backend ActivityTrackerModel to frontend display format
+    return {
+      _id: activity._id,
+      eventType: activity.eventType,
+      description: activity.description,
+      userId: activity.userId,
+      userType: activity.userType,
+      deviceName: activity.deviceName || 'Unknown',
+      createdAt: activity.createdAt,
+      oldData: activity.oldData,
+      newData: activity.newData,
+      
+      // display shortcuts
+      type: this.getActivityType(activity.eventType),
+      user: activity.userType ? `${activity.userType} (${activity.userId})` : activity.userId,
+      timestamp: new Date(activity.createdAt),
+      changes: activity.oldData && activity.newData ? { before: activity.oldData, after: activity.newData } : {}
+    };
+  }
 
-    this.activities = mockActivities;
-    this.filteredActivities = this.activities;
-    this.renderActivities();
+  getActivityType(eventType) {
+    const types = {
+      'CREATE_PROJECT': 'create',
+      'UPDATE_PROJECT': 'update',
+      'DELETE_PROJECT': 'delete',
+      'CREATE_INCEPTION': 'create',
+      'UPDATE_INCEPTION': 'update',
+      'CREATE_COMMENT': 'comment',
+    };
+    return types[eventType] || (eventType.includes('CREATE') ? 'create' : eventType.includes('DELETE') ? 'delete' : 'update');
   }
 
   applyFilters() {
-    const typeFilter = document.getElementById('filterActivityType').value;
-    const entityFilter = document.getElementById('filterActivityEntity').value;
-    const dateFilter = document.getElementById('filterActivityDate').value;
-    const searchFilter = document.getElementById('searchActivity').value.toLowerCase();
+    const typeFilter = document.getElementById('filterActivityType')?.value || '';
+    const searchFilter = (document.getElementById('searchActivity')?.value || '').toLowerCase();
 
     this.filteredActivities = this.activities.filter(activity => {
-      const typeMatch = !typeFilter || activity.type === typeFilter;
-      const entityMatch = !entityFilter || activity.entity === entityFilter;
-      const dateMatch = !dateFilter || formatDate(activity.timestamp).startsWith(dateFilter);
+      const typeMatch = !typeFilter || activity.eventType === typeFilter;
       const searchMatch = !searchFilter || 
-        activity.entityName.toLowerCase().includes(searchFilter) ||
-        activity.description.toLowerCase().includes(searchFilter) ||
-        activity.user.toLowerCase().includes(searchFilter);
+        (activity.description || '').toLowerCase().includes(searchFilter) ||
+        (activity.user || '').toLowerCase().includes(searchFilter) ||
+        (activity.eventType || '').toLowerCase().includes(searchFilter);
 
-      return typeMatch && entityMatch && dateMatch && searchMatch;
+      return typeMatch && searchMatch;
     });
 
-    this.renderActivities();
+    console.log('🔍 [ACTIVITY] Filtered to', this.filteredActivities.length, 'of', this.activities.length);
   }
 
   renderActivities() {
@@ -122,42 +147,37 @@ export class ActivityPage {
     const empty = document.getElementById('emptyActivity');
 
     if (this.filteredActivities.length === 0) {
-      container.classList.add('hidden');
-      empty.classList.remove('hidden');
+      if (container) container.classList.add('hidden');
+      if (empty) empty.classList.remove('hidden');
       return;
     }
 
-    container.classList.remove('hidden');
-    empty.classList.add('hidden');
+    if (container) container.classList.remove('hidden');
+    if (empty) empty.classList.add('hidden');
 
-    // Group by date
     const grouped = this.groupActivitiesByDate(this.filteredActivities);
-    
-    container.innerHTML = Object.entries(grouped)
-      .map(([date, activities]) => this.createDateGroup(date, activities))
-      .join('');
+    if (container) {
+      container.innerHTML = Object.entries(grouped)
+        .map(([date, activities]) => this.createDateGroup(date, activities))
+        .join('');
+    }
   }
 
   groupActivitiesByDate(activities) {
     const groups = {};
-    
-    // Ensure activities is an array
-    const activitiesArray = Array.isArray(activities) ? activities : [];
-    
-    activitiesArray.forEach(activity => {
-      const date = formatDate(activity.timestamp).split(' ')[0]; // Get just the date part
+    activities.forEach(activity => {
+      const date = formatDate(activity.timestamp).split(' ')[0];
       if (!groups[date]) groups[date] = [];
       groups[date].push(activity);
     });
-
     return groups;
   }
 
   createDateGroup(date, activities) {
     return `
-      <div class="activity-date-group">
-        <h3 class="date-header">${date}</h3>
-        <div class="activities-list">
+      <div class="activity-date-group" style="margin-bottom: 20px;">
+        <h3 class="date-header" style="color: #333; font-size: 14px; font-weight: bold; margin-bottom: 10px;">📅 ${date}</h3>
+        <div class="activities-list" style="border-left: 3px solid #ddd; padding-left: 15px;">
           ${activities.map(activity => this.createActivityItem(activity)).join('')}
         </div>
       </div>
@@ -167,36 +187,53 @@ export class ActivityPage {
   createActivityItem(activity) {
     const icon = this.getActivityIcon(activity.type);
     const color = this.getActivityColor(activity.type);
-    const time = formatDate(activity.timestamp);
+    const time = formatDate(activity.timestamp).split(' ')[1] || 'N/A';
+    const eventDesc = this.getEventDescription(activity.eventType);
 
     return `
-      <div class="activity-item" data-activity-id="${activity.id}">
-        <div class="activity-icon" style="background: ${color};">${icon}</div>
-        <div class="activity-content">
-          <div class="activity-header">
-            <h4 class="activity-title">
-              <strong>${activity.entityName}</strong>
-              <span class="activity-action">${activity.description}</span>
+      <div class="activity-item" data-activity-id="${activity._id}" style="display: flex; gap: 12px; margin-bottom: 15px; padding: 10px; background: #f9f9f9; border-radius: 4px;">
+        <div class="activity-icon" style="background: ${color}; color: white; display: flex; align-items: center; justify-content: center; border-radius: 50%; width: 40px; height: 40px; flex-shrink: 0; font-size: 18px;">
+          ${icon}
+        </div>
+        <div class="activity-content" style="flex: 1;">
+          <div class="activity-header" style="display: flex; justify-content: space-between; margin-bottom: 4px;">
+            <h4 class="activity-title" style="margin: 0; color: #333;">
+              <strong>${eventDesc}</strong>
             </h4>
-            <span class="activity-time">${time.split(' ')[1] || 'recently'}</span>
+            <span class="activity-time" style="color: #999; font-size: 12px;">${time}</span>
           </div>
-          <div class="activity-meta">
-            <span class="meta-user">by ${activity.user}</span>
-            <span class="meta-type badge">${activity.entity}</span>
+          <p style="margin: 4px 0; color: #666; font-size: 13px;">${activity.description}</p>
+          <div class="activity-meta" style="display: flex; gap: 15px; font-size: 12px; color: #888; margin-top: 6px;">
+            <span>👤 ${activity.user}</span>
+            <span>🖥️ ${activity.deviceName}</span>
+            <span>📌 ${activity.eventType}</span>
           </div>
           ${Object.keys(activity.changes).length > 0 ? `
-            <div class="activity-changes">
-              ${Object.entries(activity.changes).map(([key, value]) => {
-                if (typeof value === 'object' && value.from && value.to) {
-                  return `<p><code>${key}</code>: <em>${value.from}</em> → <em>${value.to}</em></p>`;
-                }
-                return `<p><code>${key}</code>: ${JSON.stringify(value)}</p>`;
-              }).join('')}
-            </div>
+            <details style="margin-top: 8px; font-size: 12px;">
+              <summary style="cursor: pointer; color: #0069d9;">View Changes</summary>
+              <pre style="margin: 6px 0; padding: 8px; background: #fff; border: 1px solid #ddd; border-radius: 3px; overflow: auto; max-height: 150px; font-size: 11px;">${JSON.stringify(activity.changes, null, 2)}</pre>
+            </details>
           ` : ''}
         </div>
       </div>
     `;
+  }
+
+  getEventDescription(eventType) {
+    const map = {
+      'CREATE_PROJECT': '✅ Project Created',
+      'UPDATE_PROJECT': '✏️ Project Updated',
+      'DELETE_PROJECT': '🗑️ Project Deleted',
+      'ACTIVATE_PROJECT': '🔄 Project Activated',
+      'CREATE_INCEPTION': '✅ Inception Created',
+      'UPDATE_INCEPTION': '✏️ Inception Updated',
+      'DELETE_INCEPTION': '🗑️ Inception Deleted',
+      'CREATE_STAKEHOLDER': '👤 Stakeholder Added',
+      'CREATE_COMMENT': '💬 Comment Added',
+      'UPDATE_COMMENT': '✏️ Comment Updated',
+      'DELETE_COMMENT': '🗑️ Comment Deleted',
+    };
+    return map[eventType] || eventType;
   }
 
   getActivityIcon(type) {
@@ -207,35 +244,73 @@ export class ActivityPage {
       comment: '💬',
       approve: '✓',
       reject: '✗',
-      'status-change': '🔄'
+      'status-change': '🔄',
+      other: '📝'
     };
     return icons[type] || '📝';
   }
 
   getActivityColor(type) {
     const colors = {
-      create: '#28a745',    // green
-      update: '#0069d9',    // blue
-      delete: '#dc3545',    // red
-      comment: '#17a2b8',   // cyan
-      approve: '#20c997',   // teal
-      reject: '#ff6b6b',    // red
-      'status-change': '#ffc107' // yellow
+      create: '#28a745',
+      update: '#0069d9',
+      delete: '#dc3545',
+      comment: '#17a2b8',
+      approve: '#20c997',
+      reject: '#ff6b6b',
+      'status-change': '#ffc107',
+      other: '#6c757d'
     };
-    return colors[type] || '#6c757d'; // gray
+    return colors[type] || '#6c757d';
+  }
+
+  updatePagination() {
+    const btnPrev = document.getElementById('btnPrevPage');
+    const btnNext = document.getElementById('btnNextPage');
+    const pageInfo = document.getElementById('pageInfo');
+
+    if (btnPrev) {
+      btnPrev.disabled = this.currentPage <= 1;
+      btnPrev.style.opacity = this.currentPage <= 1 ? '0.5' : '1';
+    }
+    if (btnNext) {
+      btnNext.disabled = this.currentPage >= this.pagination.totalPages;
+      btnNext.style.opacity = this.currentPage >= this.pagination.totalPages ? '0.5' : '1';
+    }
+    if (pageInfo) {
+      pageInfo.textContent = `Page ${this.currentPage} of ${this.pagination.totalPages} (Total: ${this.pagination.total})`;
+    }
+  }
+
+  loadNextPage() {
+    if (this.currentPage < this.pagination.totalPages) {
+      this.currentPage++;
+      this.loadActivities();
+    }
+  }
+
+  loadPrevPage() {
+    if (this.currentPage > 1) {
+      this.currentPage--;
+      this.loadActivities();
+    }
   }
 
   exportActivity() {
-    // Create CSV content
-    const headers = ['Date', 'Time', 'Type', 'Entity', 'Name', 'User', 'Description'];
+    if (this.filteredActivities.length === 0) {
+      showToast('No activities to export', 'warning');
+      return;
+    }
+
+    const headers = ['Date', 'Time', 'Event Type', 'Description', 'User', 'Device', 'User Type'];
     const rows = this.filteredActivities.map(activity => [
       formatDate(activity.timestamp).split(' ')[0],
-      formatDate(activity.timestamp).split(' ')[1],
-      activity.type,
-      activity.entity,
-      activity.entityName,
+      formatDate(activity.timestamp).split(' ')[1] || 'N/A',
+      activity.eventType,
+      activity.description,
       activity.user,
-      activity.description
+      activity.deviceName,
+      activity.userType || 'N/A'
     ]);
 
     const csv = [
@@ -243,7 +318,6 @@ export class ActivityPage {
       ...rows.map(row => row.map(cell => `"${cell}"`).join(','))
     ].join('\n');
 
-    // Download
     const blob = new Blob([csv], { type: 'text/csv' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -254,7 +328,7 @@ export class ActivityPage {
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
 
-    showToast('Activity log exported', 'success');
+    showToast('✅ Activity log exported', 'success');
   }
 }
 
