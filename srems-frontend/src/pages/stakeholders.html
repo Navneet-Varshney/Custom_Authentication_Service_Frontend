@@ -34,68 +34,80 @@
       <button class="modal-close" data-close-modal="stakeholderModal">&times;</button>
     </div>
     <form id="stakeholderForm" class="form-stack">
-      <div class="form-row">
-        <div class="form-group">
-          <label for="stakeholderName" class="form-label">Name *</label>
-          <input type="text" id="stakeholderName" class="form-control" required maxlength="100" />
-          <span class="form-error" id="error-stakeholderName"></span>
-        </div>
-
-        <div class="form-group">
-          <label for="stakeholderEmail" class="form-label">Email *</label>
-          <input type="email" id="stakeholderEmail" class="form-control" required maxlength="100" />
-          <span class="form-error" id="error-stakeholderEmail"></span>
-        </div>
-      </div>
-
-      <div class="form-row">
-        <div class="form-group">
-          <label for="stakeholderRole" class="form-label">Role *</label>
-          <select id="stakeholderRole" class="form-control" required>
-            <option value="">Select Role</option>
-            <option value="product-owner">Product Owner</option>
-            <option value="business-analyst">Business Analyst</option>
-            <option value="developer">Developer</option>
-            <option value="qa-engineer">QA Engineer</option>
-            <option value="architect">Architect</option>
-            <option value="project-manager">Project Manager</option>
-            <option value="sponsor">Sponsor</option>
-            <option value="end-user">End User</option>
-          </select>
-          <span class="form-error" id="error-stakeholderRole"></span>
-        </div>
-
-        <div class="form-group">
-          <label for="stakeholderDepartment" class="form-label">Department</label>
-          <input type="text" id="stakeholderDepartment" class="form-control" maxlength="50" />
-        </div>
-      </div>
-
-      <div class="form-row">
-        <div class="form-group">
-          <label for="stakeholderPhone" class="form-label">Phone</label>
-          <input type="tel" id="stakeholderPhone" class="form-control" maxlength="20" />
-        </div>
-
-        <div class="form-group">
-          <label for="stakeholderAvailability" class="form-label">Availability</label>
-          <select id="stakeholderAvailability" class="form-control">
-            <option value="">Select</option>
-            <option value="full-time">Full Time</option>
-            <option value="part-time">Part Time</option>
-            <option value="as-needed">As Needed</option>
-          </select>
-        </div>
+      <div class="form-group">
+        <label for="stakeholderUserId" class="form-label">User ID *</label>
+        <input type="text" id="stakeholderUserId" class="form-control" placeholder="USR-xxxxxx" required maxlength="20" />
+        <span class="form-error" id="error-stakeholderUserId"></span>
       </div>
 
       <div class="form-group">
-        <label for="stakeholderInvolvement" class="form-label">Area of Involvement</label>
-        <textarea id="stakeholderInvolvement" class="form-control" rows="2" maxlength="300" placeholder="What will this stakeholder be involved in?"></textarea>
+        <label for="stakeholderRole" class="form-label">Role *</label>
+        <select id="stakeholderRole" class="form-control" required>
+          <option value="">Select Role</option>
+          <optgroup label="Project Roles">
+            <option value="manager">Manager</option>
+            <option value="developer">Developer</option>
+            <option value="tester">Tester</option>
+            <option value="analyst">Analyst</option>
+            <option value="owner">Owner</option>
+            <option value="other">Other</option>
+          </optgroup>
+          <optgroup label="Client Roles">
+            <option value="sponsor">Sponsor</option>
+            <option value="partner">Partner</option>
+            <option value="vendor">Vendor</option>
+            <option value="end_user">End User</option>
+          </optgroup>
+        </select>
+        <span class="form-error" id="error-stakeholderRole"></span>
+      </div>
+
+      <div class="form-group">
+        <label for="stakeholderOrgId" class="form-label">Organization ID (Optional)</label>
+        <input type="text" id="stakeholderOrgId" class="form-control" placeholder="For multi-organization projects" maxlength="24" />
+        <span class="form-error" id="error-stakeholderOrgId"></span>
       </div>
 
       <div class="form-actions">
         <button type="button" class="btn btn-secondary" data-close-modal="stakeholderModal">Cancel</button>
         <button type="submit" class="btn btn-primary">Save Stakeholder</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Delete Stakeholder Modal -->
+<div id="deleteStakeholderModal" class="modal hidden">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h2>Remove Stakeholder</h2>
+      <button class="modal-close" data-close-modal="deleteStakeholderModal">&times;</button>
+    </div>
+    <form id="deleteStakeholderForm" class="form-stack">
+      <p class="text-muted">Please select a reason for removing this stakeholder:</p>
+      
+      <div class="form-group">
+        <label for="deletionReason" class="form-label">Deletion Reason *</label>
+        <select id="deletionReason" class="form-control" required>
+          <option value="">Select Reason</option>
+          <option value="duplicate_stakeholder">Duplicate Stakeholder</option>
+          <option value="test_or_demo_stakeholder_cleanup">Test/Demo Stakeholder Cleanup</option>
+          <option value="created_by_admin_mistake">Created by Admin Mistake</option>
+          <option value="organization_removed_from_client">Organization Removed from Client</option>
+          <option value="other">Other</option>
+        </select>
+        <span class="form-error" id="error-deletionReason"></span>
+      </div>
+
+      <div class="form-group">
+        <label for="deletionDescription" class="form-label">Description (Optional)</label>
+        <textarea id="deletionDescription" class="form-control" rows="2" maxlength="300" placeholder="Additional details about this deletion..."></textarea>
+        <span class="form-error" id="error-deletionDescription"></span>
+      </div>
+
+      <div class="form-actions">
+        <button type="button" class="btn btn-secondary" data-close-modal="deleteStakeholderModal">Cancel</button>
+        <button type="submit" class="btn btn-danger">Confirm Removal</button>
       </div>
     </form>
   </div>
