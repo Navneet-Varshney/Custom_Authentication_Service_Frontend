@@ -9,24 +9,24 @@ import { API_CONFIG } from '../utils/constants.js';
 class ElicitationService {
   /**
    * Create elicitation
-   * Backend: POST /projects/:projectId/elicitations
+   * Backend: POST /elicitations/create/:projectId
    */
   async createElicitation(elicitationData) {
     const { projectId, ...data } = elicitationData;
     return apiClient.post(
-      `/projects/${projectId}/elicitations`,
+      `/elicitations/create/${projectId}`,
       data
     );
   }
 
   /**
    * Get all elicitations
-   * Backend: GET /projects/:projectId/elicitations
+   * Backend: GET /elicitations/list/:projectId
    */
   async getElicitations(projectId, page = 1, pageSize = 10) {
     try {
       const response = await apiClient.get(
-        `/projects/${projectId}/elicitations`
+        `/elicitations/list/${projectId}`
       );
       
       if (!response.success) {
@@ -41,34 +41,51 @@ class ElicitationService {
   }
 
   /**
+   * Get latest (active) elicitation for a project
+   * Backend: GET /elicitations/latest/:projectId
+   */
+  async getLatestElicitation(projectId) {
+    try {
+      if (!projectId) {
+        throw new Error('Project ID is required');
+      }
+      const response = await apiClient.get(`/elicitations/latest/${projectId}`);
+      return response.data || null;
+    } catch (error) {
+      console.error('Failed to fetch latest elicitation:', error);
+      return null;
+    }
+  }
+
+  /**
    * Get single elicitation
-   * Backend: GET /projects/:projectId/elicitations/:elicitationId
+   * Backend: GET /elicitations/get/:elicitationId
    */
   async getElicitation(projectId, elicitationId) {
     return apiClient.get(
-      `/projects/${projectId}/elicitations/${elicitationId}`
+      `/elicitations/get/${elicitationId}`
     );
   }
 
   /**
    * Update elicitation
-   * Backend: PATCH /projects/:projectId/elicitations/:elicitationId
+   * Backend: PATCH /elicitations/update/:projectId
    */
   async updateElicitation(projectId, elicitationId, updateData) {
     return apiClient.patch(
-      `/projects/${projectId}/elicitations/${elicitationId}`,
-      updateData
+      `/elicitations/update/${projectId}`,
+      { elicitationId, ...updateData }
     );
   }
 
   /**
    * Delete elicitation
-   * Backend: DELETE /projects/:projectId/elicitations/:elicitationId
+   * Backend: DELETE /elicitations/delete/:projectId
    */
   async deleteElicitation(projectId, elicitationId, deleteData = {}) {
     return apiClient.delete(
-      `/projects/${projectId}/elicitations/${elicitationId}`,
-      deleteData
+      `/elicitations/delete/${projectId}`,
+      { elicitationId, ...deleteData }
     );
   }
 
@@ -77,7 +94,7 @@ class ElicitationService {
    */
   async getElicitationsByProject(projectId) {
     return apiClient.get(
-      `/projects/${projectId}/elicitations`
+      `/elicitations/list/${projectId}`
     );
   }
 }
