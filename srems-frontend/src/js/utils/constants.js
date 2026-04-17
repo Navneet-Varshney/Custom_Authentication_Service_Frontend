@@ -227,6 +227,15 @@ export const PROJECT_ROLES = Object.freeze({
   DEVELOPER: 'developer',
   TESTER: 'tester',
   ANALYST: 'analyst',
+  OTHER: 'other',
+  OWNER: 'owner'
+});
+
+export const STAKEHOLDER_DELETION_REASON = Object.freeze({
+  DUPLICATE: 'duplicate_stakeholder',
+  TEST_STAKEHOLDER: 'test_or_demo_stakeholder_cleanup',
+  ADMIN_ERROR: 'created_by_admin_mistake',
+  ORGANIZATION_REMOVED: 'organization_removed_from_client',
   OTHER: 'other'
 });
 
