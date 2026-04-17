@@ -9,6 +9,10 @@ export class ProjectsPage {
     this.projects = [];
     this.filteredProjects = [];
     this.editingProjectId = null;
+    this.isSubmitting = false; // Prevent double form submission
+    this.lastSubmitTime = 0; // Track last submission time
+    this.submissionCount = 0; // Track total submissions for debugging
+    this.currentSubmissionId = null; // Track current submission
     this.init();
   }
 
@@ -253,6 +257,37 @@ export class ProjectsPage {
 
   async handleFormSubmit(event) {
     event.preventDefault();
+    event.stopImmediatePropagation(); // CRITICAL: Stop event bubbling to prevent duplicate submissions
+
+    // Generate unique submission ID
+    const submissionId = ++this.submissionCount;
+    console.log(`🆔 [SUBMISSION #${submissionId}] Starting...`);
+
+    // Prevent double submission - both flag and time-based check
+    const now = Date.now();
+    if (this.isSubmitting === true) {
+      console.warn(`🚫 [SUBMISSION #${submissionId}] BLOCKED - Already processing submission #${this.currentSubmissionId}!`);
+      return;
+    }
+    
+    if (now - this.lastSubmitTime < 2000) {
+      console.warn(`⚠️ [SUBMISSION #${submissionId}] BLOCKED - Too soon after last submission (${now - this.lastSubmitTime}ms ago)`);
+      return;
+    }
+    
+    // Lock the form immediately
+    this.isSubmitting = true;
+    this.currentSubmissionId = submissionId;
+    this.lastSubmitTime = now;
+    console.log(`🔒 [SUBMISSION #${submissionId}] Locked - isSubmitting = true`);
+
+    // Disable submit button during submission
+    const submitBtn = document.querySelector('#projectForm button[type="submit"]');
+    const originalBtnText = submitBtn?.textContent || 'Save Project';
+    if (submitBtn) {
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Saving...';
+    }
 
     const formData = {};
 
@@ -306,29 +341,54 @@ export class ProjectsPage {
     const form = document.getElementById('projectForm');
     const validation = validateFormData(form, FORM_FIELDS.CREATE_PROJECT);
     if (!validation.isValid) {
+      console.warn(`❌ [SUBMISSION #${submissionId}] Form validation failed`);
       Object.entries(validation.errors).forEach(([fieldId, message]) => {
         const errorEl = document.getElementById(`error-${fieldId}`);
         if (errorEl) errorEl.textContent = message;
       });
+      this.isSubmitting = false; // Reset flag if validation fails
+      this.currentSubmissionId = null;
+      
+      // Re-enable submit button on validation error
+      if (submitBtn) {
+        submitBtn.disabled = false;
+        submitBtn.textContent = originalBtnText;
+      }
       return;
     }
 
     try {
+      console.log(`📤 [SUBMISSION #${submissionId}] Submitting form...`);
       showToast(`${this.editingProjectId ? 'Updating' : 'Creating'} project...`, 'info');
 
       if (this.editingProjectId) {
+        console.log(`✏️ [SUBMISSION #${submissionId}] Updating project:`, this.editingProjectId);
         await projectsService.updateProject(this.editingProjectId, formData);
         showToast('Project updated successfully', 'success');
       } else {
+        console.log(`➕ [SUBMISSION #${submissionId}] Creating new project`);
         const newProject = await projectsService.createProject(formData);
+        console.log(`✅ [SUBMISSION #${submissionId}] Project created:`, newProject._id);
         showToast('Project created successfully', 'success');
         store.setCurrentProject(newProject._id);
       }
 
       hideModal('projectModal');
+      console.log(`🔄 [SUBMISSION #${submissionId}] Reloading projects list...`);
       await this.loadProjects();
     } catch (error) {
+      console.error(`❌ [SUBMISSION #${submissionId}] Error during submission:`, error);
       showToast(error.message || 'Failed to save project', 'error');
+    } finally {
+      this.isSubmitting = false; // Reset flag to allow future submissions
+      this.currentSubmissionId = null;
+      
+      // Re-enable submit button
+      if (submitBtn) {
+        submitBtn.disabled = false;
+        submitBtn.textContent = originalBtnText;
+      }
+      console.log(`✅ [SUBMISSION #${submissionId}] Form submission completed`);
     }
   }
 
