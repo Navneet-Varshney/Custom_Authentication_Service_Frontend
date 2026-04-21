@@ -1,13 +1,19 @@
 import { commentsService } from '../js/services/comments.service.js';
+import { COMMENT_ENTITY_TYPES } from '../js/utils/constants.js';
 
 /**
  * Comments Page Controller
  * Displays all comments and discussions
+ * 
+ * Backend requires: commentText (REQUIRED)
+ * Entity information: entityType, entityId
  */
 class CommentsPage {
   constructor() {
     this.comments = [];
     this.filteredComments = [];
+    this.entityType = 'projects';  // Default
+    this.entityId = localStorage.getItem('CURRENT_PROJECT') || 'all';
   }
 
   async init() {
@@ -30,18 +36,24 @@ class CommentsPage {
       });
     }
 
-    const statusFilter = document.getElementById('filterStatus');
-    if (statusFilter) {
-      statusFilter.addEventListener('change', () => {
-        this.filterComments();
+    const createBtn = document.getElementById('createCommentBtn') || document.getElementById('addCommentBtn');
+    if (createBtn) {
+      createBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        this.showCommentForm();
       });
     }
   }
 
   async loadComments() {
     try {
-      const response = await commentsService.listComments();
-      this.comments = response.data || [];
+      console.log(`💬 Loading comments for entityType=${this.entityType}, entityId=${this.entityId}`);
+
+      // Get hierarchical comments (with replies structured)
+      // Service returns response wrapper { success, status, data: [...] }
+      const response = await commentsService.getCommentsByEntityHierarchical(this.entityType, this.entityId);
+      this.comments = (response && response.data && Array.isArray(response.data)) ? response.data : [];
+      
       this.filterComments();
       this.renderComments();
     } catch (error) {
@@ -52,19 +64,15 @@ class CommentsPage {
   }
 
   filterComments() {
-    const search = document.getElementById('searchComments').value.toLowerCase();
-    const typeFilter = document.getElementById('filterType').value;
-    const statusFilter = document.getElementById('filterStatus').value;
+    const search = document.getElementById('searchComments')?.value?.toLowerCase() || '';
 
     this.filteredComments = this.comments.filter(comment => {
       const matchesSearch = !search || 
-        comment.text?.toLowerCase().includes(search) ||
-        comment.author?.toLowerCase().includes(search);
+        (comment.commentText?.toLowerCase().includes(search)) ||
+        (comment.author?.toLowerCase().includes(search)) ||
+        (comment.userName?.toLowerCase().includes(search));
       
-      const matchesType = !typeFilter || comment.entityType === typeFilter;
-      const matchesStatus = !statusFilter || comment.status === statusFilter;
-
-      return matchesSearch && matchesType && matchesStatus;
+      return matchesSearch;
     });
 
     this.renderComments();
@@ -72,13 +80,15 @@ class CommentsPage {
 
   renderComments() {
     const container = document.getElementById('commentsList');
+    if (!container) return;
 
     if (!Array.isArray(this.filteredComments) || this.filteredComments.length === 0) {
       container.innerHTML = `
         <div class="empty-state">
           <div class="empty-icon">💬</div>
           <h3>No Comments</h3>
-          <p>No comments yet. Start discussions on requirement documents.</p>
+          <p>No comments yet. Start discussions on this item.</p>
+          <button class="btn btn-primary" onclick="window.commentsPage.showCommentForm()">Add Comment</button>
         </div>
       `;
       return;
@@ -88,54 +98,33 @@ class CommentsPage {
       <div class="comment-card">
         <div class="comment-header">
           <div class="comment-author">
-            <strong>${comment.author || 'Anonymous'}</strong>
+            <strong>${comment.author || comment.userName || 'Anonymous'}</strong>
             <span class="comment-time">${this.formatDate(comment.createdAt)}</span>
           </div>
-          <span class="badge badge-${comment.status?.toLowerCase() || 'default'}">
-            ${comment.status || 'OPEN'}
-          </span>
-        </div>
-
-        <div class="comment-entity">
-          <span class="entity-type">${comment.entityType || 'Comment'}</span>
-          <span class="entity-id">#${comment.entityId?.substring(0, 8) || 'N/A'}</span>
+          ${comment.status ? `<span class="badge badge-${comment.status?.toLowerCase() || 'default'}">${comment.status}</span>` : ''}
         </div>
 
         <div class="comment-body">
-          <p>${this.escapeHtml(comment.text || '')}</p>
-        </div>
-
-        <div class="comment-meta">
-          <div class="meta-item">
-            <span>${comment.likes || 0} 👍</span>
-          </div>
-          ${comment.replies && comment.replies.length > 0 ? `
-            <div class="meta-item">
-              <span>${comment.replies.length} 💬 replies</span>
-            </div>
-          ` : ''}
-          ${comment.updatedAt && comment.updatedAt !== comment.createdAt ? `
-            <div class="meta-item">
-              <span style="opacity: 0.6;">Edited ${this.formatDate(comment.updatedAt)}</span>
-            </div>
-          ` : ''}
+          <p>${this.escapeHtml(comment.commentText || '')}</p>
         </div>
 
         <div class="comment-footer">
-          <button class="btn btn-sm btn-secondary" onclick="window.commentsPage.likeComment('${comment._id}')">👍 Like</button>
           <button class="btn btn-sm btn-secondary" onclick="window.commentsPage.replyToComment('${comment._id}')">💬 Reply</button>
-          <button class="btn btn-sm btn-danger" onclick="window.commentsPage.deleteComment('${comment._id}')">🗑️ Delete</button>
+          ${comment.createdBy === localStorage.getItem('USER_ID') ? `
+            <button class="btn btn-sm btn-danger" onclick="window.commentsPage.deleteComment('${comment._id}')">🗑️ Delete</button>
+          ` : ''}
         </div>
 
-        ${comment.replies && comment.replies.length > 0 ? `
+        ${comment.replies && Array.isArray(comment.replies) && comment.replies.length > 0 ? `
           <div class="comment-replies">
+            <div class="replies-header">↳ ${comment.replies.length} replies</div>
             ${comment.replies.map(reply => `
               <div class="reply-card">
                 <div class="reply-header">
-                  <strong>${reply.author || 'Anonymous'}</strong>
+                  <strong>${reply.author || reply.userName || 'Anonymous'}</strong>
                   <span class="reply-time">${this.formatDate(reply.createdAt)}</span>
                 </div>
-                <p>${this.escapeHtml(reply.text || '')}</p>
+                <p>${this.escapeHtml(reply.commentText || '')}</p>
               </div>
             `).join('')}
           </div>
@@ -156,33 +145,96 @@ class CommentsPage {
     return div.innerHTML;
   }
 
-  async likeComment(commentId) {
+  async showCommentForm() {
+    let form = document.getElementById('quickCommentForm');
+    if (!form) {
+      form = document.createElement('div');
+      form.id = 'quickCommentForm';
+      form.className = 'comment-form-card';
+      form.innerHTML = `
+        <div class="form-group">
+          <textarea id="quickCommentText" placeholder="Add your comment..." rows="4" required></textarea>
+        </div>
+        <div class="form-actions">
+          <button class="btn btn-primary" id="submitCommentBtn">Post Comment</button>
+          <button class="btn btn-secondary" id="cancelCommentBtn">Cancel</button>
+        </div>
+      `;
+      
+      const container = document.getElementById('commentsList');
+      if (container) {
+        container.parentElement.insertBefore(form, container);
+      }
+    }
+
+    form.style.display = 'block';
+
+    document.getElementById('submitCommentBtn').onclick = () => this.submitComment();
+    document.getElementById('cancelCommentBtn').onclick = () => {
+      form.style.display = 'none';
+    };
+  }
+
+  async submitComment() {
     try {
-      await commentsService.likeComment(commentId);
+      const commentTextVal = document.getElementById('quickCommentText')?.value?.trim();
+
+      if (!commentTextVal) {
+        alert('Comment text is required');
+        return;
+      }
+
+      const commentData = {
+        commentText: commentTextVal  // Backend expects commentText, not text
+      };
+
+      const response = await commentsService.createComment(
+        this.entityType,
+        this.entityId,
+        commentData
+      );
+
+      console.log('✅ Comment posted:', response);
+      alert('Comment posted successfully!');
+
+      const form = document.getElementById('quickCommentForm');
+      if (form) form.style.display = 'none';
+
       await this.loadComments();
     } catch (error) {
-      console.error('Failed to like comment:', error);
+      console.error('Failed to post comment:', error);
+      alert(`Failed to post comment: ${error.message}`);
     }
   }
 
   async replyToComment(commentId) {
-    const text = prompt('Enter your reply:');
-    if (text) {
-      try {
-        await commentsService.replyToComment(commentId, { text });
-        alert('Reply added successfully!');
-        await this.loadComments();
-      } catch (error) {
-        console.error('Failed to add reply:', error);
-        alert('Failed to add reply');
-      }
+    const replyText = prompt('Enter your reply:');
+    if (!replyText) return;
+
+    try {
+      const replyData = {
+        commentText: replyText,
+        parentCommentId: commentId
+      };
+
+      const response = await commentsService.createComment(
+        this.entityType,
+        this.entityId,
+        replyData
+      );
+
+      alert('Reply posted successfully!');
+      await this.loadComments();
+    } catch (error) {
+      console.error('Failed to add reply:', error);
+      alert('Failed to add reply');
     }
   }
 
   async deleteComment(commentId) {
     if (confirm('Are you sure you want to delete this comment?')) {
       try {
-        await commentsService.deleteComment(commentId);
+        await commentsService.deleteComment(commentId, 'Deleted by user');
         alert('Comment deleted!');
         await this.loadComments();
       } catch (error) {
