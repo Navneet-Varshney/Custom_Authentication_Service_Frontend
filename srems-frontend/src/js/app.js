@@ -141,6 +141,38 @@ class App {
       }
     });
 
+    // Handle collapsible sections in sidebar
+    document.querySelectorAll('.collapsible-section').forEach(title => {
+      title.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const section = title.closest('.nav-section');
+        const sectionId = title.getAttribute('data-section');
+        
+        if (section) {
+          section.classList.toggle('collapsed');
+          title.classList.toggle('collapsed');
+          
+          // Save collapse state to localStorage
+          const collapsedSections = JSON.parse(localStorage.getItem('sidebarCollapsed') || '{}');
+          collapsedSections[sectionId] = section.classList.contains('collapsed');
+          localStorage.setItem('sidebarCollapsed', JSON.stringify(collapsedSections));
+        }
+      });
+    });
+
+    // Restore collapse state from localStorage
+    const collapsedSections = JSON.parse(localStorage.getItem('sidebarCollapsed') || '{}');
+    Object.entries(collapsedSections).forEach(([sectionId, isCollapsed]) => {
+      if (isCollapsed) {
+        const section = document.querySelector(`.nav-section [data-section="${sectionId}"]`)?.closest('.nav-section');
+        const title = document.querySelector(`.collapsible-section[data-section="${sectionId}"]`);
+        if (section && title) {
+          section.classList.add('collapsed');
+          title.classList.add('collapsed');
+        }
+      }
+    });
+
     // Handle sidebar toggle
     const sidebarToggle = document.getElementById('sidebarToggle');
     const sidebar = document.getElementById('mainSidebar');
@@ -306,8 +338,29 @@ class App {
       console.log('    Content height:', sidebarNav.scrollHeight, 'vs Container:', sidebarNav.clientHeight);
     }
     
+    // 🧪 TEST IF SCROLLING ACTUALLY WORKS
+    console.log('\n🧪 [DEBUG] TESTING SCROLL FUNCTIONALITY...');
+    const scrollPositionBefore = sidebarNav.scrollTop;
+    console.log('  - Scroll position BEFORE:', scrollPositionBefore);
+    
+    // Test 1: Try to scroll down by 100px
+    sidebarNav.scrollTop = 100;
+    const scrollPositionAfter = sidebarNav.scrollTop;
+    console.log('  - Scroll position AFTER setting to 100:', scrollPositionAfter);
+    console.log('  - Scroll worked?', scrollPositionAfter === 100 ? '✅ YES' : '❌ NO');
+    
+    // Test 2: Try to scroll to bottom
+    const maxScroll = sidebarNav.scrollHeight - sidebarNav.clientHeight;
+    sidebarNav.scrollTop = maxScroll;
+    console.log('  - Max scrollable height:', maxScroll);
+    console.log('  - Scroll position after max scroll:', sidebarNav.scrollTop);
+    console.log('  - Reached bottom?', sidebarNav.scrollTop >= maxScroll - 10 ? '✅ YES' : '❌ NO');
+    
+    // Reset scroll to top
+    sidebarNav.scrollTop = 0;
+    
     // Check CSS rules
-    console.log('📋 [DEBUG] Checking stylesheet rules...');
+    console.log('\n📋 [DEBUG] Checking stylesheet rules...');
     for (let sheet of document.styleSheets) {
       try {
         for (let rule of sheet.cssRules || sheet.rules) {
