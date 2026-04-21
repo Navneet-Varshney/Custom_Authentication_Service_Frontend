@@ -358,6 +358,96 @@ export const DATE_FORMATS = {
 };
 
 // ═════════════════════════════════════════════════════════════════════════════
+// MEETING ENUMS (Backend aligned)
+// ═════════════════════════════════════════════════════════════════════════════
+
+export const MEETING_PLATFORMS = Object.freeze({
+  ZOOM: 'ZOOM',
+  TEAMS: 'TEAMS',
+  GOOGLE_MEET: 'GOOGLE_MEET',
+  OTHER: 'OTHER'
+});
+
+export const MEETING_STATUSES = Object.freeze({
+  DRAFT: 'DRAFT',
+  SCHEDULED: 'SCHEDULED',
+  ONGOING: 'ONGOING',
+  COMPLETED: 'COMPLETED',
+  CANCELLED: 'CANCELLED'
+});
+
+export const MEETING_GROUPS = Object.freeze({
+  GENERAL: 'GENERAL',
+  AUTH: 'AUTH',
+  PAYMENT: 'PAYMENT',
+  NOTIFICATION: 'NOTIFICATION',
+  SEARCH: 'SEARCH',
+  ANALYTICS: 'ANALYTICS',
+  USER_MANAGEMENT: 'USER_MANAGEMENT',
+  ORDER_MANAGEMENT: 'ORDER_MANAGEMENT',
+  INVENTORY: 'INVENTORY',
+  BILLING: 'BILLING',
+  THIRD_PARTY: 'THIRD_PARTY',
+  API: 'API',
+  INTEGRATION: 'INTEGRATION',
+  PERFORMANCE: 'PERFORMANCE',
+  SECURITY: 'SECURITY',
+  DATABASE: 'DATABASE',
+  INFRASTRUCTURE: 'INFRASTRUCTURE',
+  REQUIREMENTS: 'REQUIREMENTS',
+  DESIGN: 'DESIGN',
+  REVIEW: 'REVIEW',
+  PLANNING: 'PLANNING',
+  BUG_FIX: 'BUG_FIX',
+  ENHANCEMENT: 'ENHANCEMENT'
+});
+
+export const MEETING_CANCELLATION_REASONS = Object.freeze({
+  SCHEDULING_CONFLICT: 'SCHEDULING_CONFLICT',
+  TECHNICAL_ISSUES: 'TECHNICAL_ISSUES',
+  CHANGE_IN_PLANS: 'CHANGE_IN_PLANS',
+  STAKEHOLDER_UNAVAILABILITY: 'STAKEHOLDER_UNAVAILABILITY',
+  OTHER: 'OTHER'
+});
+
+// ═════════════════════════════════════════════════════════════════════════════
+// PARTICIPANTS ENUMS (Backend aligned)
+// ═════════════════════════════════════════════════════════════════════════════
+
+export const PARTICIPANT_TYPES = Object.freeze({
+  FACILITATOR: 'FACILITATOR',
+  PARTICIPANT: 'PARTICIPANT'
+});
+
+// ═════════════════════════════════════════════════════════════════════════════
+// COMMENTS ENUMS (Backend aligned)
+// ═════════════════════════════════════════════════════════════════════════════
+
+export const COMMENT_ENTITY_TYPES = Object.freeze({
+  SCOPES: 'scopes',
+  REQUIREMENTS: 'requirements',
+  INCEPTIONS: 'inceptions',
+  HIGH_LEVEL_FEATURES: 'high_level_features',
+  EXTERNAL_INTERFACES: 'external_interfaces',
+  IDEAS: 'ideas',
+  MEETINGS: 'meetings',
+  PROJECTS: 'projects'
+});
+
+// ═════════════════════════════════════════════════════════════════════════════
+// PHASE ENTITY TYPES (for API calls)
+// ═════════════════════════════════════════════════════════════════════════════
+
+export const ENTITY_TYPES = Object.freeze({
+  INCEPTION: 'inceptions',        // Backend requires PLURAL
+  ELICITATION: 'elicitations',    // Backend requires PLURAL
+  ELABORATION: 'elaborations',    // Backend requires PLURAL
+  NEGOTIATION: 'negotiations',    // Backend requires PLURAL
+  SPECIFICATION: 'specifications',// Backend requires PLURAL
+  VALIDATION: 'validations'       // Backend requires PLURAL
+});
+
+// ═════════════════════════════════════════════════════════════════════════════
 // URLS & ROUTES
 // ═════════════════════════════════════════════════════════════════════════════
 
