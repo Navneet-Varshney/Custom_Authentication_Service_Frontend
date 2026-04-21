@@ -48,9 +48,14 @@ class ScopeService {
 
   /**
    * Delete scope item
+   * Backend: DELETE /scope/delete/:scopeId
+   * OPTIONAL FIELDS: deletionReasonDescription
    */
-  async deleteScope(scopeId) {
-    return apiClient.delete(`${API_CONFIG.ENDPOINTS.SCOPE}/delete/${scopeId}`);
+  async deleteScope(scopeId, deleteData = {}) {
+    return apiClient.delete(
+      `${API_CONFIG.ENDPOINTS.SCOPE}/delete/${scopeId}`,
+      deleteData
+    );
   }
 
   /**
