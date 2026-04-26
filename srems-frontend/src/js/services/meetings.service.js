@@ -21,6 +21,7 @@ export const meetingsService = {
   /**
    * Create new meeting
    * Backend: POST /meetings/create/:entityType/:projectId
+   * Response structure: {success: true, data: {meeting: {...}}}
    * REQUIRED FIELDS: title
    * OPTIONAL FIELDS: description, facilitatorId, meetingGroup, platform
    * @param {string} entityType - Type of entity (inception, elicitation, elaboration, etc.)
@@ -37,15 +38,20 @@ export const meetingsService = {
       ...(meetingData.platform && { platform: meetingData.platform })
     };
 
-    return apiClient.post(
+    const response = await apiClient.post(
       `${API_CONFIG.ENDPOINTS.MEETINGS}/create/${entityType}/${projectId}`,
       normalizedData
     );
+    
+    // Backend returns: {data: {meeting: {...}}}
+    response.data = response.data?.meeting || response.data;
+    return response;
   },
 
   /**
    * List all meetings for an entity
    * Backend: GET /meetings/list/:entityType/:projectId
+   * Response structure: {success: true, data: {meetings: [...], pagination: {...}}}
    * @param {string} entityType - Type of entity (inception, elicitation, elaboration, etc.)
    * @param {string} projectId - Project ID
    */
@@ -63,7 +69,9 @@ export const meetingsService = {
         return [];
       }
       
-      const data = Array.isArray(response.data) ? response.data : [];
+      // Backend returns: {data: {meetings: [...], pagination: {...}}}
+      const meetings = response.data?.meetings || [];
+      const data = Array.isArray(meetings) ? meetings : [];
       console.log(`✅ Returning ${data.length} meetings`);
       return data;
     } catch (error) {
@@ -75,27 +83,37 @@ export const meetingsService = {
   /**
    * Get single meeting details
    * Backend: GET /meetings/get/:entityType/:meetingId
+   * Response structure: {success: true, data: {meeting: {...}}}
    * @param {string} entityType - Type of entity
    * @param {string} meetingId - Meeting ID
    */
   async getMeeting(entityType, meetingId) {
-    return apiClient.get(
+    const response = await apiClient.get(
       `${API_CONFIG.ENDPOINTS.MEETINGS}/get/${entityType}/${meetingId}`
     );
+    
+    // Backend returns: {data: {meeting: {...}}}
+    response.data = response.data?.meeting || response.data;
+    return response;
   },
 
   /**
    * Update meeting
    * Backend: PATCH /meetings/update/:entityType/:meetingId
+   * Response structure: {success: true, data: {meeting: {...}}}
    * @param {string} entityType - Type of entity
    * @param {string} meetingId - Meeting ID
    * @param {Object} meetingData - Updated meeting data
    */
   async updateMeeting(entityType, meetingId, meetingData) {
-    return apiClient.patch(
+    const response = await apiClient.patch(
       `${API_CONFIG.ENDPOINTS.MEETINGS}/update/${entityType}/${meetingId}`,
       meetingData
     );
+    
+    // Backend returns: {data: {meeting: {...}}}
+    response.data = response.data?.meeting || response.data;
+    return response;
   },
 
   /**

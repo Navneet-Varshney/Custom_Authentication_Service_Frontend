@@ -12,13 +12,70 @@ class CommentsPage {
   constructor() {
     this.comments = [];
     this.filteredComments = [];
-    this.entityType = 'projects';  // Default
-    this.entityId = localStorage.getItem('CURRENT_PROJECT') || 'all';
+    // Backend only supports comments on: scopes, requirements, inceptions, high-level-features
+    // Default to 'scopes' since it's a main entity type
+    this.entityType = 'scopes';
+    
+    // Extract project ID from URL query parameter: #/comments?project=<projectId>
+    this.extractProjectId();
+    
+    // Initialize page (setup listeners and load comments if entityId exists)
+    this.init();
+  }
+
+  extractProjectId() {
+    try {
+      // Extract from hash since we're using hash-based routing
+      // Hash format: #/comments?project=<projectId>
+      const hash = window.location.hash.substring(2); // Remove #/
+      const queryIndex = hash.indexOf('?');
+      
+      if (queryIndex === -1) {
+        console.warn('⚠️ No project specified in URL. Comments cannot be loaded');
+        this.entityId = null;
+        return;
+      }
+      
+      const queryString = hash.substring(queryIndex + 1);
+      const params = new URLSearchParams(queryString);
+      this.entityId = params.get('project');
+      
+      if (!this.entityId) {
+        console.warn('⚠️ Project ID not found in URL parameters');
+      }
+    } catch (error) {
+      console.error('❌ Error extracting project ID:', error);
+      this.entityId = null;
+    }
   }
 
   async init() {
     this.setupEventListeners();
-    await this.loadComments();
+    
+    // Comments can only be added on specific entities (scopes, requirements, inceptions, high-level-features)
+    // Not on projects directly
+    // For now, show a notice
+    this.renderNotice();
+  }
+
+  renderNotice() {
+    const container = document.getElementById('commentsList');
+    if (container) {
+      container.innerHTML = `
+        <div class="info-message">
+          <div class="info-icon">ℹ️</div>
+          <h3>Comments by Entity</h3>
+          <p>Comments in this system are managed on specific entities within a project:</p>
+          <ul style="text-align: left; margin: 1rem auto; max-width: 400px;">
+            <li>📌 Scopes</li>
+            <li>📋 Requirements</li>
+            <li>💡 Inceptions (Product Vision)</li>
+            <li>⭐ High-Level Features</li>
+          </ul>
+          <p>To view or add comments, navigate to a specific entity detail page.</p>
+        </div>
+      `;
+    }
   }
 
   setupEventListeners() {
@@ -40,8 +97,25 @@ class CommentsPage {
     if (createBtn) {
       createBtn.addEventListener('click', (e) => {
         e.preventDefault();
+        if (!this.entityId || this.entityId === 'all') {
+          alert('⚠️ Please select a project first');
+          return;
+        }
         this.showCommentForm();
       });
+    }
+  }
+
+  renderEmptyState() {
+    const container = document.getElementById('commentsList');
+    if (container) {
+      container.innerHTML = `
+        <div class="empty-state">
+          <div class="empty-icon">📋</div>
+          <h3>No Project Selected</h3>
+          <p>Select a project to view and add comments.</p>
+        </div>
+      `;
     }
   }
 
@@ -177,6 +251,12 @@ class CommentsPage {
 
   async submitComment() {
     try {
+      // Validate project is selected
+      if (!this.entityId || this.entityId === 'all') {
+        alert('⚠️ Please select a project first');
+        return;
+      }
+
       const commentTextVal = document.getElementById('quickCommentText')?.value?.trim();
 
       if (!commentTextVal) {

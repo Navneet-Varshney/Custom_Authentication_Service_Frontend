@@ -89,7 +89,7 @@ class App {
         console.log('[App] ⚠️  No authentication token found. Redirecting to login...');
         showToast('Session expired. Please login again.', 'warning');
         // Redirect to Authentication Dashboard
-        window.location.href = 'http://localhost:5500';
+        window.location.href = `${window.location.origin}/`;
         return;
       }
       

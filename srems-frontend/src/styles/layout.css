@@ -173,8 +173,8 @@
 
 .sidebar {
   width: var(--sidebar-width);
-  height: 100vh;
-  max-height: 100vh;
+  height: calc(100vh - var(--header-height));
+  max-height: calc(100vh - var(--header-height));
   background-color: var(--color-bg);
   border-right: 1px solid var(--color-border);
   overflow: hidden;
@@ -231,6 +231,43 @@
   text-transform: uppercase;
   letter-spacing: 0.5px;
   color: var(--color-text-lighter);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.collapsible-section {
+  cursor: pointer;
+  user-select: none;
+  transition: color var(--transition-fast);
+}
+
+.collapsible-section:hover {
+  color: var(--color-text-light);
+}
+
+.collapse-icon {
+  display: inline-block;
+  font-size: 0.6rem;
+  transition: transform 0.3s ease;
+  transform-origin: center;
+}
+
+.collapsible-section.collapsed .collapse-icon {
+  transform: rotate(-90deg);
+}
+
+.nav-section.collapsed .sidebar-menu {
+  max-height: 0;
+  overflow: hidden;
+  opacity: 0;
+  transition: max-height 0.3s ease, opacity 0.3s ease;
+}
+
+.sidebar-menu {
+  max-height: 1000px;
+  opacity: 1;
+  transition: max-height 0.3s ease, opacity 0.3s ease;
 }
 
 .sidebar-menu {
@@ -289,6 +326,8 @@
   padding: var(--spacing-lg);
   border-top: 1px solid var(--color-border);
   background-color: rgba(0, 0, 0, 0.01);
+  flex-shrink: 0;
+  margin-top: auto;
 }
 
 .sidebar-info {

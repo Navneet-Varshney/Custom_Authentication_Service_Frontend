@@ -1,21 +1,38 @@
 import { participantsService } from '../js/services/participants.service.js';
+import { ENTITY_TYPES, PARTICIPANT_TYPES } from '../js/utils/constants.js';
 
 /**
  * Participants Page Controller
+ * 
+ * IMPORTANT: This page links EXISTING users to meetings
+ * It does NOT create new participant profiles
+ * Backend expects: userId (USR-prefixed like "USR1100000")
  */
 class ParticipantsPage {
   constructor() {
     this.participants = [];
     this.filteredParticipants = [];
     this.editingParticipantId = null;
+    this.entityType = 'inceptions';  // Default (PLURAL form for backend API)
+    this.meetingId = null;
+    this.init();
   }
 
   async init() {
-    this.setupEventListeners();
-    await this.loadParticipants();
+    setTimeout(() => {
+      this.setupEventListeners();
+      this.loadParticipants();
+    }, 50);
   }
 
   setupEventListeners() {
+    // Ensure modal is hidden on init
+    const modal = document.getElementById('participantModal');
+    if (modal) {
+      modal.classList.remove('show');
+    }
+
+    // Add participant button
     const createBtn = document.getElementById('createParticipantBtn') || document.getElementById('newParticipantBtn');
     if (createBtn) {
       createBtn.addEventListener('click', (e) => {
@@ -24,14 +41,7 @@ class ParticipantsPage {
       });
     }
 
-    const emptyCreateBtn = document.getElementById('emptyCreateBtn');
-    if (emptyCreateBtn) {
-      emptyCreateBtn.addEventListener('click', (e) => {
-        e.preventDefault();
-        this.openParticipantModal();
-      });
-    }
-
+    // Form submission
     const form = document.getElementById('participantForm');
     if (form) {
       form.addEventListener('submit', (e) => {
@@ -40,6 +50,7 @@ class ParticipantsPage {
       });
     }
 
+    // Modal close buttons
     const cancelBtn = document.getElementById('cancelParticipantBtn');
     if (cancelBtn) {
       cancelBtn.addEventListener('click', () => {
@@ -54,23 +65,10 @@ class ParticipantsPage {
       });
     }
 
+    // Search and filters
     const searchBox = document.getElementById('searchParticipants');
     if (searchBox) {
       searchBox.addEventListener('input', () => {
-        this.filterParticipants();
-      });
-    }
-
-    const roleFilter = document.getElementById('filterRole');
-    if (roleFilter) {
-      roleFilter.addEventListener('change', () => {
-        this.filterParticipants();
-      });
-    }
-
-    const statusFilter = document.getElementById('filterStatus');
-    if (statusFilter) {
-      statusFilter.addEventListener('change', () => {
         this.filterParticipants();
       });
     }
@@ -78,8 +76,25 @@ class ParticipantsPage {
 
   async loadParticipants() {
     try {
-      const response = await participantsService.listParticipants();
-      this.participants = response.data || [];
+      // Get meetingId from URL or state - MUST be a specific meeting ID
+      let meetingId = localStorage.getItem('CURRENT_MEETING');
+      this.meetingId = meetingId;
+
+      // If no meeting ID, show empty state
+      if (!meetingId) {
+        console.log('ℹ️ No meeting selected - participants list is empty');
+        this.participants = [];
+        this.renderParticipants();
+        return;
+      }
+
+      console.log(`👥 Loading participants for entityType=${this.entityType}, meetingId=${meetingId}`);
+
+      // Call service with entityType and meetingId
+      // Service returns array directly (handles response wrapper internally)
+      const participants = await participantsService.listParticipants(this.entityType, meetingId);
+      this.participants = Array.isArray(participants) ? participants : [];
+      
       this.filterParticipants();
       this.renderParticipants();
     } catch (error) {
@@ -90,24 +105,16 @@ class ParticipantsPage {
   }
 
   filterParticipants() {
-    const search = document.getElementById('searchParticipants').value.toLowerCase();
-    const roleFilter = document.getElementById('filterRole').value;
-    const statusFilter = document.getElementById('filterStatus').value;
+    const search = document.getElementById('searchParticipants')?.value?.toLowerCase() || '';
 
     this.filteredParticipants = this.participants.filter(participant => {
-      const fullName = `${participant.firstName || ''} ${participant.lastName || ''}`.toLowerCase();
+      // Search by userId, roleDescription, or any user info
       const matchesSearch = !search || 
-        fullName.includes(search) ||
-        participant.email?.toLowerCase().includes(search) ||
-        participant.department?.toLowerCase().includes(search);
+        (participant.userId?.toLowerCase().includes(search)) ||
+        (participant.roleDescription?.toLowerCase().includes(search)) ||
+        (participant.userName?.toLowerCase().includes(search));
       
-      const matchesRole = !roleFilter || participant.role === roleFilter;
-      const matchesStatus = !statusFilter || 
-        (statusFilter === 'ACTIVE' ? participant.isActive : 
-         statusFilter === 'INACTIVE' ? !participant.isActive : 
-         true);
-
-      return matchesSearch && matchesRole && matchesStatus;
+      return matchesSearch;
     });
 
     this.renderParticipants();
@@ -115,11 +122,12 @@ class ParticipantsPage {
 
   renderParticipants() {
     const tbody = document.getElementById('participantsBody');
+    if (!tbody) return;
 
     if (!Array.isArray(this.filteredParticipants) || this.filteredParticipants.length === 0) {
       tbody.innerHTML = `
         <tr>
-          <td colspan="6" style="text-align: center;">
+          <td colspan="5" style="text-align: center;">
             <div class="empty-state">
               <div class="empty-icon">👥</div>
               <h3>No Participants</h3>
@@ -133,19 +141,12 @@ class ParticipantsPage {
 
     tbody.innerHTML = this.filteredParticipants.map(participant => `
       <tr>
+        <td><strong>${participant.userId}</strong></td>
+        <td>${participant.userName || 'N/A'}</td>
         <td>
-          <strong>${participant.firstName || ''} ${participant.lastName || ''}</strong>
+          <span class="badge badge-secondary">${participant.roleDescription || 'Participant'}</span>
         </td>
-        <td>${participant.email || 'N/A'}</td>
-        <td>
-          <span class="badge badge-secondary">${participant.role || 'Other'}</span>
-        </td>
-        <td>${participant.department || '—'}</td>
-        <td>
-          <span class="status-badge ${participant.isActive ? 'active' : 'inactive'}">
-            ${participant.isActive ? '✓ Active' : '✗ Inactive'}
-          </span>
-        </td>
+        <td>${new Date(participant.createdAt).toLocaleDateString()}</td>
         <td>
           <div class="action-buttons">
             <button class="btn btn-sm btn-secondary" onclick="window.participantsPage.editParticipant('${participant._id}')">Edit</button>
@@ -166,57 +167,64 @@ class ParticipantsPage {
       document.getElementById('modalTitle').textContent = 'Edit Participant';
       const participant = this.participants.find(p => p._id === participantId);
       if (participant) {
-        document.getElementById('participantFirstName').value = participant.firstName || '';
-        document.getElementById('participantLastName').value = participant.lastName || '';
-        document.getElementById('participantEmail').value = participant.email || '';
-        document.getElementById('participantRole').value = participant.role || '';
-        document.getElementById('participantDepartment').value = participant.department || '';
-        document.getElementById('participantPhone').value = participant.phone || '';
-        document.getElementById('participantExpertise').value = (participant.expertise || []).join(', ');
-        document.getElementById('participantIsActive').checked = participant.isActive !== false;
+        document.getElementById('participantUserId').value = participant.userId || '';
+        document.getElementById('participantRoleDescription').value = participant.roleDescription || '';
       }
     } else {
       // Create mode
       document.getElementById('modalTitle').textContent = 'Add Participant';
       form.reset();
-      document.getElementById('participantIsActive').checked = true;
     }
 
-    modal.style.display = 'flex';
+    modal.classList.add('show');
   }
 
   closeParticipantModal() {
     const modal = document.getElementById('participantModal');
-    modal.style.display = 'none';
+    modal.classList.remove('show');
     this.editingParticipantId = null;
     document.getElementById('participantForm').reset();
   }
 
   async saveParticipant() {
     try {
+      const userIdVal = document.getElementById('participantUserId')?.value?.trim();
+      const roleDescriptionVal = document.getElementById('participantRoleDescription')?.value?.trim();
+
+      // Backend REQUIRES userId (USR-prefixed like "USR1100000")
+      if (!userIdVal) {
+        alert('User ID is required (e.g., USR1100000)');
+        return;
+      }
+
+      if (!this.meetingId) {
+        alert('No meeting selected');
+        return;
+      }
+
       const participantData = {
-        firstName: document.getElementById('participantFirstName').value,
-        lastName: document.getElementById('participantLastName').value,
-        email: document.getElementById('participantEmail').value,
-        role: document.getElementById('participantRole').value,
-        department: document.getElementById('participantDepartment').value,
-        phone: document.getElementById('participantPhone').value,
-        expertise: document.getElementById('participantExpertise').value
-          .split(',')
-          .map(e => e.trim())
-          .filter(e => e),
-        isActive: document.getElementById('participantIsActive').checked
+        userId: userIdVal,
+        ...(roleDescriptionVal && { roleDescription: roleDescriptionVal })
       };
 
       let response;
       if (this.editingParticipantId) {
+        // UPDATE participant
         response = await participantsService.updateParticipant(
-          this.editingParticipantId, 
+          this.entityType,
+          this.editingParticipantId,
           participantData
         );
+        console.log('✅ Participant updated:', response);
         alert('Participant updated successfully!');
       } else {
-        response = await participantsService.addParticipant(participantData);
+        // ADD participant to meeting
+        response = await participantsService.addParticipant(
+          this.entityType,
+          this.meetingId,
+          participantData
+        );
+        console.log('✅ Participant added:', response);
         alert('Participant added successfully!');
       }
 
@@ -224,7 +232,7 @@ class ParticipantsPage {
       await this.loadParticipants();
     } catch (error) {
       console.error('Failed to save participant:', error);
-      alert('Failed to save participant');
+      alert(`Failed to save participant: ${error.message}`);
     }
   }
 
@@ -233,14 +241,14 @@ class ParticipantsPage {
   }
 
   async deleteParticipant(participantId) {
-    if (confirm('Are you sure you want to delete this participant?')) {
+    if (confirm('Are you sure you want to remove this participant?')) {
       try {
-        await participantsService.removeParticipant(participantId);
-        alert('Participant deleted successfully!');
+        await participantsService.removeParticipant(this.entityType, participantId);
+        alert('Participant removed successfully!');
         await this.loadParticipants();
       } catch (error) {
         console.error('Failed to delete:', error);
-        alert('Failed to delete participant');
+        alert('Failed to remove participant');
       }
     }
   }
@@ -249,6 +257,5 @@ class ParticipantsPage {
 // Initialize page
 const participantsPage = new ParticipantsPage();
 window.participantsPage = participantsPage;
-participantsPage.init();
 
 export { ParticipantsPage };

@@ -1,12 +1,3 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Meetings - SREMS</title>
-  <link rel="stylesheet" href="../../styles/components.css">
-</head>
-<body>
 <div class="page-container">
   <!-- Hero Section -->
   <div class="page-hero">
@@ -16,7 +7,7 @@
     </div>
     <div class="hero-actions">
       <button class="btn btn-primary btn-lg" id="newMeetingBtn">
-        <span class="btn-icon">➕</span> Schedule Meeting
+        <span class="btn-icon">➕</span> Create Meeting
       </button>
     </div>
   </div>
@@ -58,71 +49,109 @@
     </div>
   </div>
 
-  <!-- Meeting Form Modal -->
-  <div id="meetingModal" class="modal" style="display: none;">
+  <!-- Create Meeting Modal (Step 1) -->
+  <div id="createMeetingModal" class="modal">
     <div class="modal-backdrop"></div>
-    <div class="modal-content">
+    <div class="modal-content modal-lg">
       <div class="modal-header">
-        <h2 id="modalTitle">Schedule Meeting</h2>
-        <button class="modal-close" type="button">&times;</button>
+        <div class="modal-title-section">
+          <h2>📅 Create Meeting</h2>
+          <p class="modal-subtitle">Step 1: Add basic meeting details</p>
+        </div>
+        <button class="modal-close" type="button" id="closeCreateModal">&times;</button>
       </div>
-      <form id="meetingForm" class="modal-form">
-        <div class="form-group">
-          <label for="meetingTitle">Meeting Title *</label>
-          <input type="text" id="meetingTitle" name="title" required>
+      <form id="createMeetingForm" class="modal-form">
+        <div class="form-row">
+          <div class="form-group">
+            <label for="createTitle">Meeting Title *</label>
+            <input type="text" id="createTitle" name="title" required placeholder="e.g., Requirements Gathering Session">
+            <small class="form-hint">Brief, descriptive title for the meeting</small>
+          </div>
         </div>
 
         <div class="form-row">
           <div class="form-group">
-            <label for="meetingDate">Date *</label>
-            <input type="date" id="meetingDate" name="date" required>
+            <label for="createGroup">Meeting Group *</label>
+            <select id="createGroup" name="meetingGroup" required>
+              <option value="">Select Meeting Group</option>
+              <option value="GENERAL">General</option>
+              <option value="REQUIREMENTS">Requirements</option>
+              <option value="DESIGN">Design</option>
+              <option value="REVIEW">Review</option>
+              <option value="REQUIREMENTS_GATHERING">Requirements Gathering</option>
+              <option value="STAKEHOLDER">Stakeholder</option>
+              <option value="TEAM">Team</option>
+            </select>
           </div>
           <div class="form-group">
-            <label for="meetingTime">Time *</label>
-            <input type="time" id="meetingTime" name="time" required>
+            <label for="createPlatform">Meeting Platform *</label>
+            <select id="createPlatform" name="platform" required>
+              <option value="">Select Platform</option>
+              <option value="ZOOM">Zoom</option>
+              <option value="TEAMS">Microsoft Teams</option>
+              <option value="GOOGLE_MEET">Google Meet</option>
+              <option value="OTHER">Other</option>
+            </select>
           </div>
         </div>
 
-        <div class="form-group">
-          <label for="meetingType">Meeting Type</label>
-          <select id="meetingType" name="type">
-            <option value="KICKOFF">Kickoff</option>
-            <option value="ELICITATION">Elicitation</option>
-            <option value="REVIEW">Review</option>
-            <option value="VALIDATION">Validation</option>
-            <option value="OTHER">Other</option>
-          </select>
-        </div>
-
-        <div class="form-group">
-          <label for="meetingLocation">Location / Meeting Link</label>
-          <input type="text" id="meetingLocation" name="location" placeholder="Room or Zoom URL">
-        </div>
-
-        <div class="form-group">
-          <label for="meetingDescription">Description</label>
-          <textarea id="meetingDescription" name="description" rows="3" placeholder="Meeting purpose and agenda"></textarea>
-        </div>
-
-        <div class="form-group">
-          <label for="meetingDuration">Duration (minutes)</label>
-          <input type="number" id="meetingDuration" name="duration" min="15" max="480" value="60">
-        </div>
-
-        <div class="form-group">
-          <label for="meetingParticipants">Participants (comma separated)</label>
-          <textarea id="meetingParticipants" name="participants" rows="3" placeholder="Email addresses or names"></textarea>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="createDescription">Description</label>
+            <textarea id="createDescription" name="description" rows="4" placeholder="Meeting purpose, agenda items, expected outcomes..."></textarea>
+            <small class="form-hint">Provide context for all participants</small>
+          </div>
         </div>
 
         <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" id="cancelMeetingBtn">Cancel</button>
-          <button type="submit" class="btn btn-primary">Schedule Meeting</button>
+          <button type="button" class="btn btn-secondary" id="cancelCreateBtn">Cancel</button>
+          <button type="submit" class="btn btn-primary">Next: Schedule Meeting →</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Schedule Meeting Modal (Step 2) -->
+  <div id="scheduleMeetingModal" class="modal">
+    <div class="modal-backdrop"></div>
+    <div class="modal-content modal-lg">
+      <div class="modal-header">
+        <div class="modal-title-section">
+          <h2>⏰ Schedule Meeting</h2>
+          <p class="modal-subtitle">Step 2: Set date, time, and meeting details</p>
+        </div>
+        <button class="modal-close" type="button" id="closeScheduleModal">&times;</button>
+      </div>
+      <form id="scheduleMeetingForm" class="modal-form">
+        <div class="form-row">
+          <div class="form-group">
+            <label for="scheduleDateTime">Scheduled Date & Time *</label>
+            <input type="datetime-local" id="scheduleDateTime" name="scheduledAt" required>
+            <small class="form-hint">When should the meeting take place?</small>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="scheduleLink">Meeting Link *</label>
+            <input type="url" id="scheduleLink" name="meetingLink" placeholder="https://zoom.us/j/123456789" required>
+            <small class="form-hint">Video conference URL or meeting room link</small>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="schedulePassword">Meeting Password (Optional)</label>
+            <input type="password" id="schedulePassword" name="meetingPassword" placeholder="•••••••">
+            <small class="form-hint">If your video platform requires a password</small>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" id="backToCreateBtn">← Back</button>
+          <button type="submit" class="btn btn-primary">✓ Schedule Meeting</button>
         </div>
       </form>
     </div>
   </div>
 </div>
-
-<script type="module" src="./meetings.js"></script>
-</body>
-</html>

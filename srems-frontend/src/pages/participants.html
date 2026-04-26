@@ -1,12 +1,3 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Participants - SREMS</title>
-  <link rel="stylesheet" href="../../styles/components.css">
-</head>
-<body>
 <div class="page-container">
   <!-- Hero Section -->
   <div class="page-hero">
@@ -54,17 +45,16 @@
     <table class="data-table">
       <thead>
         <tr>
-          <th>Name</th>
-          <th>Email</th>
+          <th>User ID</th>
+          <th>User Name</th>
           <th>Role</th>
-          <th>Department</th>
-          <th>Status</th>
+          <th>Added Date</th>
           <th>Actions</th>
         </tr>
       </thead>
       <tbody id="participantsBody">
         <tr class="placeholder-row">
-          <td colspan="6" style="text-align: center;">
+          <td colspan="5" style="text-align: center;">
             <div class="loading-state">
               <div class="spinner"></div>
               <p>Loading participants...</p>
@@ -76,73 +66,49 @@
   </div>
 
   <!-- Participant Form Modal -->
-  <div id="participantModal" class="modal" style="display: none;">
+  <div id="participantModal" class="modal">
     <div class="modal-backdrop"></div>
     <div class="modal-content">
       <div class="modal-header">
-        <h2 id="modalTitle">Add Participant</h2>
-        <button class="modal-close" type="button">&times;</button>
+        <h2 id="modalTitle">Add Participant to Meeting</h2>
+        <button class="modal-close" type="button" id="closeParticipantModal">&times;</button>
       </div>
       <form id="participantForm" class="modal-form">
-        <div class="form-row">
-          <div class="form-group">
-            <label for="participantFirstName">First Name *</label>
-            <input type="text" id="participantFirstName" name="firstName" required>
-          </div>
-          <div class="form-group">
-            <label for="participantLastName">Last Name *</label>
-            <input type="text" id="participantLastName" name="lastName" required>
-          </div>
+        <!-- Backend expects userId (USR-prefixed, e.g., "USR1100000") and optional roleDescription -->
+        <div class="form-group">
+          <label for="participantUserId">User ID (USR-prefixed) *</label>
+          <input 
+            type="text" 
+            id="participantUserId" 
+            name="userId" 
+            placeholder="e.g., USR1100000"
+            pattern="USR[0-9]+"
+            title="Must start with 'USR' followed by numbers (e.g., USR1100000)"
+            required
+          >
+          <small style="display: block; margin-top: 5px; color: #666;">
+            Enter existing user ID. Format: USR + digits (e.g., USR1100000)
+          </small>
         </div>
 
         <div class="form-group">
-          <label for="participantEmail">Email *</label>
-          <input type="email" id="participantEmail" name="email" required>
-        </div>
-
-        <div class="form-row">
-          <div class="form-group">
-            <label for="participantRole">Role</label>
-            <select id="participantRole" name="role">
-              <option value="STAKEHOLDER">Stakeholder</option>
-              <option value="ANALYST">Analyst</option>
-              <option value="DEVELOPER">Developer</option>
-              <option value="MANAGER">Manager</option>
-              <option value="OTHER">Other</option>
-            </select>
-          </div>
-          <div class="form-group">
-            <label for="participantDepartment">Department</label>
-            <input type="text" id="participantDepartment" name="department" placeholder="e.g., Engineering">
-          </div>
-        </div>
-
-        <div class="form-group">
-          <label for="participantPhone">Phone</label>
-          <input type="tel" id="participantPhone" name="phone">
-        </div>
-
-        <div class="form-group">
-          <label for="participantExpertise">Expertise/Skills</label>
-          <textarea id="participantExpertise" name="expertise" rows="2" placeholder="Comma-separated skills"></textarea>
-        </div>
-
-        <div class="form-group">
-          <label>
-            <input type="checkbox" id="participantIsActive" name="isActive" checked>
-            Active Participant
-          </label>
+          <label for="participantRoleDescription">Role Description (Optional)</label>
+          <input 
+            type="text" 
+            id="participantRoleDescription" 
+            name="roleDescription" 
+            placeholder="e.g., SCRIBE, FACILITATOR, PARTICIPANT"
+          >
+          <small style="display: block; margin-top: 5px; color: #666;">
+            Describe the participant's role in this meeting (e.g., SCRIBE, FACILITATOR, PARTICIPANT)
+          </small>
         </div>
 
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" id="cancelParticipantBtn">Cancel</button>
-          <button type="submit" class="btn btn-primary">Save Participant</button>
+          <button type="submit" class="btn btn-primary">Add Participant</button>
         </div>
       </form>
     </div>
   </div>
 </div>
-
-<script type="module" src="./participants.js"></script>
-</body>
-</html>

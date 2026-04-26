@@ -1,107 +1,115 @@
 <div class="page-container">
-  <!-- Breadcrumb Navigation -->
-  <div class="breadcrumb">
-    <a href="#/projects" class="breadcrumb-link">📁 Projects</a>
-    <span class="breadcrumb-separator">/</span>
-    <span class="breadcrumb-current" id="breadcrumbTitle">Project</span>
+  <!-- Page Header -->
+  <div class="page-header">
+    <div class="page-title-section">
+      <h1 class="page-title" id="projectTitle">Loading...</h1>
+      <p class="page-subtitle" id="projectSubtitle">Project details and management</p>
+    </div>
+    <button class="btn btn-primary" id="btnEditProject" title="Edit project details">
+      ✎ Edit Project
+    </button>
   </div>
 
-  <!-- Project Header -->
-  <div class="project-detail-header">
-    <div class="header-content">
-      <div class="header-title-section">
-        <h1 class="project-title" id="projectTitle">Loading...</h1>
-        <div class="header-meta">
-          <span class="status-badge" id="statusBadge">Active</span>
-          <span class="created-date" id="createdDate">Created: —</span>
-        </div>
+  <!-- Project Status & Meta Info Bar -->
+  <div class="project-meta-bar">
+    <div class="meta-badge-group">
+      <span class="status-badge" id="statusBadge">Active</span>
+      <span class="meta-text">Created <span class="meta-date" id="createdDate">—</span></span>
+    </div>
+    <div class="meta-stats">
+      <div class="meta-stat">
+        <span class="meta-stat-label">Type</span>
+        <span class="meta-stat-value" id="infoType">—</span>
       </div>
-      <div class="header-actions-quick">
-        <button class="btn btn-sm btn-outline-primary" id="btnEditProject">
-          <span>✎</span> Edit
-        </button>
+      <div class="meta-stat">
+        <span class="meta-stat-label">Complexity</span>
+        <span class="meta-stat-value" id="infoComplexity">—</span>
+      </div>
+      <div class="meta-stat">
+        <span class="meta-stat-label">Criticality</span>
+        <span class="meta-stat-value" id="infoCriticality">—</span>
+      </div>
+      <div class="meta-stat">
+        <span class="meta-stat-label">Priority</span>
+        <span class="meta-stat-value" id="infoPriority">—</span>
       </div>
     </div>
   </div>
 
-  <!-- Project Information Grid -->
-  <div class="project-info-section">
-    <div class="info-grid">
-      <!-- Left Column -->
-      <div class="info-column">
-        <div class="info-card">
-          <h3 class="info-card-title">📋 Overview</h3>
-          <div class="info-row">
-            <label class="info-label">Name</label>
-            <div class="info-value" id="infoName">—</div>
-          </div>
-          <div class="info-row">
-            <label class="info-label">Description</label>
-            <div class="info-value info-multiline" id="infoDescription">—</div>
-          </div>
-          <div class="info-row">
-            <label class="info-label">Problem Statement</label>
-            <div class="info-value info-multiline" id="infoProblem">—</div>
-          </div>
-          <div class="info-row">
-            <label class="info-label">Project Goal</label>
-            <div class="info-value info-multiline" id="infoGoal">—</div>
-          </div>
+  <!-- Project Information Cards Grid -->
+  <div class="project-info-grid">
+    <!-- Project Overview -->
+    <div class="info-card">
+      <div class="info-card-header">
+        <h3>Project Overview</h3>
+      </div>
+      <div class="info-card-content">
+        <div class="info-item">
+          <span class="info-label">Project Name</span>
+          <span class="info-value" id="infoName">—</span>
         </div>
-
-        <div class="info-card">
-          <h3 class="info-card-title">⚙️ Configuration</h3>
-          <div class="info-row">
-            <label class="info-label">Category</label>
-            <div class="info-value" id="infoCategory">—</div>
-          </div>
-          <div class="info-row">
-            <label class="info-label">Type</label>
-            <div class="info-value" id="infoType">—</div>
-          </div>
-          <div class="info-row">
-            <label class="info-label">Complexity</label>
-            <div class="info-value" id="infoComplexity">—</div>
-          </div>
-          <div class="info-row">
-            <label class="info-label">Criticality</label>
-            <div class="info-value" id="infoCriticality">—</div>
-          </div>
-          <div class="info-row">
-            <label class="info-label">Priority</label>
-            <div class="info-value" id="infoPriority">—</div>
-          </div>
+        <div class="info-item">
+          <span class="info-label">Description</span>
+          <span class="info-value info-value-multiline" id="infoDescription">—</span>
+        </div>
+        <div class="info-item">
+          <span class="info-label">Category</span>
+          <span class="info-value" id="infoCategory">—</span>
+        </div>
+        <div class="info-item">
+          <span class="info-label">Creation Reason</span>
+          <span class="info-value" id="infoCreationReason">—</span>
         </div>
       </div>
+    </div>
 
-      <!-- Right Column -->
-      <div class="info-column">
-        <div class="info-card">
-          <h3 class="info-card-title">💰 Resources</h3>
-          <div class="info-row">
-            <label class="info-label">Expected Budget</label>
-            <div class="info-value" id="infoBudget">—</div>
-          </div>
-          <div class="info-row">
-            <label class="info-label">Timeline</label>
-            <div class="info-value" id="infoTimeline">—</div>
-          </div>
-          <div class="info-row">
-            <label class="info-label">Creation Reason</label>
-            <div class="info-value" id="infoCreationReason">—</div>
-          </div>
+    <!-- Project Objectives -->
+    <div class="info-card">
+      <div class="info-card-header">
+        <h3>Objectives & Goals</h3>
+      </div>
+      <div class="info-card-content">
+        <div class="info-item">
+          <span class="info-label">Problem Statement</span>
+          <span class="info-value info-value-multiline" id="infoProblem">—</span>
         </div>
+        <div class="info-item">
+          <span class="info-label">Project Goal</span>
+          <span class="info-value info-value-multiline" id="infoGoal">—</span>
+        </div>
+      </div>
+    </div>
 
-        <div class="info-card">
-          <h3 class="info-card-title">👤 Ownership</h3>
-          <div class="info-row">
-            <label class="info-label">Owner</label>
-            <div class="info-value" id="infoOwner">—</div>
-          </div>
-          <div class="info-row">
-            <label class="info-label">Project Status</label>
-            <div class="info-value" id="infoProjectStatus">—</div>
-          </div>
+    <!-- Resources & Timeline -->
+    <div class="info-card">
+      <div class="info-card-header">
+        <h3>Resources</h3>
+      </div>
+      <div class="info-card-content">
+        <div class="info-item">
+          <span class="info-label">Expected Budget</span>
+          <span class="info-value" id="infoBudget">—</span>
+        </div>
+        <div class="info-item">
+          <span class="info-label">Timeline (Days)</span>
+          <span class="info-value" id="infoTimeline">—</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Ownership -->
+    <div class="info-card">
+      <div class="info-card-header">
+        <h3>Ownership</h3>
+      </div>
+      <div class="info-card-content">
+        <div class="info-item">
+          <span class="info-label">Project Owner</span>
+          <span class="info-value" id="infoOwner">—</span>
+        </div>
+        <div class="info-item">
+          <span class="info-label">Status</span>
+          <span class="info-value" id="infoProjectStatus">—</span>
         </div>
       </div>
     </div>
@@ -109,9 +117,9 @@
 
   <!-- Action Buttons Section -->
   <div class="project-actions-section">
-    <div class="actions-header">
-      <h3 class="actions-title">🎛️ Project Actions</h3>
-      <p class="actions-subtitle">Available operations for this project</p>
+    <div class="section-header">
+      <h2>Project Actions</h2>
+      <span class="section-subtitle">Manage project status and operations</span>
     </div>
     
     <div class="actions-grid" id="actionsGrid">

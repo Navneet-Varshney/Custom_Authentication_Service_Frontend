@@ -19,6 +19,7 @@ export const participantsService = {
   /**
    * Add participant to meeting
    * Backend: POST /participants/create/:entityType/:meetingId
+   * Response structure: {success: true, data: {participant: {...}}}
    * REQUIRED FIELDS: userId (USR-prefixed custom user ID)
    * OPTIONAL FIELDS: roleDescription
    */
@@ -29,18 +30,23 @@ export const participantsService = {
       ...(participantData.roleDescription && { roleDescription: participantData.roleDescription })
     };
 
-    return apiClient.post(
+    const response = await apiClient.post(
       `${API_CONFIG.ENDPOINTS.PARTICIPANTS}/create/${entityType}/${meetingId}`,
       normalizedData
     );
+    
+    // Backend returns: {data: {participant: {...}}}
+    response.data = response.data?.participant || response.data;
+    return response;
   },
 
   /**
    * List all participants for a meeting
    * Backend: GET /participants/list/:entityType/:meetingId
+   * Response structure: {success: true, data: {participants: [...], pagination: {...}}}
    * NOTE: meetingId must be a valid MongoDB ObjectId, cannot be 'all'
    */
-  async listParticipants(entityType = 'inception', meetingId = null) {
+  async listParticipants(entityType = 'inceptions', meetingId = null) {
     // If no meetingId provided, return empty array - user must select a specific meeting
     if (!meetingId) {
       console.warn('⚠️ No meetingId provided to listParticipants - returning empty array');
@@ -56,7 +62,9 @@ export const participantsService = {
         return [];
       }
       
-      return Array.isArray(response.data) ? response.data : [];
+      // Backend returns: {data: {participants: [...], pagination: {...}}}
+      const participants = response.data?.participants || [];
+      return Array.isArray(participants) ? participants : [];
     } catch (error) {
       console.error('Failed to fetch participants:', error);
       return [];
@@ -66,16 +74,22 @@ export const participantsService = {
   /**
    * Get single participant details
    * Backend: GET /participants/get/:entityType/:participantId
+   * Response structure: {success: true, data: {participant: {...}}}
    */
   async getParticipant(entityType, participantId) {
-    return apiClient.get(
+    const response = await apiClient.get(
       `${API_CONFIG.ENDPOINTS.PARTICIPANTS}/get/${entityType}/${participantId}`
     );
+    
+    // Backend returns: {data: {participant: {...}}}
+    response.data = response.data?.participant || response.data;
+    return response;
   },
 
   /**
    * Update participant
    * Backend: PATCH /participants/update/:entityType/:participantId
+   * Response structure: {success: true, data: {participant: {...}}}
    * REQUIRED FIELDS: userId
    * OPTIONAL FIELDS: roleDescription
    */
@@ -85,23 +99,32 @@ export const participantsService = {
       ...(participantData.roleDescription && { roleDescription: participantData.roleDescription })
     };
 
-    return apiClient.patch(
+    const response = await apiClient.patch(
       `${API_CONFIG.ENDPOINTS.PARTICIPANTS}/update/${entityType}/${participantId}`,
       normalizedData
     );
+    
+    // Backend returns: {data: {participant: {...}}}
+    response.data = response.data?.participant || response.data;
+    return response;
   },
 
   /**
    * Remove participant from meeting
-   * Backend: DELETE /participants/delete/:entityType/:participantId
+   * Backend: PATCH /participants/remove/:entityType/:participantId
+   * Response structure: {success: true, data: {participant: {...}}}
    * OPTIONAL FIELDS: removeReason
    */
   async removeParticipant(entityType, participantId, removeReason = null) {
-    const deleteData = removeReason ? { removeReason } : {};
+    const removeData = removeReason ? { removeReason } : {};
 
-    return apiClient.delete(
-      `${API_CONFIG.ENDPOINTS.PARTICIPANTS}/delete/${entityType}/${participantId}`,
-      deleteData
+    const response = await apiClient.patch(
+      `${API_CONFIG.ENDPOINTS.PARTICIPANTS}/remove/${entityType}/${participantId}`,
+      removeData
     );
+    
+    // Backend returns: {data: {participant: {...}}}
+    response.data = response.data?.participant || response.data;
+    return response;
   }
 };
