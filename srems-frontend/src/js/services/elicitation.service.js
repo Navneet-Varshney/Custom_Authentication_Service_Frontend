@@ -14,7 +14,7 @@ class ElicitationService {
   async createElicitation(elicitationData) {
     const { projectId, ...data } = elicitationData;
     return apiClient.post(
-      `/elicitations/create/${projectId}`,
+      `${API_CONFIG.ENDPOINTS.ELICITATION}/create/${projectId}`,
       data
     );
   }
@@ -26,14 +26,14 @@ class ElicitationService {
   async getElicitations(projectId, page = 1, pageSize = 10) {
     try {
       const response = await apiClient.get(
-        `/elicitations/list/${projectId}`
+        `${API_CONFIG.ENDPOINTS.ELICITATION}/list/${projectId}`
       );
       
       if (!response.success) {
         return [];
       }
       
-      return Array.isArray(response.data) ? response.data : [];
+      return Array.isArray(response.data?.data?.elicitations) ? response.data.data.elicitations : [];
     } catch (error) {
       console.error('Failed to fetch elicitations:', error);
       return [];
@@ -49,8 +49,8 @@ class ElicitationService {
       if (!projectId) {
         throw new Error('Project ID is required');
       }
-      const response = await apiClient.get(`/elicitations/latest/${projectId}`);
-      return response.data || null;
+      const response = await apiClient.get(`${API_CONFIG.ENDPOINTS.ELICITATION}/latest/${projectId}`);
+      return response.data?.data?.elicitation || null;
     } catch (error) {
       console.error('Failed to fetch latest elicitation:', error);
       return null;
@@ -62,9 +62,12 @@ class ElicitationService {
    * Backend: GET /elicitations/get/:elicitationId
    */
   async getElicitation(projectId, elicitationId) {
-    return apiClient.get(
-      `/elicitations/get/${elicitationId}`
+    const response = await apiClient.get(
+      `${API_CONFIG.ENDPOINTS.ELICITATION}/get/${elicitationId}`
     );
+
+    response.data = response.data?.data?.elicitation || response.data?.elicitation || response.data;
+    return response;
   }
 
   /**
@@ -72,10 +75,13 @@ class ElicitationService {
    * Backend: PATCH /elicitations/update/:projectId
    */
   async updateElicitation(projectId, elicitationId, updateData) {
-    return apiClient.patch(
-      `/elicitations/update/${projectId}`,
+    const response = await apiClient.patch(
+      `${API_CONFIG.ENDPOINTS.ELICITATION}/update/${projectId}`,
       { elicitationId, ...updateData }
     );
+
+    response.data = response.data?.data?.elicitation || response.data?.elicitation || response.data;
+    return response;
   }
 
   /**
@@ -84,7 +90,7 @@ class ElicitationService {
    */
   async deleteElicitation(projectId, elicitationId, deleteData = {}) {
     return apiClient.delete(
-      `/elicitations/delete/${projectId}`,
+      `${API_CONFIG.ENDPOINTS.ELICITATION}/delete/${projectId}`,
       { elicitationId, ...deleteData }
     );
   }
@@ -94,7 +100,7 @@ class ElicitationService {
    */
   async getElicitationsByProject(projectId) {
     return apiClient.get(
-      `/elicitations/list/${projectId}`
+      `${API_CONFIG.ENDPOINTS.ELICITATION}/list/${projectId}`
     );
   }
 }
