@@ -14,7 +14,7 @@ class ElaborationService {
   async createElaboration(elaborationData) {
     const { projectId, ...data } = elaborationData;
     return apiClient.post(
-      `/projects/${projectId}/elaborations`,
+      `${API_CONFIG.ENDPOINTS.ELABORATION}/create/${projectId}`,
       data
     );
   }
@@ -26,14 +26,14 @@ class ElaborationService {
   async getElaborations(projectId, page = 1, pageSize = 10) {
     try {
       const response = await apiClient.get(
-        `/projects/${projectId}/elaborations`
+        `${API_CONFIG.ENDPOINTS.ELABORATION}/list/${projectId}?pageNumber=${page}&pageSize=${pageSize}`
       );
       
       if (!response.success) {
         return [];
       }
       
-      return Array.isArray(response.data) ? response.data : [];
+      return Array.isArray(response.data?.data?.elaborations) ? response.data.data.elaborations : [];
     } catch (error) {
       console.error('Failed to fetch elaborations:', error);
       return [];
@@ -45,9 +45,12 @@ class ElaborationService {
    * Backend: GET /projects/:projectId/elaborations/:elaborationId
    */
   async getElaboration(projectId, elaborationId) {
-    return apiClient.get(
-      `/projects/${projectId}/elaborations/${elaborationId}`
+    const response = await apiClient.get(
+      `${API_CONFIG.ENDPOINTS.ELABORATION}/get/${elaborationId}`
     );
+
+    response.data = response.data?.data?.elaboration || response.data?.elaboration || response.data;
+    return response;
   }
 
   /**
@@ -55,10 +58,13 @@ class ElaborationService {
    * Backend: PATCH /projects/:projectId/elaborations/:elaborationId
    */
   async updateElaboration(projectId, elaborationId, updateData) {
-    return apiClient.patch(
-      `/projects/${projectId}/elaborations/${elaborationId}`,
-      updateData
+    const response = await apiClient.patch(
+      `${API_CONFIG.ENDPOINTS.ELABORATION}/update/${projectId}`,
+      { elaborationId, ...updateData }
     );
+
+    response.data = response.data?.data?.elaboration || response.data?.elaboration || response.data;
+    return response;
   }
 
   /**
@@ -67,8 +73,8 @@ class ElaborationService {
    */
   async deleteElaboration(projectId, elaborationId, deleteData = {}) {
     return apiClient.delete(
-      `/projects/${projectId}/elaborations/${elaborationId}`,
-      deleteData
+      `${API_CONFIG.ENDPOINTS.ELABORATION}/delete/${projectId}`,
+      { elaborationId, ...deleteData }
     );
   }
 
@@ -77,7 +83,7 @@ class ElaborationService {
    */
   async getElaborationsByProject(projectId) {
     return apiClient.get(
-      `/projects/${projectId}/elaborations`
+      `${API_CONFIG.ENDPOINTS.ELABORATION}/list/${projectId}`
     );
   }
 }
