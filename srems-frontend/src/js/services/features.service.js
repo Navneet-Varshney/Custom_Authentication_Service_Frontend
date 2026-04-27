@@ -10,10 +10,15 @@ class FeaturesService {
   /**
    * Create high-level feature
    */
-  async createFeature(featureData) {
+  async createFeature(projectId, featureData) {
+    const payload = {
+      ...featureData,
+      title: featureData.title || featureData.name
+    };
+
     return apiClient.post(
-      `${API_CONFIG.ENDPOINTS.HIGH_LEVEL_FEATURES}/create/${featureData.projectId}`,
-      featureData
+      `${API_CONFIG.ENDPOINTS.HIGH_LEVEL_FEATURES}/create/${projectId}`,
+      payload
     );
   }
 
@@ -30,8 +35,8 @@ class FeaturesService {
       throw new Error(response.message || 'Failed to fetch features');
     }
     
-    // Return the data array
-    return response.data || [];
+    // Backend response: { success, message, data: { hlfs, pagination } }
+    return response.data?.data?.hlfs || [];
   }
 
   /**
@@ -47,9 +52,14 @@ class FeaturesService {
    * Update feature
    */
   async updateFeature(featureId, updateData) {
+    const payload = {
+      ...updateData,
+      ...(updateData.name ? { title: updateData.name } : {})
+    };
+
     return apiClient.patch(
       `${API_CONFIG.ENDPOINTS.HIGH_LEVEL_FEATURES}/update/${featureId}`,
-      updateData
+      payload
     );
   }
 
