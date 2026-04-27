@@ -9,16 +9,16 @@ import { apiClient } from './api.js';
  * NOT creating new participant profiles
  * 
  * Backend Endpoints:
- * POST   /participants/create/:entityType/:meetingId
+ * POST   /participants/add/:entityType/:meetingId
  * GET    /participants/list/:entityType/:meetingId
- * GET    /participants/get/:entityType/:participantId
- * PATCH  /participants/update/:entityType/:participantId
- * DELETE /participants/delete/:entityType/:participantId
+ * GET    /participants/get/:entityType/:meetingId/:participantId
+ * PATCH  /participants/update/:entityType/:meetingId
+ * PATCH  /participants/remove/:entityType/:meetingId
  */
 export const participantsService = {
   /**
    * Add participant to meeting
-   * Backend: POST /participants/create/:entityType/:meetingId
+    * Backend: POST /participants/add/:entityType/:meetingId
    * Response structure: {success: true, data: {participant: {...}}}
    * REQUIRED FIELDS: userId (USR-prefixed custom user ID)
    * OPTIONAL FIELDS: roleDescription
@@ -31,12 +31,12 @@ export const participantsService = {
     };
 
     const response = await apiClient.post(
-      `${API_CONFIG.ENDPOINTS.PARTICIPANTS}/create/${entityType}/${meetingId}`,
+      `${API_CONFIG.ENDPOINTS.PARTICIPANTS}/add/${entityType}/${meetingId}`,
       normalizedData
     );
     
-    // Backend returns: {data: {participant: {...}}}
-    response.data = response.data?.participant || response.data;
+    // Backend returns: { success, message, data: participant }
+    response.data = response.data?.data || response.data;
     return response;
   },
 
@@ -62,8 +62,8 @@ export const participantsService = {
         return [];
       }
       
-      // Backend returns: {data: {participants: [...], pagination: {...}}}
-      const participants = response.data?.participants || [];
+      // Backend returns: { success, message, data: participants[], count }
+      const participants = response.data?.data || [];
       return Array.isArray(participants) ? participants : [];
     } catch (error) {
       console.error('Failed to fetch participants:', error);
@@ -73,58 +73,62 @@ export const participantsService = {
 
   /**
    * Get single participant details
-   * Backend: GET /participants/get/:entityType/:participantId
+   * Backend: GET /participants/get/:entityType/:meetingId/:participantId
    * Response structure: {success: true, data: {participant: {...}}}
    */
-  async getParticipant(entityType, participantId) {
+  async getParticipant(entityType, meetingId, participantId) {
     const response = await apiClient.get(
-      `${API_CONFIG.ENDPOINTS.PARTICIPANTS}/get/${entityType}/${participantId}`
+      `${API_CONFIG.ENDPOINTS.PARTICIPANTS}/get/${entityType}/${meetingId}/${participantId}`
     );
     
-    // Backend returns: {data: {participant: {...}}}
-    response.data = response.data?.participant || response.data;
+    // Backend returns: { success, message, data: participant }
+    response.data = response.data?.data || response.data;
     return response;
   },
 
   /**
    * Update participant
-   * Backend: PATCH /participants/update/:entityType/:participantId
+   * Backend: PATCH /participants/update/:entityType/:meetingId
    * Response structure: {success: true, data: {participant: {...}}}
    * REQUIRED FIELDS: userId
    * OPTIONAL FIELDS: roleDescription
    */
-  async updateParticipant(entityType, participantId, participantData) {
+  async updateParticipant(entityType, meetingId, participantData) {
     const normalizedData = {
       userId: participantData.userId,  // REQUIRED
       ...(participantData.roleDescription && { roleDescription: participantData.roleDescription })
     };
 
     const response = await apiClient.patch(
-      `${API_CONFIG.ENDPOINTS.PARTICIPANTS}/update/${entityType}/${participantId}`,
+      `${API_CONFIG.ENDPOINTS.PARTICIPANTS}/update/${entityType}/${meetingId}`,
       normalizedData
     );
     
-    // Backend returns: {data: {participant: {...}}}
-    response.data = response.data?.participant || response.data;
+    // Backend returns: { success, message, data: participant }
+    response.data = response.data?.data || response.data;
     return response;
   },
 
   /**
    * Remove participant from meeting
-   * Backend: PATCH /participants/remove/:entityType/:participantId
+   * Backend: PATCH /participants/remove/:entityType/:meetingId
    * Response structure: {success: true, data: {participant: {...}}}
+   * REQUIRED FIELDS: userId
    * OPTIONAL FIELDS: removeReason
    */
-  async removeParticipant(entityType, participantId, removeReason = null) {
-    const removeData = removeReason ? { removeReason } : {};
+  async removeParticipant(entityType, meetingId, userId, removeReason = null) {
+    const removeData = {
+      userId,
+      ...(removeReason ? { removeReason } : {})
+    };
 
     const response = await apiClient.patch(
-      `${API_CONFIG.ENDPOINTS.PARTICIPANTS}/remove/${entityType}/${participantId}`,
+      `${API_CONFIG.ENDPOINTS.PARTICIPANTS}/remove/${entityType}/${meetingId}`,
       removeData
     );
     
-    // Backend returns: {data: {participant: {...}}}
-    response.data = response.data?.participant || response.data;
+    // Backend returns: { success, message, data: participant }
+    response.data = response.data?.data || response.data;
     return response;
   }
 };
