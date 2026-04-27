@@ -43,8 +43,8 @@ export const meetingsService = {
       normalizedData
     );
     
-    // Backend returns: {data: {meeting: {...}}}
-    response.data = response.data?.meeting || response.data;
+    // Backend returns: { success, message, data: { meeting } }
+    response.data = response.data?.data?.meeting || response.data?.meeting || response.data;
     return response;
   },
 
@@ -69,8 +69,8 @@ export const meetingsService = {
         return [];
       }
       
-      // Backend returns: {data: {meetings: [...], pagination: {...}}}
-      const meetings = response.data?.meetings || [];
+      // Backend returns: { success, message, data: { meetings, pagination } }
+      const meetings = response.data?.data?.meetings || [];
       const data = Array.isArray(meetings) ? meetings : [];
       console.log(`✅ Returning ${data.length} meetings`);
       return data;
@@ -92,8 +92,8 @@ export const meetingsService = {
       `${API_CONFIG.ENDPOINTS.MEETINGS}/get/${entityType}/${meetingId}`
     );
     
-    // Backend returns: {data: {meeting: {...}}}
-    response.data = response.data?.meeting || response.data;
+    // Backend returns: { success, message, data: { meeting } }
+    response.data = response.data?.data?.meeting || response.data?.meeting || response.data;
     return response;
   },
 
@@ -111,8 +111,8 @@ export const meetingsService = {
       meetingData
     );
     
-    // Backend returns: {data: {meeting: {...}}}
-    response.data = response.data?.meeting || response.data;
+    // Backend returns: { success, message, data: { meeting } }
+    response.data = response.data?.data?.meeting || response.data?.meeting || response.data;
     return response;
   },
 
