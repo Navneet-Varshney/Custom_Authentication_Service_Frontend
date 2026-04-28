@@ -212,7 +212,7 @@ class ParticipantsPage {
         // UPDATE participant
         response = await participantsService.updateParticipant(
           this.entityType,
-          this.editingParticipantId,
+          this.meetingId,
           participantData
         );
         console.log('✅ Participant updated:', response);
@@ -243,7 +243,12 @@ class ParticipantsPage {
   async deleteParticipant(participantId) {
     if (confirm('Are you sure you want to remove this participant?')) {
       try {
-        await participantsService.removeParticipant(this.entityType, participantId);
+        const participant = this.participants.find((p) => p._id === participantId);
+        if (!participant?.userId) {
+          throw new Error('Participant userId not found');
+        }
+
+        await participantsService.removeParticipant(this.entityType, this.meetingId, participant.userId);
         alert('Participant removed successfully!');
         await this.loadParticipants();
       } catch (error) {
