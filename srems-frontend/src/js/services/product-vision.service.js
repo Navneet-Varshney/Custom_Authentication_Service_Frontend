@@ -36,11 +36,12 @@ class ProductVisionService {
         return [];
       }
       
-      // Backend returns single object or array
-      if (Array.isArray(response.data)) {
-        return response.data;
+      // Backend returns: { success, message, data: { inception } }
+      const vision = response.data?.data?.inception || response.data?.inception || null;
+      if (Array.isArray(vision)) {
+        return vision;
       }
-      return response.data ? [response.data] : [];
+      return vision ? [vision] : [];
     } catch (error) {
       console.error('Failed to fetch product visions:', error);
       return [];
@@ -63,8 +64,7 @@ class ProductVisionService {
   async updateProductVision(projectId, visionId, updateData) {
     return apiClient.patch(
       `${API_CONFIG.ENDPOINTS.PRODUCT_VISION}/update/${projectId}`,
-      { visionId, ...updateData }FIG.ENDPOINTS.PRODUCT_VISION}/update/${visionId}`,
-      updateData
+      { visionId, ...updateData }
     );
   }
 
