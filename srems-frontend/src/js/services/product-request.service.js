@@ -30,8 +30,8 @@ class ProductRequestService {
       throw new Error(response.message || 'Failed to fetch product requests');
     }
     
-    // Return the data array
-    return response.data || [];
+    // Backend response: { success, message, data: { productRequests, pagination } }
+    return response.data?.data?.productRequests || [];
   }
 
   /**
