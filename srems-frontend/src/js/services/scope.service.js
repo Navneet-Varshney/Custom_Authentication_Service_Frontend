@@ -10,8 +10,13 @@ class ScopeService {
   /**
    * Create scope item
    */
-  async createScope(scopeData) {
-    return apiClient.post(`${API_CONFIG.ENDPOINTS.SCOPE}/create`, scopeData);
+  async createScope(projectId, scopeData) {
+    const payload = {
+      title: scopeData.title || scopeData.description,
+      ...scopeData
+    };
+
+    return apiClient.post(`${API_CONFIG.ENDPOINTS.SCOPE}/create/${projectId}`, payload);
   }
 
   /**
@@ -25,8 +30,8 @@ class ScopeService {
       throw new Error(response.message || 'Failed to fetch scopes');
     }
     
-    // Return the data array
-    return response.data || [];
+    // Backend response: { success, message, data: { scopes, pagination } }
+    return response.data?.data?.scopes || [];
   }
 
   /**
