@@ -7,6 +7,18 @@
 import { storage } from '../utils/helpers.js';
 import { STORAGE_KEYS } from '../utils/constants.js';
 
+/**
+ * Logger for store operations
+ */
+const storeLogger = {
+  log: (action, data = null) => {
+    console.log(`[STORE] ${action}`, data);
+  },
+  warn: (action, message) => {
+    console.warn(`[STORE] ${action} - ${message}`);
+  }
+};
+
 class Store {
   constructor() {
     // Initialize state with defaults
@@ -152,6 +164,8 @@ class Store {
    * Load persisted state from localStorage
    */
   loadPersistedState() {
+    storeLogger.log('loadPersistedState', 'Loading persisted state...');
+    
     const token = storage.get(STORAGE_KEYS.AUTH_TOKEN);
     const userId = storage.get(STORAGE_KEYS.USER_ID);
     const userRole = storage.get(STORAGE_KEYS.USER_ROLE);
@@ -163,6 +177,9 @@ class Store {
         token,
         isAuthenticated: true
       };
+      storeLogger.log('loadPersistedState', 'User loaded from localStorage');
+    } else {
+      storeLogger.warn('loadPersistedState', 'No persisted user found');
     }
   }
 
@@ -177,7 +194,10 @@ class Store {
     
     for (const key of keys) {
       value = value[key];
-      if (value === undefined) return null;
+      if (value === undefined) {
+        storeLogger.warn('getState', `Path not found: ${path}`);
+        return null;
+      }
     }
     
     return value;
@@ -187,6 +207,7 @@ class Store {
    * Update state (immutable)
    */
   setState(updates) {
+    storeLogger.log('setState', updates);
     this.state = {
       ...this.state,
       ...updates
@@ -199,6 +220,8 @@ class Store {
    * Update nested state
    */
   updateNestedState(path, value) {
+    storeLogger.log('updateNestedState', { path, value });
+    
     const keys = path.split('.');
     const lastKey = keys.pop();
     
@@ -215,6 +238,8 @@ class Store {
    * Set user authentication
    */
   setUser(user) {
+    storeLogger.log('setUser', `Setting user: ${user.id}`);
+    
     this.state.user = {
       ...user,
       isAuthenticated: true
@@ -232,6 +257,8 @@ class Store {
    * Logout user
    */
   logout() {
+    storeLogger.log('logout', 'User logout initiated');
+    
     this.state.user = {
       id: null,
       role: null,
