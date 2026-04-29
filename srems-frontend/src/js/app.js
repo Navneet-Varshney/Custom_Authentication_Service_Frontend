@@ -4,8 +4,18 @@
  */
 
 import { store } from './store/store.js';
-import { showToast } from './utils/helpers.js';
+import { showToast, logger } from './utils/helpers.js';
 import { STORAGE_KEYS } from './utils/constants.js';
+
+// ═══════════════════════════════════════════════════════════════════════════
+// SESSION & LOGGING CONFIGURATION
+// ═══════════════════════════════════════════════════════════════════════════
+
+const SESSION_CONFIG = {
+  TIMEOUT_MINUTES: 30,
+  TOKEN_REFRESH_INTERVAL: 5 * 60 * 1000, // 5 minutes
+  ACTIVITY_CHECK_INTERVAL: 1 * 60 * 1000  // 1 minute
+};
 
 // ═══════════════════════════════════════════════════════════════════════════
 // DEVICE MANAGEMENT FUNCTIONS
@@ -72,6 +82,35 @@ class App {
   constructor() {
     this.store = store;
     this.isInitialized = false;
+    this.sessionStartTime = Date.now();
+    this.lastActivityTime = Date.now();
+    this.sessionId = this.generateSessionId();
+    
+    logger.info('App', `Session started with ID: ${this.sessionId}`);
+  }
+
+  /**
+   * Generate unique session ID for tracking
+   */
+  generateSessionId() {
+    const timestamp = Date.now();
+    const random = Math.random().toString(36).substring(2, 9);
+    return `${timestamp}-${random}`;
+  }
+
+  /**
+   * Track user activity and update last activity time
+   */
+  trackActivity() {
+    this.lastActivityTime = Date.now();
+    logger.debug('App', 'User activity tracked');
+  }
+
+  /**
+   * Get current session duration in seconds
+   */
+  getSessionDuration() {
+    return Math.floor((Date.now() - this.sessionStartTime) / 1000);
   }
 
   /**
