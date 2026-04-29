@@ -250,6 +250,51 @@ export const REQUEST_STATUS = Object.freeze({
 });
 
 // ═════════════════════════════════════════════════════════════════════════════
+// HTTP STATUS CODES & ERROR HANDLING
+// ═════════════════════════════════════════════════════════════════════════════
+
+export const HTTP_STATUS = Object.freeze({
+  OK: 200,
+  CREATED: 201,
+  ACCEPTED: 202,
+  NO_CONTENT: 204,
+  BAD_REQUEST: 400,
+  UNAUTHORIZED: 401,
+  FORBIDDEN: 403,
+  NOT_FOUND: 404,
+  CONFLICT: 409,
+  VALIDATION_ERROR: 422,
+  INTERNAL_ERROR: 500,
+  SERVICE_UNAVAILABLE: 503
+});
+
+export const ERROR_CODES = Object.freeze({
+  VALIDATION_ERROR: 'VALIDATION_ERROR',
+  AUTH_REQUIRED: 'AUTH_REQUIRED',
+  FORBIDDEN_ACCESS: 'FORBIDDEN_ACCESS',
+  RESOURCE_NOT_FOUND: 'RESOURCE_NOT_FOUND',
+  DUPLICATE_ENTRY: 'DUPLICATE_ENTRY',
+  INVALID_STATE: 'INVALID_STATE',
+  NETWORK_ERROR: 'NETWORK_ERROR',
+  TIMEOUT: 'TIMEOUT',
+  SERVER_ERROR: 'SERVER_ERROR',
+  UNKNOWN_ERROR: 'UNKNOWN_ERROR'
+});
+
+export const STORAGE_KEYS = Object.freeze({
+  AUTH_TOKEN: 'accessToken',
+  DEVICE_UUID: 'deviceUUID',
+  DEVICE_TYPE: 'deviceType',
+  USER_ID: 'userId',
+  USER_ROLE: 'userRole',
+  CURRENT_PROJECT: 'currentProjectId',
+  THEME: 'theme',
+  SIDEBAR_STATE: 'sidebarCollapsed'
+});
+
+export const API_TIMEOUT = 30000;
+
+// ═════════════════════════════════════════════════════════════════════════════
 // ELICITATION METHODS
 // ═════════════════════════════════════════════════════════════════════════════
 
