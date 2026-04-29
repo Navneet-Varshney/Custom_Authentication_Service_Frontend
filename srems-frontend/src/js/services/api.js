@@ -77,11 +77,18 @@ class ApiClient {
   }
 
   /**
-   * Generic API request method
+   * Generic API request method with logging
    */
   async request(method, endpoint, data = null, options = {}) {
     const url = this.buildUrl(endpoint);
     const headers = this.buildHeaders();
+    
+    // Log request
+    console.log(`[API REQUEST] ${method} ${endpoint}`, {
+      url: url,
+      headers: this.sanitizeHeaders(headers),
+      body: data ? (data instanceof FormData ? 'FormData' : data) : null
+    });
     
     const config = {
       method,
@@ -107,7 +114,9 @@ class ApiClient {
       const timeoutId = setTimeout(() => controller.abort(), API_OPTIONS.TIMEOUT);
       config.signal = controller.signal;
 
+      const startTime = Date.now();
       const response = await fetch(url, config);
+      const duration = Date.now() - startTime;
       clearTimeout(timeoutId);
 
       // Handle response
@@ -119,6 +128,13 @@ class ApiClient {
       } else {
         responseData = await response.text();
       }
+      
+      // Log response
+      console.log(`[API RESPONSE] ${method} ${endpoint} (${duration}ms)`, {
+        status: response.status,
+        statusText: response.statusText,
+        data: responseData
+      });
 
       // Check if response is OK
       if (!response.ok) {
@@ -162,6 +178,17 @@ class ApiClient {
         validationErrors: error.data?.errors || error.data?.data?.errors
       };
     }
+  }
+
+  /**
+   * Sanitize headers for logging (hide sensitive info)
+   */
+  sanitizeHeaders(headers) {
+    const sanitized = { ...headers };
+    if (sanitized['x-access-token']) {
+      sanitized['x-access-token'] = sanitized['x-access-token'].substring(0, 20) + '...';
+    }
+    return sanitized;
   }
 
   // ═══════════════════════════════════════════════════════════════════════════
