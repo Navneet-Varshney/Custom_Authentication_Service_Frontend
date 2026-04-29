@@ -7,54 +7,89 @@
 import apiClient from './api.js';
 import { API_CONFIG } from '../utils/constants.js';
 
+/**
+ * Service logger
+ */
+const logger = {
+  log: (action, data = null) => console.log(`[ProjectsService] ${action}`, data),
+  error: (action, error) => console.error(`[ProjectsService] ${action}`, error)
+};
+
 class ProjectsService {
   /**
    * Create a new project
    */
   async createProject(projectData) {
-    const response = await apiClient.post(`${API_CONFIG.ENDPOINTS.PROJECTS}/create`, projectData);
+    logger.log('createProject', projectData);
     
-    // Check if response was successful
-    if (!response.success) {
-      throw new Error(response.message || 'Failed to create project');
+    try {
+      const response = await apiClient.post(`${API_CONFIG.ENDPOINTS.PROJECTS}/create`, projectData);
+      
+      // Check if response was successful
+      if (!response.success) {
+        throw new Error(response.message || 'Failed to create project');
+      }
+      
+      logger.log('createProject', 'Project created successfully');
+      
+      // Return the project object from nested data structure
+      // Backend response: { success, message, data: { project: {...} } }
+      return response.data?.data?.project || {};
+    } catch (error) {
+      logger.error('createProject', error);
+      throw error;
     }
-    
-    // Return the project object from nested data structure
-    // Backend response: { success, message, data: { project: {...} } }
-    return response.data?.data?.project || {};
   }
 
   /**
    * Get all projects (with pagination)
    */
   async getProjects(page = 1, pageSize = 10) {
-    const response = await apiClient.get(
-      `${API_CONFIG.ENDPOINTS.PROJECTS}/list?page=${page}&pageSize=${pageSize}`
-    );
+    logger.log('getProjects', { page, pageSize });
     
-    // Check if response was successful
-    if (!response.success) {
-      throw new Error(response.message || 'Failed to fetch projects');
+    try {
+      const response = await apiClient.get(
+        `${API_CONFIG.ENDPOINTS.PROJECTS}/list?page=${page}&pageSize=${pageSize}`
+      );
+      
+      // Check if response was successful
+      if (!response.success) {
+        throw new Error(response.message || 'Failed to fetch projects');
+      }
+      
+      logger.log('getProjects', `Fetched ${response.data?.data?.projects?.length || 0} projects`);
+      
+      // Return the projects array from nested data structure
+      // Backend response: { success, message, data: { projects: [...], pagination: {...} } }
+      return response.data?.data?.projects || [];
+    } catch (error) {
+      logger.error('getProjects', error);
+      throw error;
     }
-    
-    // Return the projects array from nested data structure
-    // Backend response: { success, message, data: { projects: [...], pagination: {...} } }
-    return response.data?.data?.projects || [];
   }
 
   /**
    * Get single project by ID
    */
   async getProjectById(projectId) {
-    const response = await apiClient.get(`${API_CONFIG.ENDPOINTS.PROJECTS}/get/${projectId}`);
+    logger.log('getProjectById', { projectId });
     
-    // Check if response was successful
-    if (!response.success) {
-      throw new Error(response.message || 'Failed to fetch project');
+    try {
+      const response = await apiClient.get(`${API_CONFIG.ENDPOINTS.PROJECTS}/get/${projectId}`);
+      
+      // Check if response was successful
+      if (!response.success) {
+        throw new Error(response.message || 'Failed to fetch project');
+      }
+      
+      logger.log('getProjectById', 'Project fetched successfully');
+      
+      // Return the project object from nested data structure
+      return response.data?.data?.project || {};
+    } catch (error) {
+      logger.error('getProjectById', error);
+      throw error;
     }
-    
-    // Return the project object from nested data structure
-    return response.data?.data?.project || {};
   }
 
   /**
