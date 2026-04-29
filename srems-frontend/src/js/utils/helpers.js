@@ -366,6 +366,100 @@ export function hasPermission(userRole, requiredRoles) {
   return requiredRoles.includes(userRole);
 }
 
+/**
+ * Logger utility for consistent logging across app
+ */
+export const logger = {
+  debug: (context, message, data = null) => {
+    console.log(`[DEBUG] ${context} - ${message}`, data);
+  },
+  info: (context, message, data = null) => {
+    console.info(`[INFO] ${context} - ${message}`, data);
+  },
+  warn: (context, message, data = null) => {
+    console.warn(`[WARN] ${context} - ${message}`, data);
+  },
+  error: (context, message, error = null) => {
+    console.error(`[ERROR] ${context} - ${message}`, error);
+  }
+};
+
+/**
+ * Retry API call with exponential backoff
+ */
+export async function retryAsync(fn, maxAttempts = 3, delayMs = 1000) {
+  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+    try {
+      return await fn();
+    } catch (error) {
+      if (attempt === maxAttempts) throw error;
+      const delay = delayMs * Math.pow(2, attempt - 1);
+      await new Promise(resolve => setTimeout(resolve, delay));
+    }
+  }
+}
+
+/**
+ * Flatten object for API submission
+ */
+export function flattenObject(obj, prefix = '') {
+  const result = {};
+  
+  Object.keys(obj).forEach(key => {
+    const value = obj[key];
+    const newKey = prefix ? `${prefix}.${key}` : key;
+    
+    if (value !== null && typeof value === 'object' && !Array.isArray(value)) {
+      Object.assign(result, flattenObject(value, newKey));
+    } else {
+      result[newKey] = value;
+    }
+  });
+  
+  return result;
+}
+
+/**
+ * Generate unique ID
+ */
+export function generateUUID() {
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
+    const r = (Math.random() * 16) | 0;
+    const v = c === 'x' ? r : (r & 0x3) | 0x8;
+    return v.toString(16);
+  });
+}
+
+/**
+ * Format bytes to human readable format
+ */
+export function formatBytes(bytes, decimals = 2) {
+  if (bytes === 0) return '0 Bytes';
+  const k = 1024;
+  const dm = decimals < 0 ? 0 : decimals;
+  const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+  const i = Math.floor(Math.log(bytes) / Math.log(k));
+  return Math.round((bytes / Math.pow(k, i)) * Math.pow(10, dm)) / Math.pow(10, dm) + ' ' + sizes[i];
+}
+
+/**
+ * Wait for condition to be true
+ */
+export function waitFor(condition, timeoutMs = 5000) {
+  return new Promise((resolve, reject) => {
+    const startTime = Date.now();
+    const checkInterval = setInterval(() => {
+      if (condition()) {
+        clearInterval(checkInterval);
+        resolve();
+      } else if (Date.now() - startTime > timeoutMs) {
+        clearInterval(checkInterval);
+        reject(new Error('Timeout waiting for condition'));
+      }
+    }, 100);
+  });
+}
+
 export default {
   validateFormData,
   formatDate,
@@ -394,5 +488,11 @@ export default {
   parseCSV,
   downloadFile,
   storage,
-  hasPermission
+  hasPermission,
+  logger,
+  retryAsync,
+  flattenObject,
+  generateUUID,
+  formatBytes,
+  waitFor
 };
