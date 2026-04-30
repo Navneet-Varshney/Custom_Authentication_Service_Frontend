@@ -30,12 +30,25 @@ window.ENV = {
 /**
  * Load environment variables from .env file at runtime
  * Usage in HTML: <script src="env.js"></script>
+ * 
+ * NOTE: In development with live-server, .env file is served statically.
+ * The fetch path may vary depending on your server configuration.
  */
 async function loadEnvVariables() {
   try {
-    const response = await fetch('.env');
+    // Try to fetch .env file from the public root
+    // If using live-server, it serves files from the workspace root
+    let response;
+    try {
+      response = await fetch('./.env');
+    } catch (e) {
+      // Network error or path issue - use defaults
+      return;
+    }
+    
     if (!response.ok) {
-      console.log('[ENV] .env file not found, using default values');
+      // File not found or error - use defaults (this is not an error, .env is optional)
+      console.debug('[ENV] .env file not found (404 is normal), using default values');
       return;
     }
     
@@ -71,8 +84,8 @@ async function loadEnvVariables() {
     console.log('[ENV] ✅ Environment variables loaded successfully');
     console.log('[ENV] Current environment:', window.ENV.ENVIRONMENT);
   } catch (error) {
-    console.warn('[ENV] Warning: Could not load .env file', error);
-    console.log('[ENV] Using default environment values');
+    // Silently use defaults - .env is optional
+    console.debug('[ENV] Using default environment configuration');
   }
 }
 
