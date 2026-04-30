@@ -500,6 +500,7 @@ class App {
       'product-request': './src/pages/product-request.html',
       'product-vision': './src/pages/product-vision.html',
       'meetings': './src/pages/meetings.html',
+      'meeting-detail': './src/pages/meeting-detail.html',
       'participants': './src/pages/participants.html',
       'comments': './src/pages/comments.html'
     };
@@ -539,6 +540,7 @@ class App {
       'product-request': () => import('../pages/product-request.js').then(m => new m.ProductRequestPage()),
       'product-vision': () => import('../pages/product-vision.js').then(m => new m.ProductVisionPage()),
       'meetings': () => import('../pages/meetings.js').then(m => new m.MeetingsPage()),
+      'meeting-detail': () => import('../pages/meeting-detail.js').then(m => new m.MeetingDetailPage()),
       'participants': () => import('../pages/participants.js').then(m => new m.ParticipantsPage()),
       'comments': () => import('../pages/comments.js').then(m => new m.CommentsPage()),
       '/': () => import('../pages/dashboard.js').then(m => new m.DashboardPage()),
