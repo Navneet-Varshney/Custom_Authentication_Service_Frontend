@@ -281,17 +281,6 @@ export const ERROR_CODES = Object.freeze({
   UNKNOWN_ERROR: 'UNKNOWN_ERROR'
 });
 
-export const STORAGE_KEYS = Object.freeze({
-  AUTH_TOKEN: 'accessToken',
-  DEVICE_UUID: 'deviceUUID',
-  DEVICE_TYPE: 'deviceType',
-  USER_ID: 'userId',
-  USER_ROLE: 'userRole',
-  CURRENT_PROJECT: 'currentProjectId',
-  THEME: 'theme',
-  SIDEBAR_STATE: 'sidebarCollapsed'
-});
-
 export const API_TIMEOUT = 30000;
 
 // ═════════════════════════════════════════════════════════════════════════════
@@ -381,16 +370,9 @@ export const PAGINATION = {
 // LOCAL STORAGE KEYS
 // ═════════════════════════════════════════════════════════════════════════════
 
-export const STORAGE_KEYS = {
-  accessToken: 'accessToken',
-  deviceUUID: 'deviceUUID',
-  deviceName: 'deviceName',
-  USER_ID: 'user_id',
-  USER_ROLE: 'user_role',
-  CURRENT_PROJECT: 'current_project',
-  CURRENT_PHASE: 'current_phase',
-  THEME: 'theme'
-};
+// Export STORAGE_KEYS as a convenience export (alias to SESSION_CONFIG.STORAGE_KEYS)
+// This allows: import { STORAGE_KEYS } from './constants.js'
+export const STORAGE_KEYS = SESSION_CONFIG.STORAGE_KEYS;
 
 // ═════════════════════════════════════════════════════════════════════════════
 // TIME & DATE FORMATS
