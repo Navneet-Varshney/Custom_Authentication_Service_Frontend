@@ -283,6 +283,7 @@ class MeetingsPage {
         </div>
         <div class="card-footer">
           <div class="action-buttons">
+            <button class="btn btn-sm btn-info" onclick="window.meetingsPage.viewMeetingDetails('${meeting._id}')">👁️ View Details</button>
             ${meeting.status === 'DRAFT' ? `
               <button class="btn btn-sm btn-primary" onclick="window.meetingsPage.scheduleMeeting('${meeting._id}')">📅 Schedule</button>
             ` : ''}
@@ -829,6 +830,32 @@ class MeetingsPage {
     } catch (error) {
       console.error('Failed to schedule:', error);
       alert('Failed to schedule meeting');
+    }
+  }
+
+  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  // VIEW MEETING DETAILS - Navigate to meeting-detail page with participant management
+  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  viewMeetingDetails(meetingId) {
+    try {
+      if (!meetingId) {
+        console.error('❌ No meeting ID provided');
+        alert('No meeting ID found');
+        return;
+      }
+
+      // Store meeting ID and entity type in localStorage for meeting-detail page
+      localStorage.setItem('CURRENT_MEETING', meetingId);
+      localStorage.setItem('CURRENT_ENTITY_TYPE', this.entityType);
+
+      // Navigate to meeting-detail page
+      window.location.hash = `#/meeting-detail?meetingId=${meetingId}`;
+      
+      console.log(`✅ Navigating to meeting detail: ${meetingId}`);
+    } catch (error) {
+      console.error('Failed to view meeting details:', error);
+      alert(`Failed to view meeting details: ${error.message}`);
     }
   }
 }
