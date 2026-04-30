@@ -1,0 +1,619 @@
+<div class="page-container">
+  <!-- Hero Section -->
+  <div class="page-hero">
+    <div class="hero-content">
+      <div style="display: flex; align-items: center; gap: 15px;">
+        <h1 class="page-title" id="meetingTitle">📅 Meeting Details</h1>
+        <span class="badge badge-draft" id="meetingStatusBadge">DRAFT</span>
+      </div>
+      <p class="page-description" id="meetingDescription">Loading meeting details...</p>
+    </div>
+    <div class="hero-actions">
+      <button class="btn btn-secondary" id="backBtn">← Back to Meetings</button>
+    </div>
+  </div>
+
+  <!-- Meeting Details Section -->
+  <div class="content-section">
+    <div class="section-header">
+      <h2>📋 Meeting Information</h2>
+    </div>
+    <div class="meeting-info-grid" id="meetingInfoGrid">
+      <div class="info-card">
+        <label>Platform</label>
+        <span id="meetingPlatform">-</span>
+      </div>
+      <div class="info-card">
+        <label>Scheduled Time</label>
+        <span id="meetingScheduledAt">-</span>
+      </div>
+      <div class="info-card">
+        <label>Expected Duration</label>
+        <span id="meetingDuration">-</span>
+      </div>
+      <div class="info-card">
+        <label>Meeting Group</label>
+        <span id="meetingGroup">-</span>
+      </div>
+      <div class="info-card" id="meetingLinkCard" style="display: none;">
+        <label>Meeting Link</label>
+        <a id="meetingLink" href="#" target="_blank">Open Link</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Participants Management Section -->
+  <div class="content-section">
+    <div class="section-header">
+      <h2>👥 Participants</h2>
+      <div class="section-actions">
+        <button class="btn btn-primary btn-sm" id="addParticipantBtn" style="display: none;">
+          <span class="btn-icon">➕</span> Add Participant
+        </button>
+      </div>
+    </div>
+
+    <!-- Participants Table -->
+    <div class="participants-table-wrapper">
+      <table class="data-table" id="participantsTable">
+        <thead>
+          <tr>
+            <th>User ID</th>
+            <th>Role</th>
+            <th>Role Description</th>
+            <th>Status</th>
+            <th style="width: 150px;">Actions</th>
+          </tr>
+        </thead>
+        <tbody id="participantsTableBody">
+          <tr>
+            <td colspan="5" class="text-center" style="padding: 30px; color: #999;">
+              Loading participants...
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div id="participantsEmptyState" class="empty-state" style="display: none;">
+      <div class="empty-icon">👥</div>
+      <h3>No Participants</h3>
+      <p>This meeting has no participants yet. Add one to get started!</p>
+    </div>
+  </div>
+
+  <!-- ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ -->
+  <!-- ADD PARTICIPANT MODAL -->
+  <!-- ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ -->
+  <div class="modal" id="addParticipantModal">
+    <div class="modal-backdrop"></div>
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>➕ Add Participant</h2>
+        <button class="modal-close" id="closeAddParticipantModal">&times;</button>
+      </div>
+      
+      <form id="addParticipantForm" class="modal-form">
+        <div class="form-group">
+          <label for="addParticipantUserId" class="form-label">User ID <span class="required">*</span></label>
+          <input 
+            type="text" 
+            id="addParticipantUserId" 
+            class="form-input" 
+            placeholder="e.g., USR1100000"
+            required
+          >
+          <small class="form-hint" id="userIdHint">Format: USR followed by numbers (e.g., USR1100000)</small>
+          <span class="error-message" id="userIdError" style="display: none;"></span>
+        </div>
+
+        <div class="form-group">
+          <label for="addParticipantRole" class="form-label">Role Description <span class="optional">(Optional)</span></label>
+          <input 
+            type="text" 
+            id="addParticipantRole" 
+            class="form-input" 
+            placeholder="e.g., SCRIBE, OBSERVER, FACILITATOR"
+            maxlength="255"
+          >
+          <small class="form-hint">Custom role or title for this participant (max 255 characters)</small>
+        </div>
+
+        <div id="addParticipantError" class="form-error" style="display: none;"></div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" id="cancelAddParticipantBtn">Cancel</button>
+          <button type="submit" class="btn btn-primary" id="submitAddParticipantBtn">Add Participant</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ -->
+  <!-- EDIT PARTICIPANT MODAL -->
+  <!-- ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ -->
+  <div class="modal" id="editParticipantModal">
+    <div class="modal-backdrop"></div>
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>✏️ Edit Participant</h2>
+        <button class="modal-close" id="closeEditParticipantModal">&times;</button>
+      </div>
+      
+      <form id="editParticipantForm" class="modal-form">
+        <div class="form-group">
+          <label for="editParticipantUserId" class="form-label">User ID</label>
+          <input 
+            type="text" 
+            id="editParticipantUserId" 
+            class="form-input" 
+            disabled
+            style="background-color: #f5f5f5; cursor: not-allowed;"
+          >
+          <small class="form-hint">User ID cannot be changed</small>
+        </div>
+
+        <div class="form-group">
+          <label for="editParticipantRole" class="form-label">Role Description <span class="optional">(Optional)</span></label>
+          <input 
+            type="text" 
+            id="editParticipantRole" 
+            class="form-input" 
+            placeholder="e.g., SCRIBE, OBSERVER, FACILITATOR"
+            maxlength="255"
+          >
+          <small class="form-hint">Custom role or title for this participant (max 255 characters)</small>
+        </div>
+
+        <div id="editParticipantError" class="form-error" style="display: none;"></div>
+        <div id="editParticipantSuccess" class="form-success" style="display: none; color: #4caf50;">✅ No changes made</div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" id="cancelEditParticipantBtn">Cancel</button>
+          <button type="submit" class="btn btn-primary" id="submitEditParticipantBtn">Update Participant</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ -->
+  <!-- REMOVE PARTICIPANT CONFIRMATION MODAL -->
+  <!-- ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ -->
+  <div class="modal" id="removeParticipantModal">
+    <div class="modal-backdrop"></div>
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>❌ Remove Participant</h2>
+        <button class="modal-close" id="closeRemoveParticipantModal">&times;</button>
+      </div>
+      
+      <div class="modal-body">
+        <p>Are you sure you want to remove <strong id="removeParticipantName">USR1100000</strong> from this meeting?</p>
+        
+        <form id="removeParticipantForm" class="modal-form">
+          <div class="form-group">
+            <label for="removeParticipantReason" class="form-label">Reason for Removal <span class="optional">(Optional)</span></label>
+            <textarea 
+              id="removeParticipantReason" 
+              class="form-input" 
+              placeholder="e.g., User is no longer part of the team"
+              maxlength="500"
+              rows="3"
+            ></textarea>
+            <small class="form-hint">Provide a reason for removal (max 500 characters)</small>
+          </div>
+
+          <div id="removeParticipantError" class="form-error" style="display: none;"></div>
+        </form>
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" id="cancelRemoveParticipantBtn">Cancel</button>
+        <button type="button" class="btn btn-danger" id="submitRemoveParticipantBtn">Remove Participant</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ -->
+  <!-- ERROR/SUCCESS NOTIFICATIONS (Toast) -->
+  <!-- ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ -->
+  <div id="toastContainer" class="toast-container"></div>
+</div>
+
+<style>
+  .page-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+  }
+
+  .page-hero {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+    padding: 20px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 8px;
+    color: white;
+  }
+
+  .page-title {
+    font-size: 28px;
+    margin: 0;
+    font-weight: 600;
+  }
+
+  .page-description {
+    margin: 10px 0 0 0;
+    opacity: 0.9;
+  }
+
+  .content-section {
+    background: white;
+    padding: 20px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  }
+
+  .section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding-bottom: 15px;
+    border-bottom: 2px solid #f0f0f0;
+  }
+
+  .section-header h2 {
+    margin: 0;
+    font-size: 18px;
+    color: #333;
+  }
+
+  .section-actions {
+    display: flex;
+    gap: 10px;
+  }
+
+  .meeting-info-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 15px;
+  }
+
+  .info-card {
+    padding: 15px;
+    background: #f9f9f9;
+    border-radius: 6px;
+    border-left: 3px solid #667eea;
+  }
+
+  .info-card label {
+    display: block;
+    font-size: 12px;
+    font-weight: 600;
+    color: #666;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+
+  .info-card span,
+  .info-card a {
+    font-size: 16px;
+    color: #333;
+    font-weight: 500;
+  }
+
+  .participants-table-wrapper {
+    overflow-x: auto;
+  }
+
+  .data-table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+
+  .data-table thead {
+    background: #f5f5f5;
+  }
+
+  .data-table th {
+    padding: 12px;
+    text-align: left;
+    font-weight: 600;
+    color: #333;
+    border-bottom: 2px solid #ddd;
+  }
+
+  .data-table td {
+    padding: 12px;
+    border-bottom: 1px solid #f0f0f0;
+  }
+
+  .data-table tbody tr:hover {
+    background: #f9f9f9;
+  }
+
+  .badge {
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+  }
+
+  .badge-draft { background: #ffebee; color: #c62828; }
+  .badge-active { background: #e8f5e9; color: #2e7d32; }
+  .badge-scheduled { background: #e3f2fd; color: #1565c0; }
+  .badge-ongoing { background: #f3e5f5; color: #6a1b9a; }
+  .badge-completed { background: #e0f2f1; color: #00695c; }
+  .badge-cancelled { background: #ffebee; color: #c62828; }
+
+  .btn {
+    padding: 8px 16px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+  }
+
+  .btn-primary {
+    background: #667eea;
+    color: white;
+  }
+
+  .btn-primary:hover {
+    background: #5568d3;
+  }
+
+  .btn-secondary {
+    background: #f0f0f0;
+    color: #333;
+  }
+
+  .btn-secondary:hover {
+    background: #e0e0e0;
+  }
+
+  .btn-danger {
+    background: #dc3545;
+    color: white;
+  }
+
+  .btn-danger:hover {
+    background: #c82333;
+  }
+
+  .btn-sm {
+    padding: 4px 8px;
+    font-size: 12px;
+  }
+
+  .modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+  }
+
+  .modal.show {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .modal-backdrop {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.5);
+  }
+
+  .modal-content {
+    position: relative;
+    background: white;
+    border-radius: 8px;
+    max-width: 500px;
+    width: 90%;
+    max-height: 90vh;
+    overflow-y: auto;
+    z-index: 1001;
+  }
+
+  .modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px;
+    border-bottom: 1px solid #f0f0f0;
+  }
+
+  .modal-header h2 {
+    margin: 0;
+    font-size: 18px;
+  }
+
+  .modal-close {
+    background: none;
+    border: none;
+    font-size: 24px;
+    cursor: pointer;
+    color: #999;
+  }
+
+  .modal-body {
+    padding: 20px;
+  }
+
+  .modal-footer {
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+    padding: 20px;
+    border-top: 1px solid #f0f0f0;
+  }
+
+  .modal-form {
+    padding: 20px;
+  }
+
+  .form-group {
+    margin-bottom: 20px;
+  }
+
+  .form-label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 600;
+    color: #333;
+  }
+
+  .form-input,
+  textarea.form-input {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 14px;
+    font-family: inherit;
+  }
+
+  .form-input:focus,
+  textarea.form-input:focus {
+    outline: none;
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+  }
+
+  .form-hint {
+    display: block;
+    margin-top: 5px;
+    font-size: 12px;
+    color: #999;
+  }
+
+  .required::after {
+    content: " (required)";
+    color: #dc3545;
+    font-size: 12px;
+  }
+
+  .optional {
+    color: #999;
+    font-size: 12px;
+  }
+
+  .form-error {
+    padding: 10px;
+    margin: 10px 0;
+    background: #ffebee;
+    color: #c62828;
+    border-radius: 4px;
+    font-size: 14px;
+  }
+
+  .form-success {
+    padding: 10px;
+    margin: 10px 0;
+    background: #e8f5e9;
+    color: #2e7d32;
+    border-radius: 4px;
+    font-size: 14px;
+  }
+
+  .error-message {
+    display: block;
+    margin-top: 5px;
+    color: #dc3545;
+    font-size: 12px;
+  }
+
+  .empty-state {
+    text-align: center;
+    padding: 60px 20px;
+  }
+
+  .empty-icon {
+    font-size: 48px;
+    margin-bottom: 15px;
+  }
+
+  .empty-state h3 {
+    font-size: 18px;
+    margin: 10px 0;
+    color: #333;
+  }
+
+  .empty-state p {
+    color: #999;
+    margin: 0;
+  }
+
+  .text-center {
+    text-align: center;
+  }
+
+  .toast-container {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 2000;
+  }
+
+  .toast {
+    background: white;
+    padding: 15px 20px;
+    margin-bottom: 10px;
+    border-radius: 4px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    animation: slideIn 0.3s ease-out;
+  }
+
+  .toast.success {
+    border-left: 4px solid #4caf50;
+  }
+
+  .toast.error {
+    border-left: 4px solid #dc3545;
+  }
+
+  .toast.info {
+    border-left: 4px solid #667eea;
+  }
+
+  @keyframes slideIn {
+    from {
+      transform: translateX(400px);
+      opacity: 0;
+    }
+    to {
+      transform: translateX(0);
+      opacity: 1;
+    }
+  }
+
+  @media (max-width: 768px) {
+    .page-hero {
+      flex-direction: column;
+      text-align: center;
+    }
+
+    .meeting-info-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .modal-content {
+      max-width: 95%;
+    }
+  }
+</style>
