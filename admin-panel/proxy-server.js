@@ -2,8 +2,25 @@ const http = require('http');
 const https = require('https');
 const url = require('url');
 
+// Configuration
 const BACKEND_URL = 'http://localhost:8081';
 const PROXY_PORT = 3000;
+const REQUEST_TIMEOUT = 30000; // 30 seconds
+const MAX_REQUEST_SIZE = 10 * 1024 * 1024; // 10 MB
+
+// Logging utility
+function logRequest(method, path, statusCode = null, duration = null) {
+  const timestamp = new Date().toISOString();
+  const status = statusCode ? `${statusCode}` : 'pending';
+  const time = duration ? `${duration}ms` : '';
+  console.log(`[${timestamp}] ${method.padEnd(6)} ${path.padEnd(50)} -> ${status} ${time}`);
+}
+
+// Error logger
+function logError(method, path, error) {
+  const timestamp = new Date().toISOString();
+  console.error(`[${timestamp}] ❌ ERROR ${method} ${path}: ${error.message}`);
+}
 
 const server = http.createServer((req, res) => {
   // Enable CORS
@@ -38,11 +55,13 @@ const server = http.createServer((req, res) => {
   delete options.headers['connection'];
   delete options.headers['content-length'];
 
-  console.log(`${req.method} ${req.url} -> ${targetUrl}`);
+  const startTime = Date.now();
+  logRequest(req.method, req.url);
 
-  // Make request to backend
+  // Make request to backend with timeout
   const proxyReq = http.request(options, (proxyRes) => {
-    console.log(`Response: ${proxyRes.statusCode}`);
+    const duration = Date.now() - startTime;
+    logRequest(req.method, req.url, proxyRes.statusCode, duration);
 
     // Forward response headers
     Object.keys(proxyRes.headers).forEach((key) => {
