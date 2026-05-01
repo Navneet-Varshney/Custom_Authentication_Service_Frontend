@@ -97,6 +97,35 @@ const Validation = {
   },
 
   /**
+   * Validate phone number (international format)
+   * @param {string} phone - Phone number to validate
+   * @returns {Object} { isValid: boolean, error: string }
+   */
+  validatePhone(phone) {
+    const phoneRegex = /^[+]?[(]?[0-9]{1,4}[)]?[-\s\.]?[(]?[0-9]{1,4}[)]?[-\s\.]?[0-9]{1,9}$/;
+    if (!phone || !phone.trim()) {
+      return { isValid: false, error: 'Phone number is required' };
+    }
+    if (!phoneRegex.test(phone.replace(/\s/g, ''))) {
+      return { isValid: false, error: 'Invalid phone number format' };
+    }
+    return { isValid: true, error: null };
+  },
+
+  /**
+   * Validate numeric ID (positive integer)
+   * @param {number|string} id - ID to validate
+   * @returns {Object} { isValid: boolean, error: string }
+   */
+  validateID(id) {
+    const idNum = parseInt(id, 10);
+    if (isNaN(idNum) || idNum <= 0) {
+      return { isValid: false, error: 'Invalid ID format' };
+    }
+    return { isValid: true, error: null };
+  },
+
+  /**
    * Validate URL
    * @param {string} url - URL to validate
    * @returns {Object} { isValid: boolean, error: string }
@@ -306,6 +335,145 @@ const Validation = {
       isValid: Object.keys(errors).length === 0,
       errors
     };
+  },
+
+  /**
+   * Validate numeric value
+   * @param {string|number} value - Value to validate
+   * @param {number} min - Minimum value (optional)
+   * @param {number} max - Maximum value (optional)
+   * @returns {Object} { isValid: boolean, error: string }
+   */
+  validateNumber(value, min = null, max = null) {
+    const num = Number(value);
+    
+    if (isNaN(num)) {
+      return { isValid: false, error: 'Must be a valid number' };
+    }
+    
+    if (min !== null && num < min) {
+      return { isValid: false, error: `Must be at least ${min}` };
+    }
+    
+    if (max !== null && num > max) {
+      return { isValid: false, error: `Must not exceed ${max}` };
+    }
+    
+    return { isValid: true, error: null };
+  },
+
+  /**
+   * Validate date format (YYYY-MM-DD)
+   * @param {string} dateStr - Date string to validate
+   * @returns {Object} { isValid: boolean, error: string }
+   */
+  validateDate(dateStr) {
+    if (!dateStr) {
+      return { isValid: false, error: 'Date is required' };
+    }
+    
+    const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
+    if (!dateRegex.test(dateStr)) {
+      return { isValid: false, error: 'Date must be in YYYY-MM-DD format' };
+    }
+    
+    const date = new Date(dateStr);
+    if (isNaN(date.getTime())) {
+      return { isValid: false, error: 'Invalid date' };
+    }
+    
+    return { isValid: true, error: null };
+  },
+
+  /**
+   * Validate textarea input with length limits
+   * @param {string} text - Text to validate
+   * @param {number} minLength - Minimum characters
+   * @param {number} maxLength - Maximum characters
+   * @returns {Object} { isValid: boolean, error: string }
+   */
+  validateTextarea(text, minLength = 10, maxLength = 1000) {
+    if (!text || !text.trim()) {
+      return { isValid: false, error: 'Content is required' };
+    }
+    
+    if (text.length < minLength) {
+      return { isValid: false, error: `Content must be at least ${minLength} characters` };
+    }
+    
+    if (text.length > maxLength) {
+      return { isValid: false, error: `Content must not exceed ${maxLength} characters` };
+    }
+    
+    return { isValid: true, error: null };
+  },
+
+  /**
+   * Check if value is empty
+   * @param {*} value - Value to check
+   * @returns {boolean}
+   */
+  isEmpty(value) {
+    if (value === null || value === undefined) return true;
+    if (typeof value === 'string') return value.trim().length === 0;
+    if (Array.isArray(value)) return value.length === 0;
+    if (typeof value === 'object') return Object.keys(value).length === 0;
+    return false;
+  },
+
+  /**
+   * Sanitize HTML to prevent XSS
+   * @param {string} html - HTML string to sanitize
+   * @returns {string} Sanitized HTML
+   */
+  sanitizeHTML(html) {
+    if (!html) return '';
+    
+    const map = {
+      '&': '&amp;',
+      '<': '&lt;',
+      '>': '&gt;',
+      '"': '&quot;',
+      "'": '&#039;'
+    };
+    
+    return html.replace(/[&<>"']/g, char => map[char]);
+  },
+
+  /**
+   * Format validation errors for display
+   * @param {Object} errors - Errors object from validation
+   * @returns {string} Formatted error message
+   */
+  formatErrors(errors) {
+    return Object.entries(errors)
+      .map(([field, error]) => `• ${field}: ${error}`)
+      .join('\n');
+  },
+
+  /**
+   * Check password strength level
+   * @param {string} password - Password to check
+   * @returns {Object} { strength: 'weak'|'medium'|'strong', percentage: number }
+   */
+  checkPasswordStrength(password) {
+    let strength = 0;
+    
+    // Check length
+    if (password.length >= 8) strength += 20;
+    if (password.length >= 12) strength += 10;
+    
+    // Check character types
+    if (/[a-z]/.test(password)) strength += 15;
+    if (/[A-Z]/.test(password)) strength += 15;
+    if (/[0-9]/.test(password)) strength += 15;
+    if (/[!@#$%^&*]/.test(password)) strength += 25;
+    
+    let level = 'weak';
+    if (strength >= 60) level = 'strong';
+    else if (strength >= 40) level = 'medium';
+    
+    return { strength: level, percentage: Math.min(strength, 100) };
   }
 };
 
