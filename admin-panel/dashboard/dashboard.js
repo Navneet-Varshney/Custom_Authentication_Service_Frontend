@@ -38,6 +38,7 @@ const operationState = {
    */
   async executeOperation(operationType, section, operation) {
     const operationId = `${section}-${operationType}-${Date.now()}`;
+    const startTime = performance.now();
     
     // Check if section is already processing
     if (this.activeOperations.has(section)) {
@@ -48,6 +49,7 @@ const operationState = {
     
     try {
       this.activeOperations.set(section, operationId);
+      console.debug(`⚙️ Starting operation: ${operationType} for ${section}`);
       console.log(`🔄 Starting ${operationType} operation for ${section}`);
       
       const result = await operation();
@@ -2020,6 +2022,187 @@ async function loadOrganizationUserRequests() {
   }
 }
 
-// DEMO DATA LOADING FUNCTIONS REMOVED - Using real API calls instead
+/**
+ * DATA CACHING AND PERFORMANCE OPTIMIZATION
+ * Improves dashboard performance by caching API responses
+ */
 
-console.log('✅ Dashboard script loaded - Ready for real backend integration');
+/**
+ * Cache strategy for dashboard data
+ * Reduces API calls by caching responses for configurable duration
+ */
+const DashboardCacheManager = {
+  cache: new Map(),
+  defaultTTL: 5 * 60 * 1000, // 5 minutes
+  
+  /**
+   * Cache API response data
+   * @param {string} section - Data section (admins, users, organizations, etc.)
+   * @param {*} data - Data to cache
+   * @param {number} ttl - Time to live in milliseconds
+   */
+  setData(section, data, ttl = this.defaultTTL) {
+    const cacheKey = `section_${section}`;
+    const expires = Date.now() + ttl;
+    this.cache.set(cacheKey, { data, expires });
+    console.debug(`💾 [Cache] Stored: ${section} (expires in ${ttl / 1000}s)`);
+  },
+  
+  /**
+   * Retrieve cached data if not expired
+   * @param {string} section - Data section to retrieve
+   * @returns {*} Cached data or null if expired/not found
+   */
+  getData(section) {
+    const cacheKey = `section_${section}`;
+    const item = this.cache.get(cacheKey);
+    
+    if (!item) {
+      console.debug(`❌ [Cache] Miss: ${section}`);
+      return null;
+    }
+    
+    if (Date.now() > item.expires) {
+      console.debug(`⏱️ [Cache] Expired: ${section}`);
+      this.cache.delete(cacheKey);
+      return null;
+    }
+    
+    console.debug(`✅ [Cache] Hit: ${section}`);
+    return item.data;
+  },
+  
+  /**
+   * Invalidate specific section cache
+   * @param {string} section - Section to invalidate
+   */
+  invalidate(section) {
+    const cacheKey = `section_${section}`;
+    if (this.cache.has(cacheKey)) {
+      this.cache.delete(cacheKey);
+      console.debug(`🗑️ [Cache] Invalidated: ${section}`);
+    }
+  },
+  
+  /**
+   * Invalidate all cache
+   */
+  invalidateAll() {
+    this.cache.clear();
+    console.debug(`🗑️ [Cache] All cache cleared`);
+  },
+  
+  /**
+   * Get cache statistics
+   * @returns {Object} Cache info
+   */
+  getStats() {
+    return {
+      size: this.cache.size,
+      items: Array.from(this.cache.keys()).map(key => ({
+        key,
+        expires: new Date(this.cache.get(key).expires).toISOString()
+      }))
+    };
+  },
+  
+  /**
+   * Load data with cache strategy
+   * @async
+   * @param {string} section - Data section
+   * @param {Function} loader - Async function to load data if cache misses
+   * @param {number} ttl - Cache duration
+   * @returns {Promise} Cached or freshly loaded data
+   */
+  async loadWithCache(section, loader, ttl = this.defaultTTL) {
+    const cached = this.getData(section);
+    if (cached) {
+      return cached;
+    }
+    
+    console.debug(`📡 [Cache] Loading: ${section}...`);
+    const data = await loader();
+    this.setData(section, data, ttl);
+    return data;
+  }
+};
+
+/**
+ * Enhanced data loading with cache support
+ * Wraps existing load functions with caching
+ */
+const EnhancedDataLoading = {
+  /**
+   * Load admins with cache
+   * @async
+   * @returns {Promise} Admin data
+   */
+  async loadAdminsWithCache(forceRefresh = false) {
+    if (forceRefresh) {
+      DashboardCacheManager.invalidate('admins');
+    }
+    
+    return DashboardCacheManager.loadWithCache('admins', async () => {
+      operationState.startLoading('admins');
+      try {
+        const data = await API.getAdmins(1, 100);
+        operationState.stopLoading('admins');
+        operationState.updateLoadTime('admins');
+        return data;
+      } catch (error) {
+        operationState.stopLoading('admins');
+        throw error;
+      }
+    });
+  },
+  
+  /**
+   * Load users with cache
+   * @async
+   * @returns {Promise} User data
+   */
+  async loadUsersWithCache(forceRefresh = false) {
+    if (forceRefresh) {
+      DashboardCacheManager.invalidate('users');
+    }
+    
+    return DashboardCacheManager.loadWithCache('users', async () => {
+      operationState.startLoading('users');
+      try {
+        const data = await API.getUsers(1, 100);
+        operationState.stopLoading('users');
+        operationState.updateLoadTime('users');
+        return data;
+      } catch (error) {
+        operationState.stopLoading('users');
+        throw error;
+      }
+    });
+  },
+  
+  /**
+   * Load organizations with cache
+   * @async
+   * @returns {Promise} Organization data
+   */
+  async loadOrganizationsWithCache(forceRefresh = false) {
+    if (forceRefresh) {
+      DashboardCacheManager.invalidate('organizations');
+    }
+    
+    return DashboardCacheManager.loadWithCache('organizations', async () => {
+      operationState.startLoading('organizations');
+      try {
+        const data = await API.getOrganizations(1, 100);
+        operationState.stopLoading('organizations');
+        operationState.updateLoadTime('organizations');
+        return data;
+      } catch (error) {
+        operationState.stopLoading('organizations');
+        throw error;
+      }
+    });
+  }
+};
+
+console.log('✅ Dashboard script loaded - Ready for real backend integration with cache optimization');
