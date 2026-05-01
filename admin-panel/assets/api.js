@@ -18,6 +18,14 @@ const API_CONFIG = {
   RETRY_STATUS_CODES: [408, 429, 500, 502, 503, 504], // Retry on these statuses
 };
 
+// Request logging utility
+function logAPIRequest(method, url, status = 'pending', duration = null) {
+  const timestamp = new Date().toISOString();
+  const icon = status === 'pending' ? '⏳' : (status >= 400 ? '❌' : '✅');
+  const time = duration ? ` (${duration}ms)` : '';
+  console.debug(`[${timestamp}] ${icon} ${method} ${url}${time}`);
+}
+
 // Request queue to prevent concurrent operations
 let requestQueue = [];
 let isProcessingQueue = false;
@@ -74,8 +82,12 @@ const API = {
     }
 
     try {
-      console.debug(`📡 API Request [Attempt ${retryCount + 1}/${API_CONFIG.MAX_RETRIES + 1}]: ${method} ${endpoint}`);
-      console.debug(`📋 Request Body:`, config.body ? JSON.parse(config.body) : 'No body');
+      const requestId = `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+      const timestamp = new Date().toISOString();
+      console.debug(`📡 [${requestId}] API Request [${timestamp}] [Attempt ${retryCount + 1}/${API_CONFIG.MAX_RETRIES + 1}]: ${method} ${endpoint}`);
+      if (config.body) {
+        console.debug(`📋 [${requestId}] Request Body:`, JSON.parse(config.body));
+      }
       
       // Create abort controller for timeout
       const controller = new AbortController();
@@ -84,13 +96,14 @@ const API = {
 
       const response = await fetch(url, config);
       clearTimeout(timeoutId);
+      const endTimestamp = new Date().toISOString();
       
       const result = await response.json();
 
       if (!response.ok) {
         // Handle unauthorized - token expired
         if (response.status === 401) {
-          console.warn('🔓 Unauthorized: Token expired - Clearing admin credentials');
+          console.warn(`🔓 [${requestId}] Unauthorized: Token expired - Clearing admin credentials`);
           localStorage.removeItem('adminAuthToken');
           localStorage.removeItem('adminRefreshToken');
           localStorage.removeItem('adminData');
@@ -105,15 +118,16 @@ const API = {
         
         // Check if error is retryable
         if (API_CONFIG.RETRY_STATUS_CODES.includes(response.status) && retryCount < API_CONFIG.MAX_RETRIES) {
-          console.warn(`⚠️ Retryable error (${response.status}): Retrying in ${API_CONFIG.RETRY_DELAY}ms`);
+          console.warn(`⚠️ [${requestId}] Retryable error (${response.status}): Retrying in ${API_CONFIG.RETRY_DELAY}ms`);
           await new Promise(resolve => setTimeout(resolve, API_CONFIG.RETRY_DELAY));
           return this.request(method, endpoint, data, baseUrl, retryCount + 1);
         }
         
         // Log detailed error information including warnings
-        console.error(`❌ API Error ${response.status}:`, result);
+        console.error(`❌ [${requestId}] API Error ${response.status}:`, result);
+        console.error(`📋 [${requestId}] Response: ${response.status} ${response.statusText}`);
         if (result.warning) {
-          console.warn('⚠️  Error Details:', result.warning);
+          console.warn(`⚠️ [${requestId}] Error Details:`, result.warning);
         }
         
         // Handle authorization errors with better messaging
@@ -127,21 +141,23 @@ const API = {
         throw new Error(result.message || `API Error: ${response.status}`);
       }
 
-      console.debug(`✅ API Success: ${method} ${endpoint}`);
+      console.debug(`✅ [${requestId}] API Success [${endTimestamp}]: ${method} ${endpoint}`);
       return result.data || result;
     } catch (error) {
       // Handle timeout errors
       if (error.name === 'AbortError') {
-        console.error(`⏱️ Request timeout (${API_CONFIG.REQUEST_TIMEOUT}ms): ${method} ${endpoint}`);
+        console.error(`⏱️ [${requestId}] Request timeout (${API_CONFIG.REQUEST_TIMEOUT}ms): ${method} ${endpoint}`);
+        console.error(`⏱️ [${requestId}] Server URL: ${url}`);
         if (retryCount < API_CONFIG.MAX_RETRIES) {
-          console.warn(`⚠️ Retrying after timeout...`);
+          console.warn(`⚠️ [${requestId}] Retrying after timeout...`);
           await new Promise(resolve => setTimeout(resolve, API_CONFIG.RETRY_DELAY));
           return this.request(method, endpoint, data, baseUrl, retryCount + 1);
         }
         throw new Error('Request timeout - Server not responding');
       }
       
-      console.error(`🚨 API Request Failed: ${method} ${endpoint}`, error);
+      console.error(`🚨 [${requestId}] API Request Failed: ${method} ${endpoint}`, error);
+      console.error(`🚨 [${requestId}] Error: ${error.name || 'Unknown'} - ${error.message}`);
       throw error;
     }
   },
