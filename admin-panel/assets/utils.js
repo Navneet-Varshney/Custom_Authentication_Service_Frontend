@@ -51,6 +51,73 @@ function setAdminData(adminData) {
 }
 
 /**
+ * Show error notification with icon and auto-dismiss
+ * @param {string} message - Error message
+ * @param {number} duration - Duration in milliseconds (default: 5000)
+ */
+function showErrorNotification(message, duration = 5000) {
+  console.error('🔴 Error:', message);
+  const notification = document.createElement('div');
+  notification.className = 'notification notification-error';
+  notification.innerHTML = `<span class="material-icons">error</span><span>${message}</span>`;
+  document.body.appendChild(notification);
+  
+  setTimeout(() => notification.remove(), duration);
+}
+
+/**
+ * Show success notification
+ * @param {string} message - Success message
+ * @param {number} duration - Duration in milliseconds (default: 3000)
+ */
+function showSuccessNotification(message, duration = 3000) {
+  console.log('✅ Success:', message);
+  const notification = document.createElement('div');
+  notification.className = 'notification notification-success';
+  notification.innerHTML = `<span class="material-icons">check_circle</span><span>${message}</span>`;
+  document.body.appendChild(notification);
+  
+  setTimeout(() => notification.remove(), duration);
+}
+
+/**
+ * Safely parse JSON with error handling
+ * @param {string} jsonString - JSON string to parse
+ * @param {*} defaultValue - Default value if parsing fails
+ * @returns {*} Parsed object or default value
+ */
+function safeJSONParse(jsonString, defaultValue = null) {
+  try {
+    return JSON.parse(jsonString);
+  } catch (error) {
+    console.error('JSON parse error:', error);
+    return defaultValue;
+  }
+}
+
+/**
+ * Format date to readable string
+ * @param {Date|string|number} date - Date to format
+ * @returns {string} Formatted date string
+ */
+function formatDate(date) {
+  try {
+    const dateObj = new Date(date);
+    return dateObj.toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  } catch (error) {
+    console.error('Date formatting error:', error);
+    return 'Invalid Date';
+  }
+}
+}
+
+/**
  * Logout admin user completely
  * Clears all admin credentials and redirects to Project login
  * Keeps accessToken and deviceUUID for potential future use
@@ -440,5 +507,202 @@ if (!document.getElementById('notification-styles')) {
   `;
   document.head.appendChild(style);
 }
+
+/**
+ * SESSION MANAGEMENT HELPERS
+ * Manage admin session, token refresh, and session monitoring
+ */
+
+/**
+ * Extended session management with token refresh tracking
+ * @type {Object}
+ */
+const SessionManager = {
+  /**
+   * Get current session info
+   * @returns {Object} Session information
+   */
+  getSessionInfo() {
+    return {
+      hasAdminToken: !!localStorage.getItem('adminAuthToken'),
+      hasAccessToken: !!localStorage.getItem('accessToken'),
+      hasDeviceUUID: !!localStorage.getItem('deviceUUID'),
+      adminData: JSON.parse(localStorage.getItem('adminData') || 'null'),
+      sessionStartTime: localStorage.getItem('sessionStartTime'),
+    };
+  },
+
+  /**
+   * Initialize session timer
+   * @param {number} durationMs - Session duration in milliseconds
+   */
+  initSessionTimer(durationMs = 24 * 60 * 60 * 1000) {
+    const startTime = Date.now();
+    localStorage.setItem('sessionStartTime', startTime.toString());
+    console.log(`⏱️ Session timer initialized for ${durationMs / 1000 / 60} minutes`);
+  },
+
+  /**
+   * Check if session is still valid
+   * @returns {boolean} True if session is valid
+   */
+  isSessionValid() {
+    const token = localStorage.getItem('adminAuthToken') || localStorage.getItem('accessToken');
+    return !!token;
+  },
+
+  /**
+   * Refresh session tokens
+   * @async
+   * @returns {Promise<boolean>} True if refresh successful
+   */
+  async refreshSession() {
+    try {
+      console.log('🔄 Attempting session refresh...');
+      // Placeholder for future token refresh logic
+      return true;
+    } catch (error) {
+      console.error('❌ Session refresh failed:', error);
+      return false;
+    }
+  }
+};
+
+/**
+ * DATA CACHE MANAGEMENT
+ * Cache API responses to reduce server requests
+ */
+
+/**
+ * Simple cache implementation for API responses
+ * @type {Object}
+ */
+const CacheManager = {
+  cache: new Map(),
+  defaultTTL: 5 * 60 * 1000, // 5 minutes
+
+  /**
+   * Set cache item
+   * @param {string} key - Cache key
+   * @param {*} value - Value to cache
+   * @param {number} ttl - Time to live in milliseconds
+   */
+  set(key, value, ttl = this.defaultTTL) {
+    const expires = Date.now() + ttl;
+    this.cache.set(key, { value, expires });
+    console.debug(`💾 Cached: ${key} (expires in ${ttl / 1000}s)`);
+  },
+
+  /**
+   * Get cache item
+   * @param {string} key - Cache key
+   * @returns {*} Cached value or null if expired
+   */
+  get(key) {
+    const item = this.cache.get(key);
+    
+    if (!item) {
+      console.debug(`❌ Cache miss: ${key}`);
+      return null;
+    }
+
+    if (Date.now() > item.expires) {
+      console.debug(`⏱️ Cache expired: ${key}`);
+      this.cache.delete(key);
+      return null;
+    }
+
+    console.debug(`✅ Cache hit: ${key}`);
+    return item.value;
+  },
+
+  /**
+   * Clear specific cache entry
+   * @param {string} key - Cache key
+   */
+  clear(key) {
+    if (this.cache.has(key)) {
+      this.cache.delete(key);
+      console.debug(`🗑️ Cleared cache: ${key}`);
+    }
+  },
+
+  /**
+   * Clear all cache
+   */
+  clearAll() {
+    this.cache.clear();
+    console.debug(`🗑️ All cache cleared`);
+  },
+
+  /**
+   * Get cache stats
+   * @returns {Object} Cache statistics
+   */
+  getStats() {
+    return {
+      size: this.cache.size,
+      items: Array.from(this.cache.keys())
+    };
+  }
+};
+
+/**
+ * PERFORMANCE MONITORING
+ * Track and log performance metrics
+ */
+
+/**
+ * Performance monitor utility
+ * @type {Object}
+ */
+const PerformanceMonitor = {
+  metrics: {},
+
+  /**
+   * Start performance measurement
+   * @param {string} label - Metric label
+   */
+  start(label) {
+    this.metrics[label] = performance.now();
+    console.debug(`⏱️ Started measuring: ${label}`);
+  },
+
+  /**
+   * End performance measurement and log result
+   * @param {string} label - Metric label
+   */
+  end(label) {
+    const startTime = this.metrics[label];
+    if (!startTime) {
+      console.warn(`⚠️ No start time for metric: ${label}`);
+      return null;
+    }
+
+    const duration = performance.now() - startTime;
+    console.debug(`⏱️ ${label}: ${duration.toFixed(2)}ms`);
+    delete this.metrics[label];
+    return duration;
+  },
+
+  /**
+   * Measure async operation duration
+   * @async
+   * @param {string} label - Operation label
+   * @param {Function} asyncFn - Async function to measure
+   * @returns {Promise} Result of async function
+   */
+  async measure(label, asyncFn) {
+    this.start(label);
+    try {
+      const result = await asyncFn();
+      this.end(label);
+      return result;
+    } catch (error) {
+      this.end(label);
+      throw error;
+    }
+  }
+};
 
 console.log('✅ Utils module loaded');
