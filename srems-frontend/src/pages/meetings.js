@@ -858,6 +858,161 @@ class MeetingsPage {
       alert(`Failed to view meeting details: ${error.message}`);
     }
   }
+
+  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  // MEETING STATUS OPERATIONS
+  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  async startMeeting(meetingId) {
+    try {
+      if (!meetingId) {
+        alert('Meeting ID is required');
+        return;
+      }
+
+      const startData = {
+        startedAt: new Date().toISOString(),
+        status: 'ONGOING'
+      };
+
+      const response = await meetingsService.updateMeeting(this.entityType, meetingId, startData);
+      console.log('✅ Meeting started:', response);
+      alert('Meeting started successfully!');
+      await this.loadMeetings();
+    } catch (error) {
+      console.error('Failed to start meeting:', error);
+      alert(`Failed to start meeting: ${error.message}`);
+    }
+  }
+
+  async endMeeting(meetingId) {
+    try {
+      if (!meetingId) {
+        alert('Meeting ID is required');
+        return;
+      }
+
+      if (!confirm('Are you sure you want to end this meeting?')) {
+        return;
+      }
+
+      const endData = {
+        endedAt: new Date().toISOString(),
+        status: 'COMPLETED'
+      };
+
+      const response = await meetingsService.updateMeeting(this.entityType, meetingId, endData);
+      console.log('✅ Meeting ended:', response);
+      alert('Meeting ended successfully!');
+      await this.loadMeetings();
+    } catch (error) {
+      console.error('Failed to end meeting:', error);
+      alert(`Failed to end meeting: ${error.message}`);
+    }
+  }
+
+  async cancelMeeting(meetingId) {
+    try {
+      if (!meetingId) {
+        alert('Meeting ID is required');
+        return;
+      }
+
+      if (!confirm('Are you sure you want to cancel this meeting?')) {
+        return;
+      }
+
+      const reason = prompt('Enter cancellation reason (optional):');
+      const cancelData = {
+        status: 'CANCELLED',
+        cancellationReason: reason || 'No reason provided',
+        cancelledAt: new Date().toISOString()
+      };
+
+      const response = await meetingsService.updateMeeting(this.entityType, meetingId, cancelData);
+      console.log('✅ Meeting cancelled:', response);
+      alert('Meeting cancelled successfully!');
+      await this.loadMeetings();
+    } catch (error) {
+      console.error('Failed to cancel meeting:', error);
+      alert(`Failed to cancel meeting: ${error.message}`);
+    }
+  }
+
+  async freezeMeeting(meetingId) {
+    try {
+      if (!meetingId) {
+        alert('Meeting ID is required');
+        return;
+      }
+
+      if (!confirm('Are you sure you want to freeze this meeting? (No further changes allowed)')) {
+        return;
+      }
+
+      const freezeData = {
+        status: 'FROZEN',
+        frozenAt: new Date().toISOString()
+      };
+
+      const response = await meetingsService.updateMeeting(this.entityType, meetingId, freezeData);
+      console.log('✅ Meeting frozen:', response);
+      alert('Meeting frozen successfully!');
+      await this.loadMeetings();
+    } catch (error) {
+      console.error('Failed to freeze meeting:', error);
+      alert(`Failed to freeze meeting: ${error.message}`);
+    }
+  }
+
+  async rescheduleMeeting(meetingId) {
+    try {
+      if (!meetingId) {
+        alert('Meeting ID is required');
+        return;
+      }
+
+      const newDateTime = prompt('Enter new date and time (YYYY-MM-DD HH:MM):');
+      if (!newDateTime) {
+        return;
+      }
+
+      // Validate date format
+      const dateRegex = /^\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}$/;
+      if (!dateRegex.test(newDateTime)) {
+        alert('Invalid date format. Use YYYY-MM-DD HH:MM');
+        return;
+      }
+
+      const rescheduleData = {
+        scheduledAt: new Date(newDateTime).toISOString(),
+        status: 'SCHEDULED'
+      };
+
+      const response = await meetingsService.updateMeeting(this.entityType, meetingId, rescheduleData);
+      console.log('✅ Meeting rescheduled:', response);
+      alert('Meeting rescheduled successfully!');
+      await this.loadMeetings();
+    } catch (error) {
+      console.error('Failed to reschedule meeting:', error);
+      alert(`Failed to reschedule meeting: ${error.message}`);
+    }
+  }
+}
+
+// ═════════════════════════════════════════════════════════════════════════════
+// PAGE INITIALIZATION
+// ═════════════════════════════════════════════════════════════════════════════
+
+// Initialize MeetingsPage and attach to window for onclick handlers
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', () => {
+    window.meetingsPage = new MeetingsPage();
+    console.log('✅ MeetingsPage initialized and attached to window');
+  });
+} else {
+  window.meetingsPage = new MeetingsPage();
+  console.log('✅ MeetingsPage initialized and attached to window');
 }
 
 // Export class for app.js to initialize when page loads
