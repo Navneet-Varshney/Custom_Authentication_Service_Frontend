@@ -88,6 +88,7 @@ function showSuccessNotification(message, duration = 3000) {
  */
 function safeJSONParse(jsonString, defaultValue = null) {
   try {
+    if (!jsonString) return defaultValue;
     return JSON.parse(jsonString);
   } catch (error) {
     console.error('JSON parse error:', error);
