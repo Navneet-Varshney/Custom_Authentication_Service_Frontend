@@ -100,6 +100,7 @@ function toggleTheme() {
 /**
  * Disable CSS transitions for theme change
  * Improves perceived performance during initialization
+ * Respects user's motion preferences
  */
 function disableThemeTransitions() {
   if (PREFERS_REDUCED_MOTION.matches) return;
