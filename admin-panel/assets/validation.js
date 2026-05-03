@@ -96,21 +96,7 @@ const Validation = {
     return { isValid: true, error: null };
   },
 
-  /**
-   * Validate phone number (international format)
-   * @param {string} phone - Phone number to validate
-   * @returns {Object} { isValid: boolean, error: string }
-   */
-  validatePhone(phone) {
-    const phoneRegex = /^[+]?[(]?[0-9]{1,4}[)]?[-\s\.]?[(]?[0-9]{1,4}[)]?[-\s\.]?[0-9]{1,9}$/;
-    if (!phone || !phone.trim()) {
-      return { isValid: false, error: 'Phone number is required' };
-    }
-    if (!phoneRegex.test(phone.replace(/\s/g, ''))) {
-      return { isValid: false, error: 'Invalid phone number format' };
-    }
-    return { isValid: true, error: null };
-  },
+
 
   /**
    * Validate numeric ID (positive integer)
@@ -159,7 +145,7 @@ const Validation = {
   },
 
   /**
-   * Validate required field
+   * Validate required field with trimming
    * @param {string} value - Value to validate
    * @param {string} fieldName - Field name for error message
    * @returns {Object} { isValid: boolean, error: string }
