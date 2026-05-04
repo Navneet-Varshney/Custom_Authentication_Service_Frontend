@@ -55,12 +55,21 @@ function getDeviceName() {
 /**
  * Build auth headers with device info and token
  * Call this in ALL API requests
+ * @returns {Object} Headers object with device UUID and optional access token
  */
 function authHeaders() {
   const token = localStorage.getItem('accessToken');
+  const deviceUUID = getDeviceUUID();
+  
+  if (!deviceUUID) {
+    console.warn('Warning: Device UUID not available');
+  }
+  
   const headers = {
-    'x-device-uuid': getDeviceUUID()
+    'x-device-uuid': deviceUUID,
+    'Content-Type': 'application/json'
   };
+  
   if (token) {
     headers['x-access-token'] = token;
   }
