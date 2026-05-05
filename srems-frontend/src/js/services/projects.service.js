@@ -6,21 +6,14 @@
 
 import apiClient from './api.js';
 import { API_CONFIG } from '../utils/constants.js';
-
-/**
- * Service logger
- */
-const logger = {
-  log: (action, data = null) => console.log(`[ProjectsService] ${action}`, data),
-  error: (action, error) => console.error(`[ProjectsService] ${action}`, error)
-};
+import { logger } from '../utils/helpers.js';
 
 class ProjectsService {
   /**
    * Create a new project
    */
   async createProject(projectData) {
-    logger.log('createProject', projectData);
+    logger.info('ProjectsService', 'Creating project', projectData);
     
     try {
       const response = await apiClient.post(`${API_CONFIG.ENDPOINTS.PROJECTS}/create`, projectData);
@@ -30,13 +23,13 @@ class ProjectsService {
         throw new Error(response.message || 'Failed to create project');
       }
       
-      logger.log('createProject', 'Project created successfully');
+      logger.info('ProjectsService', 'Project created successfully');
       
       // Return the project object from nested data structure
       // Backend response: { success, message, data: { project: {...} } }
       return response.data?.data?.project || {};
     } catch (error) {
-      logger.error('createProject', error);
+      logger.error('ProjectsService', 'Failed to create project', error);
       throw error;
     }
   }
