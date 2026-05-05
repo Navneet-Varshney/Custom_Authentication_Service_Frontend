@@ -160,8 +160,9 @@ export class ElicitationPage {
     document.querySelectorAll('.btnViewElicitation')?.forEach(btn => {
       btn.addEventListener('click', (e) => {
         const id = e.target.dataset.id;
-        console.log('View elicitation:', id);
-        // TODO: Open detail view
+        logger.info('Elicitation', `Viewing elicitation: ${id}`);
+        // Navigate to elicitation detail page
+        window.location.hash = `#!/elicitation-detail/${id}`;
       });
     });
 
