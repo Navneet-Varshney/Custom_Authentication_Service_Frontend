@@ -127,33 +127,22 @@ class App {
    */
   async init() {
     try {
-      console.log('[App] Initializing...');
-      
       // ✅ CHECK AUTHENTICATION TOKEN
       const token = localStorage.getItem('accessToken');
       const deviceUUID = localStorage.getItem('deviceUUID');
       
       if (!token) {
-        console.log('[App] ⚠️  No authentication token found. Redirecting to login...');
         showToast('Session expired. Please login again.', 'warning');
         // Redirect to Authentication Dashboard
         window.location.href = `${window.location.origin}/`;
         return;
       }
       
-      console.log('[App] ✅ Auth token found');
-      console.log('[App] ✅ Device UUID:', deviceUUID);
-      
       // Load persisted state
       this.store.loadPersistedState();
       
       // Check if user is authenticated
       const user = this.store.getState('user');
-      if (user.isAuthenticated) {
-        console.log('[App] User authenticated:', user.id);
-      } else {
-        console.log('[App] No authenticated user');
-      }
       
       // Initialize UI
       this.setupEventListeners();
@@ -164,14 +153,10 @@ class App {
       this.store.subscribe((state) => this.onStateChange(state));
       
       this.isInitialized = true;
-      console.log('[App] Initialization complete');
-      
-      // DEBUG: Log sidebar scrollbar status
-      setTimeout(() => this.debugSidebarScrollbar(), 500);
       
       
     } catch (error) {
-      console.error('[App] Initialization failed:', error);
+      logger.error('App', 'Initialization failed', error);
       showToast('Failed to initialize application', 'error');
     }
   }
@@ -328,100 +313,7 @@ class App {
     });
   }
 
-  /**
-   * DEBUG: Check sidebar scrollbar CSS and element properties
-   */
-  debugSidebarScrollbar() {
-    console.log('🔍 [DEBUG] Checking Sidebar Scrollbar Status...');
-    
-    const sidebar = document.querySelector('.sidebar');
-    const sidebarNav = document.querySelector('.sidebar-nav');
-    
-    if (!sidebar) {
-      console.error('❌ [DEBUG] .sidebar element NOT FOUND!');
-      return;
-    }
-    
-    if (!sidebarNav) {
-      console.error('❌ [DEBUG] .sidebar-nav element NOT FOUND!');
-      return;
-    }
-    
-    console.log('✅ [DEBUG] Sidebar elements found');
-    
-    // Get computed styles
-    const sidebarStyle = window.getComputedStyle(sidebar);
-    const navStyle = window.getComputedStyle(sidebarNav);
-    
-    console.log('📊 [DEBUG] .sidebar computed properties:');
-    console.log('  - height:', sidebarStyle.height);
-    console.log('  - max-height:', sidebarStyle.maxHeight);
-    console.log('  - overflow:', sidebarStyle.overflow);
-    console.log('  - display:', sidebarStyle.display);
-    console.log('  - flex-direction:', sidebarStyle.flexDirection);
-    
-    console.log('📊 [DEBUG] .sidebar-nav computed properties:');
-    console.log('  - height:', navStyle.height);
-    console.log('  - max-height:', navStyle.maxHeight);
-    console.log('  - overflow-y:', navStyle.overflowY);
-    console.log('  - overflow-x:', navStyle.overflowX);
-    console.log('  - scrollbar-width:', navStyle.scrollbarWidth);
-    console.log('  - flex:', navStyle.flex);
-    
-    // Check actual element dimensions
-    console.log('📐 [DEBUG] Element dimensions:');
-    console.log('  - sidebar.scrollHeight:', sidebar.scrollHeight);
-    console.log('  - sidebar.clientHeight:', sidebar.clientHeight);
-    console.log('  - sidebarNav.scrollHeight:', sidebarNav.scrollHeight);
-    console.log('  - sidebarNav.clientHeight:', sidebarNav.clientHeight);
-    
-    // Check if scrolling is needed
-    const needsScroll = sidebarNav.scrollHeight > sidebarNav.clientHeight;
-    console.log('🔄 [DEBUG] Scrolling needed?', needsScroll ? '✅ YES' : '❌ NO');
-    
-    if (needsScroll) {
-      console.log('✅ [DEBUG] Sidebar should be scrollable!');
-    } else {
-      console.log('⚠️  [DEBUG] Content fits in viewport - no scrolling needed');
-      console.log('    Content height:', sidebarNav.scrollHeight, 'vs Container:', sidebarNav.clientHeight);
-    }
-    
-    // 🧪 TEST IF SCROLLING ACTUALLY WORKS
-    console.log('\n🧪 [DEBUG] TESTING SCROLL FUNCTIONALITY...');
-    const scrollPositionBefore = sidebarNav.scrollTop;
-    console.log('  - Scroll position BEFORE:', scrollPositionBefore);
-    
-    // Test 1: Try to scroll down by 100px
-    sidebarNav.scrollTop = 100;
-    const scrollPositionAfter = sidebarNav.scrollTop;
-    console.log('  - Scroll position AFTER setting to 100:', scrollPositionAfter);
-    console.log('  - Scroll worked?', scrollPositionAfter === 100 ? '✅ YES' : '❌ NO');
-    
-    // Test 2: Try to scroll to bottom
-    const maxScroll = sidebarNav.scrollHeight - sidebarNav.clientHeight;
-    sidebarNav.scrollTop = maxScroll;
-    console.log('  - Max scrollable height:', maxScroll);
-    console.log('  - Scroll position after max scroll:', sidebarNav.scrollTop);
-    console.log('  - Reached bottom?', sidebarNav.scrollTop >= maxScroll - 10 ? '✅ YES' : '❌ NO');
-    
-    // Reset scroll to top
-    sidebarNav.scrollTop = 0;
-    
-    // Check CSS rules
-    console.log('\n📋 [DEBUG] Checking stylesheet rules...');
-    for (let sheet of document.styleSheets) {
-      try {
-        for (let rule of sheet.cssRules || sheet.rules) {
-          if (rule.selectorText && rule.selectorText.includes('sidebar-nav')) {
-            console.log('  - Found rule:', rule.selectorText);
-            console.log('    Style:', rule.style.cssText);
-          }
-        }
-      } catch (e) {
-        // Skip CORS errors
-      }
-    }
-  }
+
 
   /**
    * Update active menu item in sidebar
