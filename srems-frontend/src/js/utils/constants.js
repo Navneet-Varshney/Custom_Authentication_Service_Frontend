@@ -45,6 +45,7 @@ export const API_CONFIG = {
     // Requirements Management
     REQUIREMENTS: '/requirements',                  // Backend: /requirements (CRUD endpoints)
     
+    PHASES: '/phases',
     // Shared Features & Collaboration
     COMMENTS: '/comments',
     ACTIVITY_TRACKER: '/activity-trackers',
