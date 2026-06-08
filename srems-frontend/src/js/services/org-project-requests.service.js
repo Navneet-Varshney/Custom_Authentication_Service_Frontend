@@ -49,7 +49,7 @@ class OrgProjectRequestService {
   async getOrgProjectRequests(page = 1, pageSize = 10) {
     try {
       const response = await apiClient.get(
-        `/org-project-requests?page=${page}&pageSize=${pageSize}`
+        `/org-project-requests/list?page=${page}&pageSize=${pageSize}`
       );
       
       if (!response.success) {
@@ -66,7 +66,7 @@ class OrgProjectRequestService {
 
   /**
    * Get single org project request by ID
-   * Backend: GET /org-project-requests/:requestId
+   * Backend: GET /org-project-requests/get/:requestId
    */
   async getOrgProjectRequest(requestId) {
     try {
@@ -75,7 +75,7 @@ class OrgProjectRequestService {
       }
 
       const response = await apiClient.get(
-        `/org-project-requests/${requestId}`
+        `/org-project-requests/get/${requestId}`
       );
       
       if (!response.success) {
