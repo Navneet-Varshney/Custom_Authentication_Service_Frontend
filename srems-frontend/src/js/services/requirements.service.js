@@ -1,9 +1,5 @@
-/**
- * requirements.service.js
- * Requirement management operations (MOCKED via LocalStorage)
- * Since the backend API for requirements does not exist, this mock allows the frontend flow to continue without modifying the backend.
- */
-
+import apiClient from './api.js';
+import { API_CONFIG } from '../utils/constants.js';
 import { store } from '../store/store.js';
 
 // Helper to simulate API delay
@@ -251,13 +247,24 @@ class RequirementsService {
    * Create requirement
    */
   async createRequirement(projectId, requirementData) {
-    await delay();
-    const reqs = this._getStorage();
-    
-    // Check if projectId is passed correctly, sometimes it's passed as first arg in frontend
     const actualData = typeof projectId === 'object' ? projectId : requirementData;
     const actualProjectId = this._normalizeProjectId(projectId);
 
+    try {
+      const response = await apiClient.post(
+        `${API_CONFIG.ENDPOINTS.REQUIREMENTS}/create/${actualProjectId}`,
+        actualData
+      );
+
+      if (response?.success) {
+        return { success: true, data: response.data?.data?.requirement || response.data?.requirement || response.data };
+      }
+    } catch (err) {
+      console.warn('[REQUIREMENTS] API create call failed, falling back to storage:', err);
+    }
+
+    // Local storage fallback
+    const reqs = this._getStorage();
     const newReq = {
       _id: 'req_' + Math.random().toString(36).substr(2, 9),
       projectId: actualProjectId,
@@ -265,7 +272,6 @@ class RequirementsService {
       status: 'DRAFT',
       createdAt: new Date().toISOString()
     };
-    
     reqs.push(newReq);
     this._saveStorage(reqs);
     return { success: true, data: newReq };
@@ -275,19 +281,30 @@ class RequirementsService {
    * Get requirements by project
    */
   async getRequirements(projectId, page = 1, pageSize = 10) {
-    await delay();
-    // Dev: lightweight fallback log for requirements fetch
-    console.warn('RequirementsService.getRequirements called', { projectId, page, pageSize });
     const normalizedProjectId = this._normalizeProjectId(projectId);
+
+    try {
+      const response = await apiClient.get(
+        `${API_CONFIG.ENDPOINTS.REQUIREMENTS}/list/${normalizedProjectId}?page=${page}&limit=${pageSize}`
+      );
+
+      if (response?.success) {
+        const fetchedReqs = response.data?.data?.requirements || response.data?.requirements || [];
+        if (Array.isArray(fetchedReqs) && fetchedReqs.length > 0) {
+          return fetchedReqs;
+        }
+      }
+    } catch (err) {
+      console.warn('[REQUIREMENTS] API list call failed, falling back to demo storage:', err);
+    }
+
+    // Local storage / demo fallback
     let reqs = this._getStorage();
-
     const projectReqs = reqs.filter(r => String(r.projectId) === String(normalizedProjectId));
-
     if (projectReqs.length === 0) {
       reqs = this._seedDemoRequirements(normalizedProjectId);
       return reqs;
     }
-
     return projectReqs;
   }
 
@@ -295,9 +312,20 @@ class RequirementsService {
    * Get requirement by ID
    */
   async getRequirementById(requirementId) {
-    await delay();
-    const reqs = this._getStorage();
     const normalizedId = this._normalizeRequirementId(requirementId);
+
+    try {
+      const response = await apiClient.get(
+        `${API_CONFIG.ENDPOINTS.REQUIREMENTS}/get/${normalizedId}`
+      );
+      if (response?.success) {
+        return { success: true, data: response.data?.data?.requirement || response.data?.requirement || response.data };
+      }
+    } catch (err) {
+      console.warn('[REQUIREMENTS] API get call failed, falling back to storage:', err);
+    }
+
+    const reqs = this._getStorage();
     const req = reqs.find(r => this._normalizeRequirementId(r._id) === normalizedId);
     if (!req) throw new Error('Requirement not found');
     return { success: true, data: req };
@@ -307,22 +335,25 @@ class RequirementsService {
    * Update requirement (handles Elaboration, Negotiation, Validation data)
    */
   async updateRequirement(requirementId, updateData) {
-    await delay();
-    const reqs = this._getStorage();
     const normalizedId = this._normalizeRequirementId(requirementId);
+
+    try {
+      const response = await apiClient.patch(
+        `${API_CONFIG.ENDPOINTS.REQUIREMENTS}/update/${normalizedId}`,
+        updateData
+      );
+      if (response?.success) {
+        return { success: true, data: response.data?.data?.requirement || response.data?.requirement || response.data };
+      }
+    } catch (err) {
+      console.warn('[REQUIREMENTS] API update call failed, falling back to storage:', err);
+    }
+
+    const reqs = this._getStorage();
     const index = reqs.findIndex(r => this._normalizeRequirementId(r._id) === normalizedId);
-    
     if (index === -1) throw new Error('Requirement not found');
     
     reqs[index] = { ...reqs[index], ...updateData };
-    
-    // Special handling for negotiation votes
-    if (updateData.negotiationVotes) {
-       if (!reqs[index].negotiationVotes) reqs[index].negotiationVotes = [];
-       // Add the new vote instead of overwriting if it's an array push simulation
-       // but here we just merge it into the object for simplicity.
-    }
-    
     this._saveStorage(reqs);
     return { success: true, data: reqs[index] };
   }
@@ -331,9 +362,20 @@ class RequirementsService {
    * Delete requirement
    */
   async deleteRequirement(requirementId) {
-    await delay();
-    let reqs = this._getStorage();
     const normalizedId = this._normalizeRequirementId(requirementId);
+
+    try {
+      const response = await apiClient.delete(
+        `${API_CONFIG.ENDPOINTS.REQUIREMENTS}/delete/${normalizedId}`
+      );
+      if (response?.success) {
+        return { success: true };
+      }
+    } catch (err) {
+      console.warn('[REQUIREMENTS] API delete call failed, falling back to storage:', err);
+    }
+
+    let reqs = this._getStorage();
     reqs = reqs.filter(r => this._normalizeRequirementId(r._id) !== normalizedId);
     this._saveStorage(reqs);
     return { success: true };
