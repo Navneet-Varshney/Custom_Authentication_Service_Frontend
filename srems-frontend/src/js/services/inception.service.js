@@ -14,59 +14,56 @@ class InceptionService {
   async createInception(inceptionData) {
     const { projectId, ...data } = inceptionData;
     return apiClient.post(
-      `/inceptions/create/${projectId}`,
-      data
+      `/phases/create/${projectId}`,
+      { phaseType: 'inceptions', settings: data }
     );
   }
 
   /**
    * Get all inception documents for a project
-   * Backend: GET /inceptions/list/:projectId
+   * Backend: GET /phases/list/inceptions/:projectId
    * @param {string} projectId - MongoDB ObjectId of the project (REQUIRED)
    * @returns {Array} List of inception documents or empty array on error
    */
   async getInceptions(projectId, page = 1, pageSize = 10) {
     try {
-      // Dev: debug log when fetching inceptions
       console.debug('InceptionService.getInceptions called', { projectId, page, pageSize });
-      // Validate projectId is provided and is a valid MongoDB ObjectId format
       if (!projectId) {
         throw new Error('Project ID is required to fetch inceptions');
       }
 
-      // MongoDB ObjectId regex: 24 hex characters
       const mongoIdRegex = /^[a-f\d]{24}$/i;
       if (!mongoIdRegex.test(projectId)) {
         throw new Error('Invalid project ID format');
       }
 
       const response = await apiClient.get(
-        `/inceptions/list/${projectId}`
+        `/phases/list/inceptions/${projectId}`
       );
       
       if (!response.success) {
-        // Return empty array instead of throwing to show "No data" state
         return [];
       }
       
-      return Array.isArray(response.data) ? response.data : [];
+      const phases = response.data?.data?.phases || response.data?.phases || response.data || [];
+      return Array.isArray(phases) ? phases : [];
     } catch (error) {
       console.error('Failed to fetch inceptions:', error);
-      throw error; // Propagate error to page handler
+      throw error;
     }
   }
 
   /**
    * Get latest (active) inception for a project
-   * Backend: GET /inceptions/get-latest/:projectId
+   * Backend: GET /phases/latest/inceptions/:projectId
    */
   async getLatestInception(projectId) {
     try {
       if (!projectId) {
         throw new Error('Project ID is required');
       }
-      const response = await apiClient.get(`/inceptions/get-latest/${projectId}`);
-      return response.data || null;
+      const response = await apiClient.get(`/phases/latest/inceptions/${projectId}`);
+      return response.data?.data?.phase || response.data?.phase || response.data || null;
     } catch (error) {
       console.error('Failed to fetch latest inception:', error);
       return null;
@@ -75,44 +72,44 @@ class InceptionService {
 
   /**
    * Get single inception document
-   * Backend: GET /inceptions/get/:inceptionId
+   * Backend: GET /phases/get/inceptions/:inceptionId/:projectId
    */
   async getInception(inceptionId, projectId) {
     return apiClient.get(
-      `/inceptions/get/${inceptionId}`
+      `/phases/get/inceptions/${inceptionId}/${projectId}`
     );
   }
 
   /**
    * Update inception document
-   * Backend: PATCH /inceptions/update/:projectId
+   * Backend: PATCH /phases/update-settings/:projectId
    */
   async updateInception(projectId, inceptionId, updateData) {
     return apiClient.patch(
-      `/inceptions/update/${projectId}`,
-      { inceptionId, ...updateData }
+      `/phases/update-settings/${projectId}`,
+      { phaseType: 'inceptions', settings: updateData }
     );
   }
 
   /**
    * Freeze inception document
-   * Backend: PATCH /inceptions/freeze/:projectId
+   * Backend: PATCH /phases/update-status/:projectId
    */
   async freezeInception(projectId) {
     return apiClient.patch(
-      `/inceptions/freeze/${projectId}`,
-      {}
+      `/phases/update-status/${projectId}`,
+      { phaseType: 'inceptions', status: 'COMPLETED' }
     );
   }
 
   /**
    * Delete inception document
-   * Backend: DELETE /inceptions/delete/:projectId
+   * Backend: DELETE /phases/delete/:projectId
    */
   async deleteInception(projectId, inceptionId, deleteData = {}) {
     return apiClient.delete(
-      `/inceptions/delete/${projectId}`,
-      { inceptionId, ...deleteData }
+      `/phases/delete/${projectId}`,
+      { phaseType: 'inceptions', ...deleteData }
     );
   }
 
@@ -120,9 +117,7 @@ class InceptionService {
    * Get inception documents by project
    */
   async getInceptionsByProject(projectId) {
-    return apiClient.get(
-      `/inceptions/list/${projectId}`
-    );
+    return this.getInceptions(projectId);
   }
 }
 
