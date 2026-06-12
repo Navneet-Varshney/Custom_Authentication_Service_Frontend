@@ -31,22 +31,25 @@ class ElicitationService {
   async createElicitation(elicitationData) {
     const { projectId, ...data } = elicitationData;
     return apiClient.post(
-      `/elicitations/create/${projectId}`,
+      `/phases/create/${projectId}`,
       {
-        mode: data.mode,
-        allowParallelMeetings: data.allowParallelMeetings === true
+        phaseType: 'elicitations',
+        settings: {
+          mode: data.mode,
+          allowParallelMeetings: data.allowParallelMeetings === true
+        }
       }
     );
   }
 
   /**
    * Get all elicitations
-   * Backend: GET /elicitations/list/:projectId
+   * Backend: GET /phases/list/elicitations/:projectId
    */
   async getElicitations(projectId, page = 1, pageSize = 10) {
     try {
       const response = await apiClient.get(
-        `/elicitations/list/${projectId}`
+        `/phases/list/elicitations/${projectId}`
       );
       
       if (!response.success) {
@@ -62,17 +65,15 @@ class ElicitationService {
 
   /**
    * Get latest (active) elicitation for a project
-   * Backend: GET /elicitations/latest/:projectId
+   * Backend: GET /phases/latest/elicitations/:projectId
    */
   async getLatestElicitation(projectId) {
     try {
       if (!projectId) {
         throw new Error('Project ID is required');
       }
-      const response = await apiClient.get(`/elicitations/latest/${projectId}`);
-      // response.data is the backend JSON: { success, data: { ... } }
-      // So the actual object is in response.data.data
-      return this.normalizeElicitation(response.data?.data?.elicitation || response.data?.data || null);
+      const response = await apiClient.get(`/phases/latest/elicitations/${projectId}`);
+      return this.normalizeElicitation(response.data?.data?.phase || response.data?.phase || response.data?.data || null);
     } catch (error) {
       console.error('Failed to fetch latest elicitation:', error);
       return null;
@@ -81,44 +82,44 @@ class ElicitationService {
 
   /**
    * Freeze elicitation
-   * Backend: PATCH /elicitations/freeze/:projectId
+   * Backend: PATCH /phases/update-status/:projectId
    */
   async freezeElicitation(projectId) {
     return apiClient.patch(
-      `/elicitations/freeze/${projectId}`,
-      {}
+      `/phases/update-status/${projectId}`,
+      { phaseType: 'elicitations', status: 'COMPLETED' }
     );
   }
 
   /**
    * Get single elicitation
-   * Backend: GET /elicitations/get/:elicitationId
+   * Backend: GET /phases/get/elicitations/:elicitationId/:projectId
    */
   async getElicitation(projectId, elicitationId) {
     return apiClient.get(
-      `/elicitations/get/${elicitationId}`
+      `/phases/get/elicitations/${elicitationId}/${projectId}`
     );
   }
 
   /**
    * Update elicitation
-   * Backend: PATCH /elicitations/update/:projectId
+   * Backend: PATCH /phases/update-settings/:projectId
    */
   async updateElicitation(projectId, elicitationId, updateData) {
     return apiClient.patch(
-      `/elicitations/update/${projectId}`,
-      { elicitationId, ...updateData }
+      `/phases/update-settings/${projectId}`,
+      { phaseType: 'elicitations', settings: { elicitationId, ...updateData } }
     );
   }
 
   /**
    * Delete elicitation
-   * Backend: DELETE /elicitations/delete/:projectId
+   * Backend: DELETE /phases/delete/:projectId
    */
   async deleteElicitation(projectId, elicitationId, deleteData = {}) {
     return apiClient.delete(
-      `/elicitations/delete/${projectId}`,
-      { elicitationId, ...deleteData }
+      `/phases/delete/${projectId}`,
+      { phaseType: 'elicitations', elicitationId, ...deleteData }
     );
   }
 
@@ -126,9 +127,7 @@ class ElicitationService {
    * Get elicitations by project
    */
   async getElicitationsByProject(projectId) {
-    return apiClient.get(
-      `/elicitations/list/${projectId}`
-    );
+    return this.getElicitations(projectId);
   }
 }
 
