@@ -14,26 +14,27 @@ class ElaborationService {
   async createElaboration(elaborationData) {
     const { projectId, ...data } = elaborationData;
     return apiClient.post(
-      `/elaborations/create/${projectId}`,
-      data
+      `/phases/create/${projectId}`,
+      { phaseType: 'elaborations', settings: data }
     );
   }
 
   /**
    * Get all elaborations
-   * Backend: GET /elaborations/list/:projectId
+   * Backend: GET /phases/list/elaborations/:projectId
    */
   async getElaborations(projectId) {
     try {
       const response = await apiClient.get(
-        `/elaborations/list/${projectId}`
+        `/phases/list/elaborations/${projectId}`
       );
       
       if (!response.success) {
         return [];
       }
       
-      return Array.isArray(response.data) ? response.data : [];
+      const phases = response.data?.data?.phases || response.data?.phases || response.data || [];
+      return Array.isArray(phases) ? phases : [];
     } catch (error) {
       console.error('Failed to fetch elaborations:', error);
       return [];
@@ -42,33 +43,33 @@ class ElaborationService {
 
   /**
    * Get single elaboration
-   * Backend: GET /elaborations/get/:elaborationId
+   * Backend: GET /phases/get/elaborations/:elaborationId/:projectId
    */
   async getElaboration(projectId, elaborationId) {
     return apiClient.get(
-      `/elaborations/get/${elaborationId}`
+      `/phases/get/elaborations/${elaborationId}/${projectId}`
     );
   }
 
   /**
    * Update elaboration
-   * Backend: PATCH /elaborations/update/:projectId
+   * Backend: PATCH /phases/update-settings/:projectId
    */
   async updateElaboration(projectId, elaborationId, updateData) {
     return apiClient.patch(
-      `/elaborations/update/${projectId}`,
-      { elaborationId, ...updateData }
+      `/phases/update-settings/${projectId}`,
+      { phaseType: 'elaborations', settings: { elaborationId, ...updateData } }
     );
   }
 
   /**
    * Delete elaboration
-   * Backend: DELETE /elaborations/delete/:projectId
+   * Backend: DELETE /phases/delete/:projectId
    */
   async deleteElaboration(projectId, elaborationId, deleteData = {}) {
     return apiClient.delete(
-      `/elaborations/delete/${projectId}`,
-      { elaborationId, ...deleteData }
+      `/phases/delete/${projectId}`,
+      { phaseType: 'elaborations', elaborationId, ...deleteData }
     );
   }
 
@@ -76,22 +77,20 @@ class ElaborationService {
    * Get elaborations by project
    */
   async getElaborationsByProject(projectId) {
-    return apiClient.get(
-      `/elaborations/list/${projectId}`
-    );
+    return this.getElaborations(projectId);
   }
 
   /**
    * Get latest (active) elaboration for a project
-   * Backend: GET /elaborations/latest/:projectId
+   * Backend: GET /phases/latest/elaborations/:projectId
    */
   async getLatestElaboration(projectId) {
     try {
       if (!projectId) {
         throw new Error('Project ID is required');
       }
-      const response = await apiClient.get(`/elaborations/latest/${projectId}`);
-      return response.data?.data?.elaboration || response.data?.data || null;
+      const response = await apiClient.get(`/phases/latest/elaborations/${projectId}`);
+      return response.data?.data?.phase || response.data?.phase || response.data?.data || null;
     } catch (error) {
       console.error('Failed to fetch latest elaboration:', error);
       return null;
@@ -100,12 +99,12 @@ class ElaborationService {
 
   /**
    * Freeze elaboration
-   * Backend: PATCH /elaborations/freeze/:projectId
+   * Backend: PATCH /phases/update-status/:projectId
    */
   async freezeElaboration(projectId) {
     return apiClient.patch(
-      `/elaborations/freeze/${projectId}`,
-      {}
+      `/phases/update-status/${projectId}`,
+      { phaseType: 'elaborations', status: 'COMPLETED' }
     );
   }
 
