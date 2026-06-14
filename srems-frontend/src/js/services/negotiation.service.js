@@ -12,26 +12,27 @@ class NegotiationService {
    */
   async createNegotiation(projectId, negotiationData = {}) {
     return apiClient.post(
-      `/negotiations/create/${projectId}`,
-      negotiationData
+      `/phases/create/${projectId}`,
+      { phaseType: 'negotiations', settings: negotiationData }
     );
   }
 
   /**
    * Get all negotiations
-   * Backend: GET /negotiations/list/:projectId
+   * Backend: GET /phases/list/negotiations/:projectId
    */
   async getNegotiations(projectId) {
     try {
       const response = await apiClient.get(
-        `/negotiations/list/${projectId}`
+        `/phases/list/negotiations/${projectId}`
       );
       
       if (!response.success) {
         return [];
       }
       
-      return Array.isArray(response.data) ? response.data : [];
+      const phases = response.data?.data?.phases || response.data?.phases || response.data || [];
+      return Array.isArray(phases) ? phases : [];
     } catch (error) {
       console.error('Failed to fetch negotiations:', error);
       return [];
@@ -40,15 +41,15 @@ class NegotiationService {
 
   /**
    * Get latest (active) negotiation for a project
-   * Backend: GET /negotiations/latest/:projectId
+   * Backend: GET /phases/latest/negotiations/:projectId
    */
   async getLatestNegotiation(projectId) {
     try {
       if (!projectId) {
         throw new Error('Project ID is required');
       }
-      const response = await apiClient.get(`/negotiations/latest/${projectId}`);
-      return response.data?.data?.negotiation || response.data?.data || null;
+      const response = await apiClient.get(`/phases/latest/negotiations/${projectId}`);
+      return response.data?.data?.phase || response.data?.phase || response.data?.data || null;
     } catch (error) {
       console.error('Failed to fetch latest negotiation:', error);
       return null;
@@ -57,44 +58,44 @@ class NegotiationService {
 
   /**
    * Freeze negotiation
-   * Backend: PATCH /negotiations/freeze/:projectId
+   * Backend: PATCH /phases/update-status/:projectId
    */
   async freezeNegotiation(projectId) {
     return apiClient.patch(
-      `/negotiations/freeze/${projectId}`,
-      {}
+      `/phases/update-status/${projectId}`,
+      { phaseType: 'negotiations', status: 'COMPLETED' }
     );
   }
 
   /**
    * Get single negotiation
-   * Backend: GET /negotiations/get/:negotiationId
+   * Backend: GET /phases/get/negotiations/:negotiationId/:projectId
    */
   async getNegotiation(projectId, negotiationId) {
     return apiClient.get(
-      `/negotiations/get/${negotiationId}`
+      `/phases/get/negotiations/${negotiationId}/${projectId}`
     );
   }
 
   /**
    * Update negotiation
-   * Backend: PATCH /negotiations/update/:projectId
+   * Backend: PATCH /phases/update-settings/:projectId
    */
   async updateNegotiation(projectId, negotiationId, updateData) {
     return apiClient.patch(
-      `/negotiations/update/${projectId}`,
-      { negotiationId, ...updateData }
+      `/phases/update-settings/${projectId}`,
+      { phaseType: 'negotiations', settings: { negotiationId, ...updateData } }
     );
   }
 
   /**
    * Delete negotiation phase
-   * Backend: DELETE /negotiations/delete/:projectId
+   * Backend: DELETE /phases/delete/:projectId
    */
   async deleteNegotiation(projectId, negotiationId, deleteData = {}) {
     return apiClient.delete(
-      `/negotiations/delete/${projectId}`,
-      { negotiationId, ...deleteData }
+      `/phases/delete/${projectId}`,
+      { phaseType: 'negotiations', negotiationId, ...deleteData }
     );
   }
 }
