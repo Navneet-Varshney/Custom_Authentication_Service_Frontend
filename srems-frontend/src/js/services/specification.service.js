@@ -12,26 +12,27 @@ class SpecificationService {
    */
   async createSpecification(projectId, specificationData = {}) {
     return apiClient.post(
-      `/specifications/create/${projectId}`,
-      specificationData
+      `/phases/create/${projectId}`,
+      { phaseType: 'specifications', settings: specificationData }
     );
   }
 
   /**
    * Get all specifications
-   * Backend: GET /specifications/list/:projectId
+   * Backend: GET /phases/list/specifications/:projectId
    */
   async getSpecifications(projectId) {
     try {
       const response = await apiClient.get(
-        `/specifications/list/${projectId}`
+        `/phases/list/specifications/${projectId}`
       );
       
       if (!response.success) {
         return [];
       }
       
-      return Array.isArray(response.data) ? response.data : [];
+      const phases = response.data?.data?.phases || response.data?.phases || response.data || [];
+      return Array.isArray(phases) ? phases : [];
     } catch (error) {
       console.error('Failed to fetch specifications:', error);
       return [];
@@ -40,15 +41,15 @@ class SpecificationService {
 
   /**
    * Get latest (active) specification for a project
-   * Backend: GET /specifications/latest/:projectId
+   * Backend: GET /phases/latest/specifications/:projectId
    */
   async getLatestSpecification(projectId) {
     try {
       if (!projectId) {
         throw new Error('Project ID is required');
       }
-      const response = await apiClient.get(`/specifications/latest/${projectId}`);
-      return response.data?.data?.specification || response.data?.data || null;
+      const response = await apiClient.get(`/phases/latest/specifications/${projectId}`);
+      return response.data?.data?.phase || response.data?.phase || response.data?.data || null;
     } catch (error) {
       console.error('Failed to fetch latest specification:', error);
       return null;
@@ -57,44 +58,44 @@ class SpecificationService {
 
   /**
    * Freeze specification
-   * Backend: PATCH /specifications/freeze/:projectId
+   * Backend: PATCH /phases/update-status/:projectId
    */
   async freezeSpecification(projectId) {
     return apiClient.patch(
-      `/specifications/freeze/${projectId}`,
-      {}
+      `/phases/update-status/${projectId}`,
+      { phaseType: 'specifications', status: 'COMPLETED' }
     );
   }
 
   /**
    * Get single specification
-   * Backend: GET /specifications/get/:specificationId
+   * Backend: GET /phases/get/specifications/:specificationId/:projectId
    */
   async getSpecification(projectId, specificationId) {
     return apiClient.get(
-      `/specifications/get/${specificationId}`
+      `/phases/get/specifications/${specificationId}/${projectId}`
     );
   }
 
   /**
    * Update specification
-   * Backend: PATCH /specifications/update/:projectId
+   * Backend: PATCH /phases/update-settings/:projectId
    */
   async updateSpecification(projectId, specificationId, updateData) {
     return apiClient.patch(
-      `/specifications/update/${projectId}`,
-      { specificationId, ...updateData }
+      `/phases/update-settings/${projectId}`,
+      { phaseType: 'specifications', settings: { specificationId, ...updateData } }
     );
   }
 
   /**
    * Delete specification phase
-   * Backend: DELETE /specifications/delete/:projectId
+   * Backend: DELETE /phases/delete/:projectId
    */
   async deleteSpecification(projectId, specificationId, deleteData = {}) {
     return apiClient.delete(
-      `/specifications/delete/${projectId}`,
-      { specificationId, ...deleteData }
+      `/phases/delete/${projectId}`,
+      { phaseType: 'specifications', specificationId, ...deleteData }
     );
   }
 }
