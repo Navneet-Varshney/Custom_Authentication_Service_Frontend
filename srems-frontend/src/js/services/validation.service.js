@@ -12,26 +12,27 @@ class ValidationService {
    */
   async createValidation(projectId, validationData = {}) {
     return apiClient.post(
-      `/validations/create/${projectId}`,
-      validationData
+      `/phases/create/${projectId}`,
+      { phaseType: 'validations', settings: validationData }
     );
   }
 
   /**
    * Get all validations
-   * Backend: GET /validations/list/:projectId
+   * Backend: GET /phases/list/validations/:projectId
    */
   async getValidations(projectId) {
     try {
       const response = await apiClient.get(
-        `/validations/list/${projectId}`
+        `/phases/list/validations/${projectId}`
       );
       
       if (!response.success) {
         return [];
       }
       
-      return Array.isArray(response.data) ? response.data : [];
+      const phases = response.data?.data?.phases || response.data?.phases || response.data || [];
+      return Array.isArray(phases) ? phases : [];
     } catch (error) {
       console.error('Failed to fetch validations:', error);
       return [];
@@ -40,15 +41,15 @@ class ValidationService {
 
   /**
    * Get latest (active) validation for a project
-   * Backend: GET /validations/latest/:projectId
+   * Backend: GET /phases/latest/validations/:projectId
    */
   async getLatestValidation(projectId) {
     try {
       if (!projectId) {
         throw new Error('Project ID is required');
       }
-      const response = await apiClient.get(`/validations/latest/${projectId}`);
-      return response.data?.data?.validation || response.data?.data || null;
+      const response = await apiClient.get(`/phases/latest/validations/${projectId}`);
+      return response.data?.data?.phase || response.data?.phase || response.data?.data || null;
     } catch (error) {
       console.error('Failed to fetch latest validation:', error);
       return null;
@@ -57,23 +58,23 @@ class ValidationService {
 
   /**
    * Freeze validation
-   * Backend: PATCH /validations/freeze/:projectId
+   * Backend: PATCH /phases/update-status/:projectId
    */
   async freezeValidation(projectId) {
     return apiClient.patch(
-      `/validations/freeze/${projectId}`,
-      {}
+      `/phases/update-status/${projectId}`,
+      { phaseType: 'validations', status: 'COMPLETED' }
     );
   }
 
   /**
    * Delete validation phase
-   * Backend: DELETE /validations/delete/:projectId
+   * Backend: DELETE /phases/delete/:projectId
    */
   async deleteValidation(projectId, deleteData = {}) {
     return apiClient.delete(
-      `/validations/delete/${projectId}`,
-      deleteData
+      `/phases/delete/${projectId}`,
+      { phaseType: 'validations', ...deleteData }
     );
   }
 }
