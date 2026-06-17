@@ -1,4 +1,5 @@
 import { projectsService } from '../js/services/projects.service.js';
+import { activityTrackerService } from '../js/services/activity-tracker.service.js';
 import { requirementsService } from '../js/services/requirements.service.js';
 import { showToast, formatDate } from '../js/utils/helpers.js';
 
@@ -65,7 +66,7 @@ export class DashboardPage {
       this.projects = Array.isArray(data) ? data : [];
       this.renderMetrics();
       this.renderRecentProjects();
-      this.renderRecentActivity();
+      await this.renderRecentActivity();
     } catch (error) {
       showToast(error.message || 'Failed to load dashboard data', 'error');
       // Initialize with empty array to prevent .filter/.reduce errors
@@ -75,20 +76,32 @@ export class DashboardPage {
   }
 
   renderMetrics() {
-    const activeProjects = this.projects.filter(p => p.projectStatus !== 'completed').length;
-    const totalRequirements = this.projects.reduce((sum, p) => sum + (p.requirementCount || 0), 0);
-    const completedProjects = this.projects.filter(p => p.projectStatus === 'completed').length;
+    const isCompleted = (p) => {
+      const status = (p.status || p.projectStatus || '').toUpperCase();
+      return status === 'COMPLETED';
+    };
+
+    const activeProjects = this.projects.filter(p => !isCompleted(p)).length;
+    const totalRequirements = this.projects.reduce((sum, p) => sum + (p.requirementCount || p.requirementsCount || 0), 0);
+    const completedProjects = this.projects.filter(p => isCompleted(p)).length;
     const completionRate = this.projects.length > 0 ? Math.round((completedProjects / this.projects.length) * 100) : 0;
     const teamMembers = new Set(this.projects.flatMap(p => p.stakeholders || [])).size;
 
-    document.getElementById('activeProjects').textContent = activeProjects;
-    document.getElementById('totalRequirements').textContent = totalRequirements;
-    document.getElementById('completionRate').textContent = completionRate + '%';
-    document.getElementById('teamMembers').textContent = teamMembers;
+    const elActive = document.getElementById('activeProjects');
+    const elReqs = document.getElementById('totalRequirements');
+    const elRate = document.getElementById('completionRate');
+    const elTeam = document.getElementById('teamMembers');
+
+    if (elActive) elActive.textContent = activeProjects;
+    if (elReqs) elReqs.textContent = totalRequirements;
+    if (elRate) elRate.textContent = completionRate + '%';
+    if (elTeam) elTeam.textContent = teamMembers;
   }
 
   renderRecentProjects() {
     const container = document.getElementById('recentProjectsList');
+    if (!container) return;
+
     const recent = this.projects.slice(0, 3);
 
     if (recent.length === 0) {
@@ -96,42 +109,34 @@ export class DashboardPage {
       return;
     }
 
-    container.innerHTML = recent.map(p => `
-      <a href="#/requirements?project=${p._id}" class="project-mini-card">
-        <h4>${p.name}</h4>
-        <p class="text-muted">${p.description?.substring(0, 60) || 'No description'}</p>
-        <div class="card-footer">
-          <span class="badge">${p.currentPhase}</span>
-          <span class="text-sm">${formatDate(p.createdAt)}</span>
-        </div>
-      </a>
-    `).join('');
+    container.innerHTML = recent.map(p => {
+      const projectId = p._id || p.id || p.projectId;
+      const projectName = p.projectName || p.name || 'Untitled Project';
+      const phase = p.currentPhase || p.phase || 'INCEPTION';
+      return `
+        <a href="#/projects/${projectId}" class="project-mini-card">
+          <h4>${projectName}</h4>
+          <p class="text-muted">${p.description?.substring(0, 60) || 'No description'}</p>
+          <div class="card-footer">
+            <span class="badge">${phase}</span>
+            <span class="text-sm">${formatDate(p.createdAt)}</span>
+          </div>
+        </a>
+      `;
+    }).join('');
   }
 
-  renderRecentActivity() {
+  async renderRecentActivity() {
     const container = document.getElementById('recentActivityList');
-    
-    // Mock recent activities
-    const activities = [
-      {
-        type: 'update',
-        message: 'Updated requirements for E-Commerce Platform',
-        time: '2 hours ago',
-        user: 'John Doe'
-      },
-      {
-        type: 'create',
-        message: 'Created new project: Mobile Banking App',
-        time: '1 day ago',
-        user: 'Jane Smith'
-      },
-      {
-        type: 'approve',
-        message: 'Approved specification for User Management',
-        time: '2 days ago',
-        user: 'Manager'
-      }
-    ];
+
+    let activities = [];
+    try {
+      const response = await activityTrackerService.getMyActivity(1, 3);
+      activities = response?.data?.activities || [];
+    } catch (error) {
+      console.error('Failed to load recent activity:', error);
+      activities = [];
+    }
 
     if (activities.length === 0) {
       container.innerHTML = '<p class="empty-message">No recent activity</p>';
@@ -142,8 +147,8 @@ export class DashboardPage {
       <div class="activity-feed-item">
         <div class="activity-icon">${this.getIcon(activity.type)}</div>
         <div class="activity-text">
-          <p><strong>${activity.user}</strong> ${activity.message}</p>
-          <span class="text-muted">${activity.time}</span>
+          <p><strong>${activity.user?.name || activity.user?.fullName || 'You'}</strong> ${activity.message || activity.description || 'Updated an item'}</p>
+          <span class="text-muted">${activity.createdAt ? formatDate(activity.createdAt) : (activity.time || '')}</span>
         </div>
       </div>
     `).join('');
