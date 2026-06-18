@@ -14,8 +14,8 @@ class InceptionService {
   async createInception(inceptionData) {
     const { projectId, ...data } = inceptionData;
     return apiClient.post(
-      `/phases/create/${projectId}`,
-      { phaseType: 'inceptions', settings: data }
+      `${API_CONFIG.ENDPOINTS.PHASES}/create/${projectId}`,
+      { phaseType: 'inceptions', workflowMode: data.workflowMode, phaseStatus: data.phaseStatus }
     );
   }
 
@@ -38,7 +38,7 @@ class InceptionService {
       }
 
       const response = await apiClient.get(
-        `/phases/list/inceptions/${projectId}`
+        `${API_CONFIG.ENDPOINTS.PHASES}/list/inceptions/${projectId}`
       );
       
       if (!response.success) {
@@ -62,7 +62,7 @@ class InceptionService {
       if (!projectId) {
         throw new Error('Project ID is required');
       }
-      const response = await apiClient.get(`/phases/latest/inceptions/${projectId}`);
+      const response = await apiClient.get(`${API_CONFIG.ENDPOINTS.PHASES}/latest/inceptions/${projectId}`);
       return response.data?.data?.phase || response.data?.phase || response.data || null;
     } catch (error) {
       console.error('Failed to fetch latest inception:', error);
@@ -76,7 +76,7 @@ class InceptionService {
    */
   async getInception(inceptionId, projectId) {
     return apiClient.get(
-      `/phases/get/inceptions/${inceptionId}/${projectId}`
+      `${API_CONFIG.ENDPOINTS.PHASES}/get/inceptions/${inceptionId}/${projectId}`
     );
   }
 
@@ -86,8 +86,8 @@ class InceptionService {
    */
   async updateInception(projectId, inceptionId, updateData) {
     return apiClient.patch(
-      `/phases/update-settings/${projectId}`,
-      { phaseType: 'inceptions', settings: updateData }
+      `${API_CONFIG.ENDPOINTS.PHASES}/update-settings/${projectId}`,
+      { phaseType: 'inceptions', ...updateData }
     );
   }
 
@@ -97,8 +97,8 @@ class InceptionService {
    */
   async freezeInception(projectId) {
     return apiClient.patch(
-      `/phases/update-status/${projectId}`,
-      { phaseType: 'inceptions', status: 'COMPLETED' }
+      `${API_CONFIG.ENDPOINTS.PHASES}/update-status/${projectId}`,
+      { phaseType: 'inceptions', phaseStatus: 'FROZEN' }
     );
   }
 
@@ -108,7 +108,7 @@ class InceptionService {
    */
   async deleteInception(projectId, inceptionId, deleteData = {}) {
     return apiClient.delete(
-      `/phases/delete/${projectId}`,
+      `${API_CONFIG.ENDPOINTS.PHASES}/delete/${projectId}`,
       { phaseType: 'inceptions', ...deleteData }
     );
   }
