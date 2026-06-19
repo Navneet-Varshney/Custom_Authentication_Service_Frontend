@@ -31,13 +31,11 @@ class ElicitationService {
   async createElicitation(elicitationData) {
     const { projectId, ...data } = elicitationData;
     return apiClient.post(
-      `/phases/create/${projectId}`,
+      `${API_CONFIG.ENDPOINTS.PHASES}/create/${projectId}`,
       {
         phaseType: 'elicitations',
-        settings: {
-          mode: data.mode,
-          allowParallelMeetings: data.allowParallelMeetings === true
-        }
+        workflowMode: data.mode,
+        allowParallelMeetings: data.allowParallelMeetings === true
       }
     );
   }
@@ -49,7 +47,7 @@ class ElicitationService {
   async getElicitations(projectId, page = 1, pageSize = 10) {
     try {
       const response = await apiClient.get(
-        `/phases/list/elicitations/${projectId}`
+        `${API_CONFIG.ENDPOINTS.PHASES}/list/elicitations/${projectId}`
       );
       
       if (!response.success) {
@@ -72,7 +70,7 @@ class ElicitationService {
       if (!projectId) {
         throw new Error('Project ID is required');
       }
-      const response = await apiClient.get(`/phases/latest/elicitations/${projectId}`);
+      const response = await apiClient.get(`${API_CONFIG.ENDPOINTS.PHASES}/latest/elicitations/${projectId}`);
       return this.normalizeElicitation(response.data?.data?.phase || response.data?.phase || response.data?.data || null);
     } catch (error) {
       console.error('Failed to fetch latest elicitation:', error);
@@ -86,8 +84,8 @@ class ElicitationService {
    */
   async freezeElicitation(projectId) {
     return apiClient.patch(
-      `/phases/update-status/${projectId}`,
-      { phaseType: 'elicitations', status: 'COMPLETED' }
+      `${API_CONFIG.ENDPOINTS.PHASES}/update-status/${projectId}`,
+      { phaseType: 'elicitations', phaseStatus: 'FROZEN' }
     );
   }
 
@@ -97,7 +95,7 @@ class ElicitationService {
    */
   async getElicitation(projectId, elicitationId) {
     return apiClient.get(
-      `/phases/get/elicitations/${elicitationId}/${projectId}`
+      `${API_CONFIG.ENDPOINTS.PHASES}/get/elicitations/${elicitationId}/${projectId}`
     );
   }
 
@@ -107,8 +105,8 @@ class ElicitationService {
    */
   async updateElicitation(projectId, elicitationId, updateData) {
     return apiClient.patch(
-      `/phases/update-settings/${projectId}`,
-      { phaseType: 'elicitations', settings: { elicitationId, ...updateData } }
+      `${API_CONFIG.ENDPOINTS.PHASES}/update-settings/${projectId}`,
+      { phaseType: 'elicitations', ...updateData }
     );
   }
 
@@ -118,8 +116,8 @@ class ElicitationService {
    */
   async deleteElicitation(projectId, elicitationId, deleteData = {}) {
     return apiClient.delete(
-      `/phases/delete/${projectId}`,
-      { phaseType: 'elicitations', elicitationId, ...deleteData }
+      `${API_CONFIG.ENDPOINTS.PHASES}/delete/${projectId}`,
+      { phaseType: 'elicitations', ...deleteData }
     );
   }
 
