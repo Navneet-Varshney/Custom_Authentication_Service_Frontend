@@ -14,8 +14,8 @@ class ElaborationService {
   async createElaboration(elaborationData) {
     const { projectId, ...data } = elaborationData;
     return apiClient.post(
-      `/phases/create/${projectId}`,
-      { phaseType: 'elaborations', settings: data }
+      `${API_CONFIG.ENDPOINTS.PHASES}/create/${projectId}`,
+      { phaseType: 'elaborations', allowParallelMeetings: data.allowParallelMeetings === true, workflowMode: data.workflowMode }
     );
   }
 
@@ -26,7 +26,7 @@ class ElaborationService {
   async getElaborations(projectId) {
     try {
       const response = await apiClient.get(
-        `/phases/list/elaborations/${projectId}`
+        `${API_CONFIG.ENDPOINTS.PHASES}/list/elaborations/${projectId}`
       );
       
       if (!response.success) {
@@ -47,7 +47,7 @@ class ElaborationService {
    */
   async getElaboration(projectId, elaborationId) {
     return apiClient.get(
-      `/phases/get/elaborations/${elaborationId}/${projectId}`
+      `${API_CONFIG.ENDPOINTS.PHASES}/get/elaborations/${elaborationId}/${projectId}`
     );
   }
 
@@ -57,8 +57,8 @@ class ElaborationService {
    */
   async updateElaboration(projectId, elaborationId, updateData) {
     return apiClient.patch(
-      `/phases/update-settings/${projectId}`,
-      { phaseType: 'elaborations', settings: { elaborationId, ...updateData } }
+      `${API_CONFIG.ENDPOINTS.PHASES}/update-settings/${projectId}`,
+      { phaseType: 'elaborations', ...updateData }
     );
   }
 
@@ -68,8 +68,8 @@ class ElaborationService {
    */
   async deleteElaboration(projectId, elaborationId, deleteData = {}) {
     return apiClient.delete(
-      `/phases/delete/${projectId}`,
-      { phaseType: 'elaborations', elaborationId, ...deleteData }
+      `${API_CONFIG.ENDPOINTS.PHASES}/delete/${projectId}`,
+      { phaseType: 'elaborations', ...deleteData }
     );
   }
 
@@ -89,7 +89,7 @@ class ElaborationService {
       if (!projectId) {
         throw new Error('Project ID is required');
       }
-      const response = await apiClient.get(`/phases/latest/elaborations/${projectId}`);
+      const response = await apiClient.get(`${API_CONFIG.ENDPOINTS.PHASES}/latest/elaborations/${projectId}`);
       return response.data?.data?.phase || response.data?.phase || response.data?.data || null;
     } catch (error) {
       console.error('Failed to fetch latest elaboration:', error);
@@ -103,8 +103,8 @@ class ElaborationService {
    */
   async freezeElaboration(projectId) {
     return apiClient.patch(
-      `/phases/update-status/${projectId}`,
-      { phaseType: 'elaborations', status: 'COMPLETED' }
+      `${API_CONFIG.ENDPOINTS.PHASES}/update-status/${projectId}`,
+      { phaseType: 'elaborations', phaseStatus: 'FROZEN' }
     );
   }
 
