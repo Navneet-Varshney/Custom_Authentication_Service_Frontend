@@ -201,7 +201,9 @@ class MeetingsPage {
     const groupFilter = document.getElementById('filterGroup')?.value || '';
 
     console.log('🔍 [filterMeetings] search:', search, 'status:', statusFilter, 'group:', groupFilter);
-    console.log('📦 Total meetings:', this.meetings.length);
+    if (!Array.isArray(this.meetings)) {
+      this.meetings = [];
+    }
 
     this.filteredMeetings = this.meetings.filter(meeting => {
       const matchesSearch = !search || 
