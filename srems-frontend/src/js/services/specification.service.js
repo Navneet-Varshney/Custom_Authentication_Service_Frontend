@@ -12,8 +12,8 @@ class SpecificationService {
    */
   async createSpecification(projectId, specificationData = {}) {
     return apiClient.post(
-      `/phases/create/${projectId}`,
-      { phaseType: 'specifications', settings: specificationData }
+      `${API_CONFIG.ENDPOINTS.PHASES}/create/${projectId}`,
+      { phaseType: 'specifications', ...specificationData }
     );
   }
 
@@ -24,7 +24,7 @@ class SpecificationService {
   async getSpecifications(projectId) {
     try {
       const response = await apiClient.get(
-        `/phases/list/specifications/${projectId}`
+        `${API_CONFIG.ENDPOINTS.PHASES}/list/specifications/${projectId}`
       );
       
       if (!response.success) {
@@ -48,7 +48,7 @@ class SpecificationService {
       if (!projectId) {
         throw new Error('Project ID is required');
       }
-      const response = await apiClient.get(`/phases/latest/specifications/${projectId}`);
+      const response = await apiClient.get(`${API_CONFIG.ENDPOINTS.PHASES}/latest/specifications/${projectId}`);
       return response.data?.data?.phase || response.data?.phase || response.data?.data || null;
     } catch (error) {
       console.error('Failed to fetch latest specification:', error);
@@ -63,7 +63,7 @@ class SpecificationService {
   async freezeSpecification(projectId) {
     return apiClient.patch(
       `/phases/update-status/${projectId}`,
-      { phaseType: 'specifications', status: 'COMPLETED' }
+      { phaseType: 'specifications', phaseStatus: 'FROZEN' }
     );
   }
 
@@ -83,8 +83,8 @@ class SpecificationService {
    */
   async updateSpecification(projectId, specificationId, updateData) {
     return apiClient.patch(
-      `/phases/update-settings/${projectId}`,
-      { phaseType: 'specifications', settings: { specificationId, ...updateData } }
+      `${API_CONFIG.ENDPOINTS.PHASES}/update-settings/${projectId}`,
+      { phaseType: 'specifications', ...updateData }
     );
   }
 
@@ -94,8 +94,8 @@ class SpecificationService {
    */
   async deleteSpecification(projectId, specificationId, deleteData = {}) {
     return apiClient.delete(
-      `/phases/delete/${projectId}`,
-      { phaseType: 'specifications', specificationId, ...deleteData }
+      `${API_CONFIG.ENDPOINTS.PHASES}/delete/${projectId}`,
+      { phaseType: 'specifications', ...deleteData }
     );
   }
 }
