@@ -112,6 +112,7 @@ export class SpecificationPage {
       }
 
     } catch (error) {
+      console.error('[Specification] Error loading specification:', error);
       showToast(error.message || 'Failed to load specification', 'error');
     }
   }
