@@ -12,8 +12,8 @@ class NegotiationService {
    */
   async createNegotiation(projectId, negotiationData = {}) {
     return apiClient.post(
-      `/phases/create/${projectId}`,
-      { phaseType: 'negotiations', settings: negotiationData }
+      `${API_CONFIG.ENDPOINTS.PHASES}/create/${projectId}`,
+      { phaseType: 'negotiations', ...negotiationData }
     );
   }
 
@@ -24,7 +24,7 @@ class NegotiationService {
   async getNegotiations(projectId) {
     try {
       const response = await apiClient.get(
-        `/phases/list/negotiations/${projectId}`
+        `${API_CONFIG.ENDPOINTS.PHASES}/list/negotiations/${projectId}`
       );
       
       if (!response.success) {
@@ -48,7 +48,7 @@ class NegotiationService {
       if (!projectId) {
         throw new Error('Project ID is required');
       }
-      const response = await apiClient.get(`/phases/latest/negotiations/${projectId}`);
+      const response = await apiClient.get(`${API_CONFIG.ENDPOINTS.PHASES}/latest/negotiations/${projectId}`);
       return response.data?.data?.phase || response.data?.phase || response.data?.data || null;
     } catch (error) {
       console.error('Failed to fetch latest negotiation:', error);
@@ -62,8 +62,8 @@ class NegotiationService {
    */
   async freezeNegotiation(projectId) {
     return apiClient.patch(
-      `/phases/update-status/${projectId}`,
-      { phaseType: 'negotiations', status: 'COMPLETED' }
+      `${API_CONFIG.ENDPOINTS.PHASES}/update-status/${projectId}`,
+      { phaseType: 'negotiations', phaseStatus: 'FROZEN' }
     );
   }
 
@@ -73,7 +73,7 @@ class NegotiationService {
    */
   async getNegotiation(projectId, negotiationId) {
     return apiClient.get(
-      `/phases/get/negotiations/${negotiationId}/${projectId}`
+      `${API_CONFIG.ENDPOINTS.PHASES}/get/negotiations/${negotiationId}/${projectId}`
     );
   }
 
@@ -83,8 +83,8 @@ class NegotiationService {
    */
   async updateNegotiation(projectId, negotiationId, updateData) {
     return apiClient.patch(
-      `/phases/update-settings/${projectId}`,
-      { phaseType: 'negotiations', settings: { negotiationId, ...updateData } }
+      `${API_CONFIG.ENDPOINTS.PHASES}/update-settings/${projectId}`,
+      { phaseType: 'negotiations', ...updateData }
     );
   }
 
@@ -94,8 +94,8 @@ class NegotiationService {
    */
   async deleteNegotiation(projectId, negotiationId, deleteData = {}) {
     return apiClient.delete(
-      `/phases/delete/${projectId}`,
-      { phaseType: 'negotiations', negotiationId, ...deleteData }
+      `${API_CONFIG.ENDPOINTS.PHASES}/delete/${projectId}`,
+      { phaseType: 'negotiations', ...deleteData }
     );
   }
 }
