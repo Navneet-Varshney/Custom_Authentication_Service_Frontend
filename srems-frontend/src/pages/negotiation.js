@@ -108,7 +108,7 @@ export class NegotiationPage {
         }
       }
     } catch (error) {
-      showToast(error.message || 'Failed to load requirements', 'error');
+      showToast(error.message || 'Failed to load negotiation details', 'error');
     }
   }
 
