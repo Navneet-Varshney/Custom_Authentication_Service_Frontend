@@ -216,8 +216,8 @@ export class InceptionPage {
   }
 
   applyFilters() {
-    const statusFilter = document.getElementById('filterStatus').value;
-    const search = document.getElementById('searchInception').value.toLowerCase();
+    const statusFilter = document.getElementById('filterStatus')?.value || '';
+    const search = (document.getElementById('searchInception')?.value || '').toLowerCase();
 
     // Ensure inceptions is always an array
     if (!Array.isArray(this.inceptions)) {
