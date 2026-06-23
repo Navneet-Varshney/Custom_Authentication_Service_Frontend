@@ -98,8 +98,10 @@ export class ProjectsPage {
       this.projects = [];
     }
     this.filteredProjects = this.projects.filter(p => {
-      const statusMatch = !status || p.currentPhase === status;
-      const searchMatch = p.name.toLowerCase().includes(search) || p.description?.toLowerCase().includes(search);
+      const name = p.projectName || p.name || '';
+      const phase = p.currentPhase || p.phase || '';
+      const statusMatch = !status || phase === status;
+      const searchMatch = name.toLowerCase().includes(search) || (p.description && p.description.toLowerCase().includes(search));
       return statusMatch && searchMatch;
     });
 
@@ -109,6 +111,8 @@ export class ProjectsPage {
   renderProjects() {
     const container = document.getElementById('projectsContainer');
     const empty = document.getElementById('emptyProjects');
+
+    if (!container || !empty) return;
 
     if (this.filteredProjects.length === 0) {
       container.classList.add('hidden');
@@ -127,15 +131,23 @@ export class ProjectsPage {
   }
 
   createProjectCard(project) {
-    const statusBadge = PHASES[project.currentPhase] || project.currentPhase || 'inception';
-    const statusColor = COLORS.phases?.[project.currentPhase] || '#6c757d';
+    const projectId = project._id || project.id || project.projectId;
+    const name = project.projectName || project.name || 'Untitled Project';
+    const phase = project.currentPhase || project.phase || 'INCEPTION';
+    const projectType = project.projectType || project.type || '';
+    const projectCategory = project.projectCategory || project.category || '';
+    const projectComplexity = project.projectComplexity || project.complexity || '—';
+    const projectStatus = project.projectStatus || project.status || 'Active';
+
+    const statusBadge = PHASES[phase] || phase || 'inception';
+    const statusColor = COLORS.phases?.[phase] || '#6c757d';
     const createdDate = formatDate(project.createdAt) || 'N/A';
     
     return `
-      <div class="project-card" data-project-id="${project._id}">
+      <div class="project-card" data-project-id="${projectId}">
         <div class="card-header-enhanced">
           <div class="card-title-section">
-            <h3 class="card-title">${project.name}</h3>
+            <h3 class="card-title">${name}</h3>
           </div>
           <span class="phase-badge" style="background-color: ${statusColor}; color: white;">${statusBadge}</span>
         </div>
@@ -145,19 +157,19 @@ export class ProjectsPage {
         <div class="card-details-grid">
           <div class="detail-item">
             <span class="detail-label">Type</span>
-            <span class="detail-value">${project.projectType ? project.projectType.charAt(0).toUpperCase() + project.projectType.slice(1) : '—'}</span>
+            <span class="detail-value">${projectType ? projectType.charAt(0).toUpperCase() + projectType.slice(1) : '—'}</span>
           </div>
           <div class="detail-item">
             <span class="detail-label">Category</span>
-            <span class="detail-value">${project.projectCategory ? project.projectCategory.replace('_', ' ').charAt(0).toUpperCase() + project.projectCategory.slice(1) : '—'}</span>
+            <span class="detail-value">${projectCategory ? projectCategory.replace(/_/g, ' ').charAt(0).toUpperCase() + projectCategory.slice(1) : '—'}</span>
           </div>
           <div class="detail-item">
             <span class="detail-label">Complexity</span>
-            <span class="detail-value">${project.projectComplexity || '—'}</span>
+            <span class="detail-value">${projectComplexity}</span>
           </div>
           <div class="detail-item">
             <span class="detail-label">Status</span>
-            <span class="detail-value"><span class="card-status-tag ${project.projectStatus?.toLowerCase()}">${project.projectStatus || 'Active'}</span></span>
+            <span class="detail-value"><span class="card-status-tag ${projectStatus.toLowerCase()}">${projectStatus}</span></span>
           </div>
         </div>
         
