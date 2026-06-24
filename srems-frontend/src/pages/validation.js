@@ -24,33 +24,27 @@ export class ValidationPage {
     document.getElementById('validationForm')?.addEventListener('submit', (e) => this.handleValidationSubmit(e));
     document.getElementById('deleteValidationForm')?.addEventListener('submit', (e) => this.handleDeleteValidation(e));
 
-    document.querySelectorAll('.rating-btn')?.forEach(btn => {
+    document.querySelectorAll('.rating-btn')?.forEach((btn) => {
       btn.addEventListener('click', (e) => {
         e.preventDefault();
-        document.querySelectorAll('.rating-btn').forEach(b => b.removeAttribute('selected'));
+        document.querySelectorAll('.rating-btn').forEach((b) => b.removeAttribute('selected'));
         e.target.setAttribute('selected', 'true');
         document.getElementById('val-rating').value = e.target.dataset.rating;
       });
     });
 
-    // Modal close buttons
-    document.querySelectorAll('[data-close-modal]').forEach(btn => {
+    document.querySelectorAll('[data-close-modal]').forEach((btn) => {
       btn.addEventListener('click', (e) => {
         const modalId = e.currentTarget.getAttribute('data-close-modal');
         hideModal(modalId);
-      });
-    });
       });
     });
   }
 
   async loadRequirements() {
     try {
-      // Get current project from store or localStorage
-      let projectId = store.state.projects.current?._id || 
-                     store.state.projects.current?.id || 
-                     store.state.projects.current;
-      
+      let projectId = store.state.projects.current?._id || store.state.projects.current?.id || store.state.projects.current;
+
       if (!projectId) {
         const savedProject = localStorage.getItem('CURRENT_PROJECT');
         if (savedProject) {
@@ -69,25 +63,22 @@ export class ValidationPage {
         return;
       }
 
-      // Check for active validation phase
       const validation = await validationService.getLatestValidation(projectId);
-      
       const btnCreate = document.getElementById('btnCreateValidation');
       const btnFreeze = document.getElementById('btnFreezeValidation');
       const btnStart = document.getElementById('btnStartValidation');
       const container = document.getElementById('validationContainer');
 
       if (validation) {
-        // Hide create, show freeze and start
         if (btnCreate) btnCreate.classList.add('hidden');
         if (btnStart) btnStart.classList.remove('hidden');
-        
+
         if (btnFreeze) {
           if (!validation.isFrozen && !validation.isDeleted) {
             btnFreeze.classList.remove('hidden');
           } else {
             btnFreeze.classList.add('hidden');
-            if (btnStart) btnStart.classList.add('hidden'); // Cannot start if frozen
+            if (btnStart) btnStart.classList.add('hidden');
           }
         }
 
@@ -104,14 +95,13 @@ export class ValidationPage {
         this.renderValidationProgress();
         this.renderValidationItems();
       } else {
-        // Show create, hide others
         if (btnCreate) btnCreate.classList.remove('hidden');
         if (btnFreeze) btnFreeze.classList.add('hidden');
 
         const btnDelete = document.getElementById('btnDeleteValidation');
         if (btnDelete) btnDelete.classList.add('hidden');
         if (btnStart) btnStart.classList.add('hidden');
-        
+
         if (container) {
           container.innerHTML = '<div class="empty-state"><p>No Validation phase created yet. Create one to begin.</p></div>';
         }
@@ -123,10 +113,7 @@ export class ValidationPage {
 
   async handleCreateValidation() {
     try {
-      let projectId = store.state.projects.current?._id || 
-                     store.state.projects.current?.id || 
-                     store.state.projects.current;
-
+      const projectId = store.state.projects.current?._id || store.state.projects.current?.id || store.state.projects.current;
       const response = await validationService.createValidation(projectId, {});
       if (!response.success) {
         showToast(response.message || 'Failed to create validation phase', 'error');
@@ -146,10 +133,7 @@ export class ValidationPage {
     if (!confirmed) return;
 
     try {
-      let projectId = store.state.projects.current?._id || 
-                     store.state.projects.current?.id || 
-                     store.state.projects.current;
-
+      const projectId = store.state.projects.current?._id || store.state.projects.current?.id || store.state.projects.current;
       const response = await validationService.freezeValidation(projectId);
       if (!response.success) {
         showToast(response.message || 'Failed to freeze validation phase', 'error');
@@ -157,7 +141,7 @@ export class ValidationPage {
       }
 
       showToast('Validation phase frozen successfully. Project Management can now begin.', 'success');
-      await this.loadRequirements(); // Reload the data to update UI state
+      await this.loadRequirements();
     } catch (error) {
       console.error('[Validation] Error freezing phase:', error);
       showToast(error.message || 'Failed to freeze validation phase', 'error');
@@ -165,8 +149,8 @@ export class ValidationPage {
   }
 
   renderValidationProgress() {
-    const validated = this.requirements.filter(r => r.validationData?.isApproved).length;
-    const issues = this.requirements.filter(r => r.validationData?.issues).length;
+    const validated = this.requirements.filter((r) => r.validationData?.isApproved).length;
+    const issues = this.requirements.filter((r) => r.validationData?.issues).length;
 
     document.getElementById('valTotal').textContent = this.requirements.length;
     document.getElementById('valValidated').textContent = validated;
@@ -187,7 +171,6 @@ export class ValidationPage {
     container.innerHTML = this.requirements.map((req, idx) => {
       const valData = req.validationData || {};
       const isApproved = valData.isApproved;
-      const score = valData.qualityRating || 0;
 
       return `
         <div class="validation-item ${isApproved ? 'approved' : ''}" data-index="${idx}">
@@ -214,9 +197,9 @@ export class ValidationPage {
       `;
     }).join('');
 
-    container.querySelectorAll('.validate-btn').forEach(btn => {
+    container.querySelectorAll('.validate-btn').forEach((btn) => {
       btn.addEventListener('click', (e) => {
-        const index = parseInt(e.target.closest('.validation-item').dataset.index);
+        const index = parseInt(e.target.closest('.validation-item').dataset.index, 10);
         this.openValidationModal(index);
       });
     });
@@ -243,7 +226,6 @@ export class ValidationPage {
       </div>
     `;
 
-    // Load saved validation data
     document.getElementById('val-complete').checked = valData.isComplete || false;
     document.getElementById('val-testable').checked = valData.isTestable || false;
     document.getElementById('val-traceable').checked = valData.isTraceable || false;
@@ -254,8 +236,7 @@ export class ValidationPage {
     document.getElementById('val-comments').value = valData.comments || '';
     document.getElementById('val-approved').checked = valData.isApproved || false;
 
-    // Update rating button states
-    document.querySelectorAll('.rating-btn').forEach(btn => {
+    document.querySelectorAll('.rating-btn').forEach((btn) => {
       btn.removeAttribute('selected');
       if (btn.dataset.rating === String(valData.qualityRating || '3')) {
         btn.setAttribute('selected', 'true');
@@ -275,12 +256,12 @@ export class ValidationPage {
       isTraceable: document.getElementById('val-traceable').checked,
       isConsistent: document.getElementById('val-consistent').checked,
       isFeasible: document.getElementById('val-feasible').checked,
-      qualityRating: parseInt(document.getElementById('val-rating').value),
+      qualityRating: parseInt(document.getElementById('val-rating').value, 10),
       issues: document.getElementById('val-issues').value,
       comments: document.getElementById('val-comments').value,
       isApproved: document.getElementById('val-approved').checked,
       validatedAt: new Date().toISOString(),
-      validatedBy: store.getState().userId || 'validator',
+      validatedBy: store.state.user?.id || 'validator'
     };
 
     try {
@@ -289,7 +270,6 @@ export class ValidationPage {
       hideModal('validationModal');
       await this.loadRequirements();
 
-      // Move to next unvalidated
       const nextUnvalidated = this.requirements.findIndex((r, idx) => idx > this.currentReqIndex && !r.validationData?.isApproved);
       if (nextUnvalidated !== -1) {
         setTimeout(() => this.openValidationModal(nextUnvalidated), 500);
@@ -300,7 +280,7 @@ export class ValidationPage {
   }
 
   startValidation() {
-    const unvalidated = this.requirements.findIndex(r => !r.validationData?.isApproved);
+    const unvalidated = this.requirements.findIndex((r) => !r.validationData?.isApproved);
     if (unvalidated === -1) {
       showToast('All requirements validated!', 'info');
       return;
@@ -316,10 +296,7 @@ export class ValidationPage {
     e.preventDefault();
 
     try {
-      let projectId = store.state.projects.current?._id || 
-                     store.state.projects.current?.id || 
-                     store.state.projects.current;
-
+      const projectId = store.state.projects.current?._id || store.state.projects.current?.id || store.state.projects.current;
       if (!projectId) {
         showToast('Please select a project', 'warning');
         return;
@@ -337,7 +314,6 @@ export class ValidationPage {
       if (reasonDescription) deleteData.deletionReasonDescription = reasonDescription;
 
       const response = await validationService.deleteValidation(projectId, deleteData);
-
       if (!response.success) {
         showToast(response.message || 'Failed to delete validation phase', 'error');
         return;
@@ -352,5 +328,3 @@ export class ValidationPage {
     }
   }
 }
-
-
