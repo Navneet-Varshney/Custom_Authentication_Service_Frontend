@@ -105,7 +105,7 @@ export class ElaborationPage {
         }
       }
     } catch (error) {
-      showToast(error.message || 'Failed to load requirements', 'error');
+      showToast(error.message || 'Failed to load elaboration details', 'error');
     }
   }
 
