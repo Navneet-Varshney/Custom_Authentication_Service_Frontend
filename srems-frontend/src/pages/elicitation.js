@@ -113,8 +113,8 @@ export class ElicitationPage {
   }
 
   applyFilters() {
-    const method = document.getElementById('filterMethod').value;
-    const search = document.getElementById('searchElicitation').value.toLowerCase();
+    const method = document.getElementById('filterMethod')?.value || '';
+    const search = (document.getElementById('searchElicitation')?.value || '').toLowerCase();
 
     // Ensure elicitations is always an array
     if (!Array.isArray(this.elicitations)) {
