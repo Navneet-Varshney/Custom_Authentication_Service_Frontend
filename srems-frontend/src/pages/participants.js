@@ -191,6 +191,10 @@ class ParticipantsPage {
     console.log(`📦 [filterParticipants] Total participants before filter: ${this.participants.length}`);
     console.log(`📋 [filterParticipants] Participants data:`, this.participants);
 
+    if (!Array.isArray(this.participants)) {
+      this.participants = [];
+    }
+
     this.filteredParticipants = this.participants.filter(participant => {
       // Search by userId, roleDescription, or any user info
       const matchesSearch = !search || 
