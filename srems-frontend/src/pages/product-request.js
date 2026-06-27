@@ -50,9 +50,9 @@ export class ProductRequestPage {
   }
 
   applyFilters() {
-    const priority = document.getElementById('filterPriority').value;
-    const status = document.getElementById('filterRequestStatus').value;
-    const search = document.getElementById('searchProductRequest').value.toLowerCase();
+    const priority = document.getElementById('filterPriority')?.value || '';
+    const status = document.getElementById('filterRequestStatus')?.value || '';
+    const search = (document.getElementById('searchProductRequest')?.value || '').toLowerCase();
 
     if (!Array.isArray(this.requests)) {
       this.requests = [];
