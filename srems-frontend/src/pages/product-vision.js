@@ -78,8 +78,8 @@ export class ProductVisionPage {
   }
 
   applyFilters() {
-    const status = document.getElementById('filterVisionStatus').value;
-    const search = document.getElementById('searchProductVision').value.toLowerCase();
+    const status = document.getElementById('filterVisionStatus')?.value || '';
+    const search = (document.getElementById('searchProductVision')?.value || '').toLowerCase();
 
     this.filteredVisions = this.visions.filter(item => {
       const itemStatus = item.isDeleted ? 'deleted' : (item.isFrozen ? 'frozen' : 'active');
