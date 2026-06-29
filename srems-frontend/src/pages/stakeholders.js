@@ -91,6 +91,11 @@ export class StakeholdersPage {
     const container = document.getElementById('stakeholdersContainer');
     const empty = document.getElementById('emptyStakeholders');
 
+    if (!container || !empty) return;
+    if (!Array.isArray(this.stakeholders)) {
+      this.stakeholders = [];
+    }
+
     if (this.stakeholders.length === 0) {
       container.classList.add('hidden');
       empty.classList.remove('hidden');
