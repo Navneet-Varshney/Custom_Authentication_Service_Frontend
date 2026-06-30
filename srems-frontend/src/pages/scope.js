@@ -92,8 +92,8 @@ export class ScopePage {
 
   renderScope() {
     const included = this.scopeItems.filter(s => s.type === 'IN_SCOPE' || s.type === 'included');
-    const excluded = this.scopeItems.filter(s => s.type === 'OUT_SCOPE' || s.type === 'excluded');
-    const constraints = this.scopeItems.filter(s => s.type === 'CONSTRAINT' || s.type === 'constraint');
+    const excluded = this.scopeItems.filter(s => s.type === 'OUT_OF_SCOPE' || s.type === 'OUT_SCOPE' || s.type === 'excluded');
+    const constraints = this.scopeItems.filter(s => s.type === 'PARTIAL_SCOPE' || s.type === 'CONSTRAINT' || s.type === 'constraint');
 
     this.renderSection('includedScope', included);
     this.renderSection('excludedScope', excluded);
