@@ -86,6 +86,11 @@ export class FeaturesPage {
     const container = document.getElementById('featuresTree');
     const empty = document.getElementById('emptyFeatures');
 
+    if (!container || !empty) return;
+    if (!Array.isArray(this.features)) {
+      this.features = [];
+    }
+
     if (this.features.length === 0) {
       container.classList.add('hidden');
       empty.classList.remove('hidden');
