@@ -90,15 +90,23 @@ export class IdeasPage {
   }
 
   updateStats() {
+    if (!Array.isArray(this.ideas)) {
+      this.ideas = [];
+    }
     const total = this.ideas.length;
     const accepted = this.ideas.filter(i => i.status === 'ACCEPTED').length;
     const rejected = this.ideas.filter(i => i.status === 'REJECTED').length;
     const deferred = this.ideas.filter(i => i.status === 'DEFERRED').length;
 
-    document.getElementById('statTotal').textContent = total;
-    document.getElementById('statAccepted').textContent = accepted;
-    document.getElementById('statRejected').textContent = rejected;
-    document.getElementById('statDeferred').textContent = deferred;
+    const elTotal = document.getElementById('statTotal');
+    const elAccepted = document.getElementById('statAccepted');
+    const elRejected = document.getElementById('statRejected');
+    const elDeferred = document.getElementById('statDeferred');
+
+    if (elTotal) elTotal.textContent = total;
+    if (elAccepted) elAccepted.textContent = accepted;
+    if (elRejected) elRejected.textContent = rejected;
+    if (elDeferred) elDeferred.textContent = deferred;
   }
 
   renderIdeas() {
