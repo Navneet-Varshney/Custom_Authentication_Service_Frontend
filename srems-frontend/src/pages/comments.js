@@ -69,11 +69,11 @@ class CommentsPage {
         document.getElementById('closeCommentModal')?.addEventListener('click', () => this.closeCommentModal());
         document.getElementById('cancelCommentBtn')?.addEventListener('click', () => this.closeCommentModal());
         document.getElementById('commentEntityType')?.addEventListener('change', (e) => {
-            this.entityType = e.target.value;
+            this.entityType = e.target?.value || 'scopes';
             this.loadEntityOptions();
         });
         document.getElementById('commentEntityId')?.addEventListener('change', (e) => {
-            this.entityId = e.target.value;
+            this.entityId = e.target?.value || '';
         });
         document.getElementById('searchComments')?.addEventListener('input', debounce(() => this.applyFilters(), 250));
         document.getElementById('filterType')?.addEventListener('change', () => this.applyFilters());
