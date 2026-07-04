@@ -123,6 +123,10 @@ export class ActivityPage {
   }
 
   applyFilters() {
+    if (!Array.isArray(this.activities)) {
+      this.activities = [];
+    }
+
     const typeFilter = document.getElementById('filterActivityType')?.value || '';
     const searchFilter = (document.getElementById('searchActivity')?.value || '').toLowerCase();
 
