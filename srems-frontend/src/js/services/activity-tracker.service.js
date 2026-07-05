@@ -15,9 +15,11 @@ class ActivityTrackerService {
    */
   async getMyActivity(page = 1, pageSize = 20) {
     try {
-      console.log('👤 [ACTIVITY-SERVICE] Fetching MY activities, page:', page, 'limit:', pageSize);
+      const validPage = Math.max(1, parseInt(page, 10) || 1);
+      const validSize = Math.max(1, parseInt(pageSize, 10) || 20);
+      console.log('👤 [ACTIVITY-SERVICE] Fetching MY activities, page:', validPage, 'limit:', validSize);
       
-      const endpoint = `${API_CONFIG.ENDPOINTS.ACTIVITY_TRACKER}/my-activity?page=${page}&limit=${pageSize}`;
+      const endpoint = `${API_CONFIG.ENDPOINTS.ACTIVITY_TRACKER}/my-activity?page=${validPage}&limit=${validSize}`;
       console.log(`📡 [ACTIVITY-SERVICE] Calling API: ${endpoint}`);
       
       const response = await apiClient.get(endpoint);
