@@ -17,15 +17,16 @@ export const commentsService = {
   supportedEntityTypes: ['scopes', 'requirements', 'inceptions', 'high-level-features'],
 
   normalizeCommentTree(comment) {
-    const commentId = comment?._id || comment?.id;
-    const children = comment?.replies || comment?.childComments || [];
+    if (!comment) return null;
+    const commentId = comment._id || comment.id;
+    const children = comment.replies || comment.childComments || [];
 
     return {
       ...comment,
       _id: commentId,
       id: commentId,
       childComments: Array.isArray(children)
-        ? children.map((child) => this.normalizeCommentTree(child))
+        ? children.map((child) => this.normalizeCommentTree(child)).filter(Boolean)
         : []
     };
   },
