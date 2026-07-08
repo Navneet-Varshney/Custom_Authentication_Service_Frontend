@@ -11,11 +11,19 @@ class ElaborationService {
    * Create elaboration
    * Backend: POST /elaborations/create/:projectId
    */
-  async createElaboration(elaborationData) {
-    const { projectId, ...data } = elaborationData;
+  async createElaboration(projectIdOrData, dataPayload = {}) {
+    let projectId, data;
+    if (typeof projectIdOrData === 'object' && projectIdOrData !== null) {
+      const { projectId: pid, ...rest } = projectIdOrData;
+      projectId = pid;
+      data = rest;
+    } else {
+      projectId = projectIdOrData;
+      data = dataPayload;
+    }
     return apiClient.post(
       `${API_CONFIG.ENDPOINTS.PHASES}/create/${projectId}`,
-      { phaseType: 'elaborations', allowParallelMeetings: data.allowParallelMeetings === true, workflowMode: data.workflowMode }
+      { phaseType: 'elaborations', allowParallelMeetings: data?.allowParallelMeetings === true, workflowMode: data?.workflowMode }
     );
   }
 
