@@ -21,7 +21,7 @@ class ElicitationService {
   normalizeList(response) {
     const payload = response?.data;
     const elicitations = payload?.data?.elicitations || payload?.elicitations || payload?.data || payload || [];
-    return Array.isArray(elicitations) ? elicitations.map((item) => this.normalizeElicitation(item)) : [];
+    return Array.isArray(elicitations) ? elicitations.map((item) => this.normalizeElicitation(item)).filter(Boolean) : [];
   }
 
   /**
