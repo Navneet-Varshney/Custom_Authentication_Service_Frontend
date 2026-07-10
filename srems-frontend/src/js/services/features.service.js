@@ -12,12 +12,12 @@ class FeaturesService {
    * Backend: POST /high-level-features/create/:projectId
    * Backend only supports: title, description, linkedIdeaId
    */
-  async createFeature(projectId, featureData) {
-    // Only send backend-supported fields
+  async createFeature(projectId, featureData = {}) {
+    const data = featureData || {};
     const payload = {
-      title: featureData.title || featureData.name,
-      description: featureData.description,
-      linkedIdeaId: featureData.linkedIdeaId || null
+      title: data.title || data.name || '',
+      description: data.description || '',
+      linkedIdeaId: data.linkedIdeaId || null
     };
     
     return apiClient.post(
