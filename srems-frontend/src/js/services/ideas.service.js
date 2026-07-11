@@ -23,7 +23,7 @@ class IdeasService {
   normalizeList(response) {
     const payload = response?.data;
     const ideas = payload?.data?.ideas || payload?.data?.items || payload?.ideas || payload?.items || payload?.data || payload || [];
-    return Array.isArray(ideas) ? ideas.map((idea) => this.normalizeIdea(idea)) : [];
+    return Array.isArray(ideas) ? ideas.map((idea) => this.normalizeIdea(idea)).filter(Boolean) : [];
   }
 
   /**
