@@ -11,11 +11,19 @@ class InceptionService {
    * Create inception document
    * Backend: POST /inceptions/create/:projectId
    */
-  async createInception(inceptionData) {
-    const { projectId, ...data } = inceptionData;
+  async createInception(projectIdOrData, dataPayload = {}) {
+    let projectId, data;
+    if (typeof projectIdOrData === 'object' && projectIdOrData !== null) {
+      const { projectId: pid, ...rest } = projectIdOrData;
+      projectId = pid;
+      data = rest;
+    } else {
+      projectId = projectIdOrData;
+      data = dataPayload;
+    }
     return apiClient.post(
       `${API_CONFIG.ENDPOINTS.PHASES}/create/${projectId}`,
-      { phaseType: 'inceptions', workflowMode: data.workflowMode, phaseStatus: data.phaseStatus }
+      { phaseType: 'inceptions', workflowMode: data?.workflowMode, phaseStatus: data?.phaseStatus }
     );
   }
 
