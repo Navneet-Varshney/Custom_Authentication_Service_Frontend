@@ -28,14 +28,15 @@ export const meetingsService = {
    * @param {string} projectId - Project ID
    * @param {Object} meetingData - Meeting data
    */
-  async createMeeting(entityType, projectId, meetingData) {
+  async createMeeting(entityType, projectId, meetingData = {}) {
+    const data = meetingData || {};
     // Normalize field names to match backend expectations
     const normalizedData = {
-      title: meetingData.title,
-      ...(meetingData.description && { description: meetingData.description }),
-      ...(meetingData.facilitatorId && { facilitatorId: meetingData.facilitatorId }),
-      ...(meetingData.meetingGroup && { meetingGroup: meetingData.meetingGroup }),
-      ...(meetingData.platform && { platform: meetingData.platform })
+      title: data.title,
+      ...(data.description && { description: data.description }),
+      ...(data.facilitatorId && { facilitatorId: data.facilitatorId }),
+      ...(data.meetingGroup && { meetingGroup: data.meetingGroup }),
+      ...(data.platform && { platform: data.platform })
     };
 
     const response = await apiClient.post(
