@@ -10,10 +10,19 @@ class NegotiationService {
    * Create negotiation phase
    * Backend: POST /negotiations/create/:projectId
    */
-  async createNegotiation(projectId, negotiationData = {}) {
+  async createNegotiation(projectIdOrData, dataPayload = {}) {
+    let projectId, data;
+    if (typeof projectIdOrData === 'object' && projectIdOrData !== null) {
+      const { projectId: pid, ...rest } = projectIdOrData;
+      projectId = pid;
+      data = rest;
+    } else {
+      projectId = projectIdOrData;
+      data = dataPayload;
+    }
     return apiClient.post(
       `${API_CONFIG.ENDPOINTS.PHASES}/create/${projectId}`,
-      { phaseType: 'negotiations', ...negotiationData }
+      { phaseType: 'negotiations', ...data }
     );
   }
 
