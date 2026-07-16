@@ -24,11 +24,12 @@ class OrgProjectRequestService {
    * REQUIRED FIELDS: projectId, clientId, joinRole
    * OPTIONAL FIELDS: requestDescription, expectedDuration
    */
-  async createOrgProjectRequest(requestData) {
+  async createOrgProjectRequest(requestData = {}) {
     try {
+      const payload = requestData || {};
       const response = await apiClient.post(
         '/org-project-requests/create',
-        requestData
+        payload
       );
       
       if (!response.success) {
