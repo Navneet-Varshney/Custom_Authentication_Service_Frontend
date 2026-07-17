@@ -23,11 +23,12 @@ export const participantsService = {
    * REQUIRED FIELDS: userId (USR-prefixed custom user ID)
    * OPTIONAL FIELDS: roleDescription
    */
-  async addParticipant(entityType, meetingId, participantData) {
+  async addParticipant(entityType, meetingId, participantData = {}) {
+    const data = participantData || {};
     // Backend expects: { userId: "USR1100000", roleDescription?: "SCRIBE" }
     const normalizedData = {
-      userId: participantData.userId,  // REQUIRED - USR-prefixed ID like "USR1100000"
-      ...(participantData.roleDescription && { roleDescription: participantData.roleDescription })
+      userId: data.userId,  // REQUIRED - USR-prefixed ID like "USR1100000"
+      ...(data.roleDescription && { roleDescription: data.roleDescription })
     };
 
     const response = await apiClient.post(
