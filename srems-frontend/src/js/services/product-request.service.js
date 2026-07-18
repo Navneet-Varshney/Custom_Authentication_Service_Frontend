@@ -22,10 +22,11 @@ class ProductRequestService {
   /**
    * Create product request
    */
-  async createProductRequest(requestData) {
+  async createProductRequest(requestData = {}) {
+    const data = requestData || {};
     const response = await apiClient.post(
       `${API_CONFIG.ENDPOINTS.PRODUCT_REQUESTS}/create`,
-      requestData
+      data
     );
 
     return this.normalizeResponse(response, 'Failed to create product request');
