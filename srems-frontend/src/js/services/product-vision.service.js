@@ -11,8 +11,15 @@ class ProductVisionService {
    * Create product vision
    * Backend: POST /product-vision/create/:projectId
    */
-  async createProductVision(visionData) {
-    const { projectId, productVision } = visionData;
+  async createProductVision(projectIdOrData, visionText = '') {
+    let projectId, productVision;
+    if (typeof projectIdOrData === 'object' && projectIdOrData !== null) {
+      projectId = projectIdOrData.projectId;
+      productVision = projectIdOrData.productVision || projectIdOrData.vision || '';
+    } else {
+      projectId = projectIdOrData;
+      productVision = visionText;
+    }
     return apiClient.post(
       `${API_CONFIG.ENDPOINTS.PRODUCT_VISION}/create/${projectId}`,
       { productVision }
