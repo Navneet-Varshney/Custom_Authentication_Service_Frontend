@@ -28,13 +28,15 @@ class ProjectsService {
    * Get all projects (with pagination)
    */
   async getProjects(page = 1, pageSize = 10) {
+    const validPage = Math.max(1, parseInt(page, 10) || 1);
+    const validSize = Math.max(1, parseInt(pageSize, 10) || 10);
     const role = localStorage.getItem('user_role');
     const clientRoles = ['sponsor', 'partner', 'vendor', 'end_user', 'other'];
     const isClient = clientRoles.includes(role);
     const endpoint = isClient ? '/clients/list-projects' : `${API_CONFIG.ENDPOINTS.PROJECTS}/list`;
     
     const response = await apiClient.get(
-      `${endpoint}?page=${page}&pageSize=${pageSize}`
+      `${endpoint}?page=${validPage}&pageSize=${validSize}`
     );
     
     // Check if response was successful
