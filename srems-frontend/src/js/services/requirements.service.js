@@ -223,8 +223,13 @@ class RequirementsService {
   }
 
   _getStorage() {
-    const data = localStorage.getItem(STORAGE_KEY);
-    return data ? JSON.parse(data) : [];
+    try {
+      const data = localStorage.getItem(STORAGE_KEY);
+      return data ? JSON.parse(data) : [];
+    } catch (e) {
+      console.error('Failed to parse requirements storage:', e);
+      return [];
+    }
   }
 
   _saveStorage(data) {
