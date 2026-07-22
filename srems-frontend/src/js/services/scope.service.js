@@ -11,8 +11,9 @@ class ScopeService {
    * Create scope item
    * Backend: POST /scope/create/:projectId
    */
-  async createScope(projectId, scopeData) {
-    return apiClient.post(`${API_CONFIG.ENDPOINTS.SCOPE}/create/${projectId}`, scopeData);
+  async createScope(projectId, scopeData = {}) {
+    const payload = scopeData || {};
+    return apiClient.post(`${API_CONFIG.ENDPOINTS.SCOPE}/create/${projectId}`, payload);
   }
 
   /**
