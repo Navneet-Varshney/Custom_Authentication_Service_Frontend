@@ -10,10 +10,19 @@ class SpecificationService {
    * Create specification phase
    * Backend: POST /specifications/create/:projectId
    */
-  async createSpecification(projectId, specificationData = {}) {
+  async createSpecification(projectIdOrData, dataPayload = {}) {
+    let projectId, data;
+    if (typeof projectIdOrData === 'object' && projectIdOrData !== null) {
+      const { projectId: pid, ...rest } = projectIdOrData;
+      projectId = pid;
+      data = rest;
+    } else {
+      projectId = projectIdOrData;
+      data = dataPayload;
+    }
     return apiClient.post(
       `${API_CONFIG.ENDPOINTS.PHASES}/create/${projectId}`,
-      { phaseType: 'specifications', ...specificationData }
+      { phaseType: 'specifications', ...data }
     );
   }
 
