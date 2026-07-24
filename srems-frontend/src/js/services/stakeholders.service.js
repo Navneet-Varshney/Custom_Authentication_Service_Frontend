@@ -11,7 +11,20 @@ class StakeholdersService {
    * Add stakeholder to project
    * Backend expects: { userId, role, projectId, orgId (optional) }
    */
-  async addStakeholder(userId, role, orgId = null, projectId = null) {
+  async addStakeholder(userIdOrData, roleParam = null, orgIdParam = null, projectIdParam = null) {
+    let userId, role, orgId, projectId;
+    if (typeof userIdOrData === 'object' && userIdOrData !== null) {
+      userId = userIdOrData.userId;
+      role = userIdOrData.role;
+      orgId = userIdOrData.orgId || null;
+      projectId = userIdOrData.projectId || null;
+    } else {
+      userId = userIdOrData;
+      role = roleParam;
+      orgId = orgIdParam;
+      projectId = projectIdParam;
+    }
+
     console.log('📤 Adding stakeholder with:', { userId, role, orgId, projectId });
     
     const payload = {
