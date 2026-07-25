@@ -10,10 +10,19 @@ class ValidationService {
    * Create validation phase
    * Backend: POST /validations/create/:projectId
    */
-  async createValidation(projectId, validationData = {}) {
+  async createValidation(projectIdOrData, dataPayload = {}) {
+    let projectId, data;
+    if (typeof projectIdOrData === 'object' && projectIdOrData !== null) {
+      const { projectId: pid, ...rest } = projectIdOrData;
+      projectId = pid;
+      data = rest;
+    } else {
+      projectId = projectIdOrData;
+      data = dataPayload;
+    }
     return apiClient.post(
       `${API_CONFIG.ENDPOINTS.PHASES}/create/${projectId}`,
-      { phaseType: 'validations', ...validationData }
+      { phaseType: 'validations', ...data }
     );
   }
 
